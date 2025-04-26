@@ -62,6 +62,7 @@ export default function App() {
             changeEntryProject={changeEntryProject}
             editEntry={editEntry}
             resumeEntry={resumeEntry}
+            toggleTimer={() => toggleTimer(projects)}
           />
         )}
         {tab === 'REPORTS' && 

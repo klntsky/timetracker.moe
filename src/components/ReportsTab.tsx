@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Project, Settings, TimeEntry } from '../types';
 import { PresetRange, getRange } from '../utils/dateRanges';
+import { formatDecimalHours } from '../utils/timeFormatters';
 
 interface ReportsTabProps {
   projects: Project[];
@@ -30,8 +31,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, ti
         ? (e.duration || 0) + timerElapsedMs
         : e.duration || 0;
       
-      const hours = entryDuration / 3600000; // Convert ms to hours
-      m.set(e.projectId, (m.get(e.projectId) || 0) + hours);
+      // Store the raw milliseconds - we'll format when displaying
+      m.set(e.projectId, (m.get(e.projectId) || 0) + entryDuration);
     });
     return Array.from(m.entries());
   }, [filtered, timerElapsedMs]);
@@ -63,8 +64,11 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, ti
           <tr><th>Project</th><th className="text-end">Hours</th></tr>
         </thead>
         <tbody>
-          {totals.map(([pid, h]) => (
-            <tr key={pid}><td>{pidToName(pid)}</td><td className="text-end">{h.toFixed(2)}</td></tr>
+          {totals.map(([pid, ms]) => (
+            <tr key={pid}>
+              <td>{pidToName(pid)}</td>
+              <td className="text-end">{formatDecimalHours(ms)}</td>
+            </tr>
           ))}
         </tbody>
       </table>

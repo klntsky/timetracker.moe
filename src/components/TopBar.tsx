@@ -2,6 +2,7 @@
 import React from 'react';
 import { TimeEntry } from '../types';
 import clsx from 'clsx';
+import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 
 interface Props {
   tabs: { id: string; label: string }[];
@@ -22,19 +23,9 @@ export default function TopBar({
   toggleTimer,
   elapsedMs,
 }: Props) {
-  const hrs = Math.floor(elapsedMs / 3600000)
-    .toString()
-    .padStart(2, '0');
-  const mins = Math.floor((elapsedMs % 3600000) / 60000)
-    .toString()
-    .padStart(2, '0');
-  const secs = Math.floor((elapsedMs % 60000) / 1000)
-    .toString()
-    .padStart(2, '0');
-
-  // default display HH:MM, full HH:MM:SS on hover
-  const displayTime = `${hrs}:${mins}`;
-  const fullTime = `${hrs}:${mins}:${secs}`;
+  // Format time using our utility functions
+  const displayTime = formatTimeHHMM(elapsedMs);
+  const fullTime = formatTimeHHMMSS(elapsedMs);
 
   return (
     <header className="d-flex align-items-center border-bottom p-2 bg-white gap-3">

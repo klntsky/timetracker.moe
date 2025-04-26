@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Project, TimeEntry, Settings } from '../types';
+import { formatTimeHHMM, formatTimeHHMMSS, formatDecimalHours } from '../utils/timeFormatters';
 
 interface Props {
   projects: Project[];
@@ -12,6 +13,7 @@ interface Props {
   changeEntryProject: (id: string, pid: string) => void;
   editEntry: (entry: TimeEntry) => void;
   resumeEntry: (entry: TimeEntry) => void;
+  toggleTimer: () => void;
 }
 
 function TrackTabComponent({
@@ -25,6 +27,7 @@ function TrackTabComponent({
   changeEntryProject,
   editEntry,
   resumeEntry,
+  toggleTimer,
 }: Props) {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
@@ -51,11 +54,6 @@ function TrackTabComponent({
         new Date(e.start) >= d &&
         new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
     );
-
-  const formatHours = (entry: TimeEntry) => {
-    // Convert duration from milliseconds to hours
-    return (entry.duration / 3600000).toFixed(2);
-  };
 
   return (
     <>
@@ -84,7 +82,24 @@ function TrackTabComponent({
               <div key={d.toDateString()} className="cell">
                 {entriesForDay(p.id, d).map((e) => (
                   <div key={e.id} className={`d-flex justify-content-between align-items-center ${e.active ? 'active-entry' : ''}`}>
-                    <span>{formatHours(e)}{e.active ? ' *' : ''}</span>
+                    <span 
+                      title={formatTimeHHMMSS(e.duration)}
+                      className="time-display"
+                    >
+                      {formatTimeHHMM(e.duration)}
+                      {e.active && (
+                        <button 
+                          className="btn btn-sm btn-danger ms-2 py-0 px-1" 
+                          title="Pause this entry"
+                          onClick={(evt) => {
+                            evt.stopPropagation();
+                            toggleTimer();
+                          }}
+                        >
+                          <i className="fas fa-pause"></i>
+                        </button>
+                      )}
+                    </span>
                     <button className="ellipsis-btn" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
                       <i className="fas fa-ellipsis-v"></i>
                     </button>
