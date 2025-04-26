@@ -2,8 +2,9 @@ export interface TimeEntry {
   id: string;
   projectId: string;
   start: string; // ISO
-  end?: string;  // ISO - optional for active/running entries
+  duration: number; // duration in milliseconds
   note?: string;
+  active?: boolean; // whether the entry is currently active/running
 }
 
 export interface Project {

@@ -38,8 +38,8 @@ export default function App() {
   // ui state
   const [tab, setTab] = useState<'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'>('TRACK');
 
-  // active (running) entry – one without end
-  const activeEntry = useMemo(() => entries.find((e) => !e.end), [entries]);
+  // active (running) entry – one with active flag
+  const activeEntry = useMemo(() => entries.find((e) => e.active), [entries]);
 
   // timer persistence
   const [timerStore, setTimerStore] = useLocalStorage<{
@@ -55,14 +55,47 @@ export default function App() {
 
   // ─── Timer control ───────────────────────────────────────────────────────
   const stopEntry = (entryId: string) => {
-    setEntries((es) => es.map((e) => (e.id === entryId ? { ...e, end: new Date().toISOString() } : e)));
+    setEntries((es) => es.map((e) => {
+      if (e.id === entryId) {
+        // Calculate duration to add to the existing duration
+        const additionalDuration = timer.running && timer.startIso 
+          ? Date.now() - new Date(timer.startIso).getTime() 
+          : 0;
+        return { 
+          ...e, 
+          active: false, 
+          duration: (e.duration || 0) + additionalDuration 
+        };
+      }
+      return e;
+    }));
   };
 
   const startNewEntry = (projectId: string, resumeId?: string) => {
-    const id = resumeId ?? uuid();
-    const newEntry: TimeEntry = { id, projectId, start: new Date().toISOString() };
-    setEntries((es) => (resumeId ? es.map((e) => (e.id === id ? { ...e, start: newEntry.start, end: undefined } : e)) : [...es, newEntry]));
-    setTimerStore({ running: true, start: newEntry.start, entryId: id });
+    const now = new Date().toISOString();
+    if (resumeId) {
+      // Resume existing entry
+      setEntries((es) => es.map((e) => 
+        e.id === resumeId 
+          ? { ...e, active: true }
+          : e.active ? { ...e, active: false } : e
+      ));
+    } else {
+      // Create new entry
+      const id = uuid();
+      const newEntry: TimeEntry = { 
+        id, 
+        projectId, 
+        start: now, 
+        duration: 0,
+        active: true 
+      };
+      setEntries((es) => [
+        ...es.map(e => e.active ? { ...e, active: false } : e),
+        newEntry
+      ]);
+    }
+    setTimerStore({ running: true, start: now, entryId: resumeId || null });
     timer.start();
   };
 
@@ -70,12 +103,19 @@ export default function App() {
     if (timer.running) {
       // stop current entry
       timer.stop();
-      if (timerStore.entryId) stopEntry(timerStore.entryId);
+      if (activeEntry) stopEntry(activeEntry.id);
       setTimerStore({ running: false, start: null, entryId: null });
     } else {
       // resume last paused entry if exists, else create on first project
       if (timerStore.entryId) {
-        startNewEntry(entries.find((e) => e.id === timerStore.entryId)!.projectId, timerStore.entryId);
+        const entry = entries.find((e) => e.id === timerStore.entryId);
+        if (entry) {
+          startNewEntry(entry.projectId, entry.id);
+        } else if (projects.length) {
+          startNewEntry(projects[0].id);
+        } else {
+          alert('Create a project first');
+        }
       } else {
         if (!projects.length) return alert('Create a project first');
         startNewEntry(projects[0].id);
@@ -120,19 +160,26 @@ export default function App() {
     const defaultTo = new Date().toISOString().substring(0, 10);
     const [from, setFrom] = useState(defaultFrom);
     const [to, setTo] = useState(defaultTo);
-    const [start, end] = getRange(preset, settings, { from, to });
+    const [startDate, endDate] = getRange(preset, settings, { from, to });
 
-    const filtered = entries.filter((e) => new Date(e.start) >= start && new Date(e.end ?? new Date()) <= end);
+    const filtered = entries.filter((e) => {
+      const entryDate = new Date(e.start);
+      return entryDate >= startDate && entryDate <= endDate;
+    });
 
     const totals = useMemo(() => {
       const m = new Map<string, number>();
       filtered.forEach((e) => {
-        const finish = e.end ? new Date(e.end) : new Date();
-        const h = (finish.getTime() - new Date(e.start).getTime()) / 36e5;
-        m.set(e.projectId, (m.get(e.projectId) || 0) + h);
+        // For active entries, add current elapsed time
+        const entryDuration = e.active 
+          ? (e.duration || 0) + (timer.running ? timer.elapsedMs : 0)
+          : e.duration || 0;
+        
+        const hours = entryDuration / 3600000; // Convert ms to hours
+        m.set(e.projectId, (m.get(e.projectId) || 0) + hours);
       });
       return Array.from(m.entries());
-    }, [filtered]);
+    }, [filtered, timer.elapsedMs]);
 
     const pidToName = (pid: string) => projects.find((p) => p.id === pid)?.name || '???';
 
@@ -167,7 +214,7 @@ export default function App() {
           </tbody>
         </table>
         <small>
-          Period: {start.toLocaleDateString()} – {end.toLocaleDateString()} ({filtered.length} entries)
+          Period: {startDate.toLocaleDateString()} – {endDate.toLocaleDateString()} ({filtered.length} entries)
         </small>
       </div>
     );

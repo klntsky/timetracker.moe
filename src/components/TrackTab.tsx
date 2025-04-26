@@ -52,8 +52,10 @@ function TrackTabComponent({
         new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
     );
 
-  const formatHours = (entry: TimeEntry) =>
-    ((new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5).toFixed(2);
+  const formatHours = (entry: TimeEntry) => {
+    // Convert duration from milliseconds to hours
+    return (entry.duration / 3600000).toFixed(2);
+  };
 
   return (
     <>
@@ -81,14 +83,16 @@ function TrackTabComponent({
             {days.map((d) => (
               <div key={d.toDateString()} className="cell">
                 {entriesForDay(p.id, d).map((e) => (
-                  <div key={e.id} className="d-flex justify-content-between align-items-center">
-                    <span>{formatHours(e)}</span>
+                  <div key={e.id} className={`d-flex justify-content-between align-items-center ${e.active ? 'active-entry' : ''}`}>
+                    <span>{formatHours(e)}{e.active ? ' *' : ''}</span>
                     <button className="ellipsis-btn" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
                       <i className="fas fa-ellipsis-v"></i>
                     </button>
                     {entryMenu === e.id && (
                       <div className="dropdown-menu show" style={{ left: 'auto', right: 0 }}>
-                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); resumeEntry(e); }}>Resume</button>
+                        {!e.active && (
+                          <button className="dropdown-item" onClick={() => { setEntryMenu(null); resumeEntry(e); }}>Resume</button>
+                        )}
                         <button className="dropdown-item" onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</button>
                         <button className="dropdown-item" onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</button>
                         <div className="dropdown-item">
