@@ -11,7 +11,7 @@ import { useProjects } from './hooks/useProjects';
 
 export default function App() {
   // settings state
-  const [settings, setSettings] = useLocalStorage<Settings>('harvest.settings', { weekEndsOn: 'sunday' });
+  const [settings, setSettings] = useLocalStorage<Settings>('harnesstime.settings', { weekEndsOn: 'sunday' });
   
   // ui state
   const [tab, setTab] = useState<'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'>('TRACK');
@@ -37,11 +37,19 @@ export default function App() {
     deleteProject
   } = useProjects(entries, setEntries);
 
+  // Define tabs that appear in the UI
+  const tabs = [
+    { id: 'TRACK', label: 'Time' },
+    { id: 'REPORTS', label: 'Reports' },
+    { id: 'SETTINGS', label: 'Settings' },
+    { id: 'BACKUP', label: 'Backup' },
+  ];
+
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
     <>
       <TopBar
-        tabs={[{ id: 'TRACK', label: 'Time' }, { id: 'REPORTS', label: 'Reports' }, { id: 'SETTINGS', label: 'Settings' }, { id: 'BACKUP', label: 'Backup' }]}
+        tabs={tabs}
         current={tab}
         changeTab={(id) => setTab(id as any)}
         activeEntry={activeEntry ?? null}
