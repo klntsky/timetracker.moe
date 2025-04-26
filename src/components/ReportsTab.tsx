@@ -11,16 +11,28 @@ interface ReportsTabProps {
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, timerElapsedMs }) => {
-  const [preset, setPreset] = useState<PresetRange>('CUSTOM');
+  const [preset, setPreset] = useState<PresetRange>('THIS_WEEK');
   const defaultFrom = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().substring(0, 10);
   const defaultTo = new Date().toISOString().substring(0, 10);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
+  
+  // Get date range based on preset
   const [startDate, endDate] = getRange(preset, settings, { from, to });
 
   const filtered = entries.filter((e) => {
     const entryDate = new Date(e.start);
-    return entryDate >= startDate && entryDate <= endDate;
+    
+    // Make start date the beginning of the day (00:00:00)
+    const startDay = new Date(startDate);
+    startDay.setHours(0, 0, 0, 0);
+    
+    // Make end date the end of the day (23:59:59.999)
+    const endDay = new Date(endDate);
+    endDay.setHours(23, 59, 59, 999);
+    
+    // Compare entry timestamp with the day boundaries
+    return entryDate >= startDay && entryDate <= endDay;
   });
 
   const totals = useMemo(() => {
