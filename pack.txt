@@ -46,11 +46,126 @@ input, select { padding:0.3rem 0.4rem; font-size:0.85rem; }
 .week-grid { display:grid; grid-template-columns: 120px repeat(7,1fr); gap:0.5rem; }
 .week-grid .header { font-weight:600; }
 .week-grid .cell { min-height:40px; border:1px solid #eee; padding:0.2rem; background:#fafafa; font-size:0.8rem; position:relative; }
-/* ─── Dropdown helpers ───────────────────────────────── */
 .dropdown-toggle { cursor:pointer; user-select:none; }
 .dropdown-menu { position:absolute; right:0; top:100%; background:#fff; border:1px solid #ddd; border-radius:4px; padding:0.2rem 0; font-size:0.75rem; z-index:100; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
 .dropdown-menu div { padding:0.25rem 0.8rem; white-space:nowrap; cursor:pointer; }
 .dropdown-menu div:hover { background:#f0f0f0; }
+```
+
+// src/components/TrackTab.tsx
+```
+import React, { useState } from 'react';
+import { Project, TimeEntry, Settings } from '../types';
+
+interface Props {
+  projects: Project[];
+  entries: TimeEntry[];
+  settings: Settings;
+  addProject: () => void;
+  renameProject: (id: string) => void;
+  deleteProject: (id: string) => void;
+  deleteEntry: (id: string) => void;
+  changeEntryProject: (id: string, pid: string) => void;
+  editEntry: (entry: TimeEntry) => void;
+}
+
+function TrackTabComponent({
+  projects,
+  entries,
+  settings,
+  addProject,
+  renameProject,
+  deleteProject,
+  deleteEntry,
+  changeEntryProject,
+  editEntry,
+}: Props) {
+  const [projectMenu, setProjectMenu] = useState<string | null>(null);
+  const [entryMenu, setEntryMenu] = useState<string | null>(null);
+
+  const now = new Date();
+  const weekStart = (() => {
+    const ws = new Date(now);
+    const offset = settings.weekEndsOn === 'sunday' ? 1 : 0;
+    const diff = (now.getDay() + 7 - offset) % 7;
+    ws.setDate(now.getDate() - diff);
+    ws.setHours(0, 0, 0, 0);
+    return ws;
+  })();
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    return d;
+  });
+
+  const getEntriesForProjectDay = (projId: string, d: Date) =>
+    entries.filter((e) => e.projectId === projId && new Date(e.start) >= d && new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
+
+  const formatHours = (entry: TimeEntry) => ((new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5).toFixed(2);
+
+  return (
+    <>
+      <div className="week-grid">
+        <div className="header" />
+        {days.map((d) => (
+          <div key={d.toDateString()} className="header">
+            {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
+          </div>
+        ))}
+        {projects.map((p) => (
+          <React.Fragment key={p.id}>
+            <div
+              className="cell header"
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}
+            >
+              <span>{p.name}</span>
+              <span className="dropdown-toggle" onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}>▾</span>
+              {projectMenu === p.id && (
+                <div className="dropdown-menu" onMouseLeave={() => setProjectMenu(null)}>
+                  <div onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</div>
+                  <div onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</div>
+                </div>
+              )}
+            </div>
+            {days.map((d) => (
+              <div key={d.toDateString()} className="cell">
+                {getEntriesForProjectDay(p.id, d).map((e) => (
+                  <div key={e.id} style={{ position: 'relative' }}>
+                    <span className="dropdown-toggle" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
+                      ▾ {formatHours(e)}
+                    </span>
+                    {entryMenu === e.id && (
+                      <div className="dropdown-menu" onMouseLeave={() => setEntryMenu(null)}>
+                        <div onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</div>
+                        <div onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</div>
+                        <div>
+                          Change project:
+                          <select
+                            value={e.projectId}
+                            onChange={(ev) => { setEntryMenu(null); changeEntryProject(e.id, ev.target.value); }}
+                          >
+                            {projects.map((pr) => (
+                              <option key={pr.id} value={pr.id}>{pr.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </React.Fragment>
+        ))}
+      </div>
+      <div className="card" style={{ marginTop: '1rem' }}>
+        <button onClick={addProject}>+ Add project</button>
+      </div>
+    </>
+  );
+}
+
+export default React.memo(TrackTabComponent);
 ```
 
 // src/App.tsx
@@ -60,19 +175,20 @@ import { v4 as uuid } from 'uuid';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { TimeEntry, Project, Settings } from './types';
 import TopBar from './components/TopBar';
+import TrackTab from './components/TrackTab';
 import { PresetRange, getRange } from './utils/dateRanges';
 
-// ─── Helper hooks ────────────────────────────────────────────────────────────
+// ─── Timer Hook ─────────────────────────────────────────────────────────────
 
 function useTimer(initialRunning: boolean, initialStart: string | null) {
   const [running, setRunning] = useState(initialRunning);
   const [startIso, setStartIso] = useState<string | null>(initialStart);
-  const [tick, setTick] = useState(0);
+  // local tick so App re‑renders once a second, TrackTab (memo) stays put
+  const [, force] = useState(0);
 
-  // tick each second when running
   useEffect(() => {
     if (!running) return;
-    const int = setInterval(() => setTick(Date.now()), 1000);
+    const int = setInterval(() => force((n) => n + 1), 1000);
     return () => clearInterval(int);
   }, [running]);
 
@@ -80,31 +196,29 @@ function useTimer(initialRunning: boolean, initialStart: string | null) {
     setRunning(true);
     setStartIso(new Date().toISOString());
   };
-
-  const stop = () => {
-    setRunning(false);
-  };
+  const stop = () => setRunning(false);
 
   const elapsedMs = running && startIso ? Date.now() - new Date(startIso).getTime() : 0;
   return { running, startIso, start, stop, elapsedMs } as const;
 }
 
-// ─── Main App ────────────────────────────────────────────────────────────────
+// ─── App ────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  // persistent data
   const [projects, setProjects] = useLocalStorage<Project[]>('harvest.projects', []);
   const [entries, setEntries] = useLocalStorage<TimeEntry[]>('harvest.entries', []);
   const [settings, setSettings] = useLocalStorage<Settings>('harvest.settings', { weekEndsOn: 'sunday' });
   const [tab, setTab] = useState<'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'>('TRACK');
 
-  // active project = last updated or single
+  // active project: last‑used
   const activeProject = useMemo(() => {
     if (!projects.length) return null;
     if (projects.length === 1) return projects[0];
     return projects.reduce((a, b) => (a.updatedAt > b.updatedAt ? a : b));
   }, [projects]);
 
-  // timer state stored in localStorage to survive reload
+  // timer persistence
   const [timerStore, setTimerStore] = useLocalStorage<{ running: boolean; start: string | null; projectId: string | null }>(
     'harvest.timer',
     { running: false, start: null, projectId: null },
@@ -113,175 +227,62 @@ export default function App() {
 
   useEffect(() => {
     setTimerStore({ running: timer.running, start: timer.startIso, projectId: timerStore.projectId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timer.running, timer.startIso]);
+
+  // ─── Timer toggle ─────────────────────────────────────────────────────────
 
   const toggleTimer = () => {
     if (!activeProject) return alert('Create a project first');
+
     if (timer.running) {
-      // stop & create entry
       timer.stop();
       setTimerStore((s) => ({ ...s, running: false }));
       const startDate = new Date(timer.startIso!);
-      const endDate = new Date();
+      let endDate = new Date();
+      // ensure >= 1 minute
       if (endDate.getTime() - startDate.getTime() < 60_000) {
-        endDate.setTime(startDate.getTime() + 60_000); // ensure at least 1 minute
+        endDate = new Date(startDate.getTime() + 60_000);
       }
-      setEntries([
-        ...entries,
-        {
-          id: uuid(),
-          projectId: activeProject.id,
-          start: startDate.toISOString(),
-          end: endDate.toISOString(),
-        },
+      setEntries((es) => [
+        ...es,
+        { id: uuid(), projectId: activeProject.id, start: startDate.toISOString(), end: endDate.toISOString() },
       ]);
-      setProjects(projects.map((p) => (p.id === activeProject.id ? { ...p, updatedAt: new Date().toISOString() } : p)));
+      setProjects((ps) => ps.map((p) => (p.id === activeProject.id ? { ...p, updatedAt: new Date().toISOString() } : p)));
     } else {
       timer.start();
       setTimerStore({ running: true, start: new Date().toISOString(), projectId: activeProject.id });
     }
   };
 
-  // ─── Project CRUD ──────────────────────────────────────────────────────────
+  // ─── Project CRUD ─────────────────────────────────────────────────────────
 
   const addProject = () => {
     const name = prompt('Project name?');
     if (!name) return;
-    const proj: Project = { id: uuid(), name, updatedAt: new Date().toISOString() };
-    setProjects([...projects, proj]);
+    setProjects([...projects, { id: uuid(), name, updatedAt: new Date().toISOString() }]);
   };
-
   const renameProject = (id: string) => {
     const name = prompt('New name?');
     if (!name) return;
     setProjects(projects.map((p) => (p.id === id ? { ...p, name } : p)));
   };
-
   const deleteProject = (id: string) => {
     if (!confirm('Delete project and its entries?')) return;
     setProjects(projects.filter((p) => p.id !== id));
     setEntries(entries.filter((e) => e.projectId !== id));
   };
 
-  // ─── Entry helpers ─────────────────────────────────────────────────────────
-  const deleteEntry = (id: string) => {
-    setEntries(entries.filter((e) => e.id !== id));
-  };
+  // ─── Entry helpers ────────────────────────────────────────────────────────
 
-  const changeEntryProject = (id: string, pid: string) => {
-    setEntries(entries.map((e) => (e.id === id ? { ...e, projectId: pid } : e)));
-  };
-
+  const deleteEntry = (id: string) => setEntries(entries.filter((e) => e.id !== id));
+  const changeEntryProject = (id: string, pid: string) => setEntries(entries.map((e) => (e.id === id ? { ...e, projectId: pid } : e)));
   const editEntry = (entry: TimeEntry) => {
     const note = prompt('Edit note', entry.note || '');
     if (note === null) return;
     setEntries(entries.map((e) => (e.id === entry.id ? { ...e, note } : e)));
   };
 
-  // ─── UI fragments ─────────────────────────────────────────────────────────
-
-  const TrackTab = () => {
-    const [projectMenu, setProjectMenu] = useState<string | null>(null);
-    const [entryMenu, setEntryMenu] = useState<string | null>(null);
-
-    // build week grid for current week
-    const now = new Date();
-    const weekStart = (() => {
-      const ws = new Date(now);
-      const offset = settings.weekEndsOn === 'sunday' ? 1 : 0;
-      const diff = (now.getDay() + 7 - offset) % 7;
-      ws.setDate(now.getDate() - diff);
-      ws.setHours(0, 0, 0, 0);
-      return ws;
-    })();
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(weekStart);
-      d.setDate(weekStart.getDate() + i);
-      return d;
-    });
-
-    const getEntriesForProjectDay = (projId: string, d: Date) => {
-      return entries.filter((e) => {
-        if (e.projectId !== projId) return false;
-        const st = new Date(e.start);
-        return st >= d && st < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-      });
-    };
-
-    const formatHours = (entry: TimeEntry) => {
-      const h = (new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5;
-      return h.toFixed(2);
-    };
-
-    return (
-      <>
-        <div className="week-grid">
-          <div className="header" />
-          {days.map((d) => (
-            <div key={d.toDateString()} className="header">
-              {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
-            </div>
-          ))}
-          {projects.map((p) => (
-            <React.Fragment key={p.id}>
-              <div className="cell header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-                <span>{p.name}</span>
-                <span
-                  className="dropdown-toggle"
-                  onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}
-                >
-                  ▾
-                </span>
-                {projectMenu === p.id && (
-                  <div className="dropdown-menu" onMouseLeave={() => setProjectMenu(null)}>
-                    <div onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</div>
-                    <div onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</div>
-                  </div>
-                )}
-              </div>
-              {days.map((d) => (
-                <div key={d.toDateString()} className="cell">
-                  {getEntriesForProjectDay(p.id, d).map((e) => (
-                    <div key={e.id} style={{ position: 'relative' }}>
-                      <span
-                        className="dropdown-toggle"
-                        onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}
-                      >
-                        ▾ {formatHours(e)}
-                      </span>
-                      {entryMenu === e.id && (
-                        <div className="dropdown-menu" onMouseLeave={() => setEntryMenu(null)}>
-                          <div onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</div>
-                          <div onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</div>
-                          <div>
-                            Change project:
-                            <select
-                              value={e.projectId}
-                              onChange={(ev) => { setEntryMenu(null); changeEntryProject(e.id, ev.target.value); }}
-                            >
-                              {projects.map((pr) => (
-                                <option key={pr.id} value={pr.id}>
-                                  {pr.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </React.Fragment>
-          ))}
-        </div>
-        <div className="card" style={{ marginTop: '1rem' }}>
-          <button onClick={addProject}>+ Add project</button>
-        </div>
-      </>
-    );
-  };
+  // ─── ReportsTab ───────────────────────────────────────────────────────────
 
   const ReportsTab = () => {
     const [preset, setPreset] = useState<PresetRange>('THIS_WEEK');
@@ -289,9 +290,7 @@ export default function App() {
     const [to, setTo] = useState('');
     const [start, end] = getRange(preset, settings, { from, to });
 
-    const filtered = entries.filter((e) => {
-      return new Date(e.start) >= start && new Date(e.end) <= end;
-    });
+    const filtered = entries.filter((e) => new Date(e.start) >= start && new Date(e.end) <= end);
 
     const totals = useMemo(() => {
       const m = new Map<string, number>();
@@ -345,21 +344,22 @@ export default function App() {
     );
   };
 
+  // ─── SettingsTab ──────────────────────────────────────────────────────────
+
   const SettingsTab = () => (
     <div className="card">
       <h3>Settings</h3>
       <label>
-        Week ends on:
-        <select
-          value={settings.weekEndsOn}
-          onChange={(e) => setSettings({ weekEndsOn: e.target.value as Settings['weekEndsOn'] })}
-        >
+        Week ends on:{' '}
+        <select value={settings.weekEndsOn} onChange={(e) => setSettings({ weekEndsOn: e.target.value as Settings['weekEndsOn'] })}>
           <option value="sunday">Sunday</option>
           <option value="saturday">Saturday</option>
         </select>
       </label>
     </div>
   );
+
+  // ─── BackupTab ────────────────────────────────────────────────────────────
 
   const BackupTab = () => {
     const download = () => {
@@ -379,9 +379,7 @@ export default function App() {
       reader.onload = () => {
         try {
           const data = JSON.parse(reader.result as string);
-          for (const [k, v] of Object.entries(data)) {
-            localStorage.setItem(k, v as string);
-          }
+          for (const [k, v] of Object.entries(data)) localStorage.setItem(k, v as string);
           window.location.reload();
         } catch {
           alert('Bad file');
@@ -418,7 +416,19 @@ export default function App() {
         elapsedMs={timer.elapsedMs}
       />
       <main>
-        {tab === 'TRACK' && <TrackTab />}
+        {tab === 'TRACK' && (
+          <TrackTab
+            projects={projects}
+            entries={entries}
+            settings={settings}
+            addProject={addProject}
+            renameProject={renameProject}
+            deleteProject={deleteProject}
+            deleteEntry={deleteEntry}
+            changeEntryProject={changeEntryProject}
+            editEntry={editEntry}
+          />
+        )}
         {tab === 'REPORTS' && <ReportsTab />}
         {tab === 'SETTINGS' && <SettingsTab />}
         {tab === 'BACKUP' && <BackupTab />}

@@ -44,7 +44,6 @@ input, select { padding:0.3rem 0.4rem; font-size:0.85rem; }
 .week-grid { display:grid; grid-template-columns: 120px repeat(7,1fr); gap:0.5rem; }
 .week-grid .header { font-weight:600; }
 .week-grid .cell { min-height:40px; border:1px solid #eee; padding:0.2rem; background:#fafafa; font-size:0.8rem; position:relative; }
-/* ─── Dropdown helpers ───────────────────────────────── */
 .dropdown-toggle { cursor:pointer; user-select:none; }
 .dropdown-menu { position:absolute; right:0; top:100%; background:#fff; border:1px solid #ddd; border-radius:4px; padding:0.2rem 0; font-size:0.75rem; z-index:100; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
 .dropdown-menu div { padding:0.25rem 0.8rem; white-space:nowrap; cursor:pointer; }
