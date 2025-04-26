@@ -53,15 +53,24 @@ export function useTimeEntries() {
     [entries, setEntries],
   );
 
+  // Helper function to check if a date is today
+  const isToday = (dateString: string): boolean => {
+    const date = new Date(dateString);
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  };
+
   // Start the timer on a specific entry
   const startTimer = useCallback(
-    (projectId: string, entryId?: string) => {
+    (projectId: string, entryId?: string, note: string = '') => {
       const now = new Date().toISOString();
       let targetEntryId = entryId;
       
       // If no entry ID is provided, create a new entry
       if (!targetEntryId) {
-        const newEntry = addEntry(projectId, 0, '', now);
+        const newEntry = addEntry(projectId, 0, note, now);
         targetEntryId = newEntry.id;
       }
       
@@ -122,8 +131,14 @@ export function useTimeEntries() {
       const existingEntry = timer.lastEntryId ? entries.find(e => e.id === timer.lastEntryId) : null;
       
       if (existingEntry) {
-        // Case 1: Last entry exists - resume it
-        startTimer(existingEntry.projectId, existingEntry.id);
+        // Case 1: Last entry exists
+        if (isToday(existingEntry.start)) {
+          // If the entry is from today, resume it
+          startTimer(existingEntry.projectId, existingEntry.id);
+        } else {
+          // If the entry is from a different day, create a new entry with the same note
+          startTimer(existingEntry.projectId, undefined, existingEntry.note);
+        }
       } else if (timer.lastProjectId) {
         // Case 2: Entry was deleted but project still exists
         const projectExists = projects.some(p => p.id === timer.lastProjectId);
@@ -228,7 +243,14 @@ export function useTimeEntries() {
       if (timer.running) {
         stopTimer();
       }
-      startTimer(entry.projectId, entry.id);
+      
+      if (isToday(entry.start)) {
+        // If the entry is from today, resume it
+        startTimer(entry.projectId, entry.id);
+      } else {
+        // If the entry is from a different day, create a new entry with the same note
+        startTimer(entry.projectId, undefined, entry.note || undefined);
+      }
     },
     [timer, stopTimer, startTimer],
   );
