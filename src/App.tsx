@@ -65,13 +65,18 @@ export default function App() {
       // stop & create entry
       timer.stop();
       setTimerStore((s) => ({ ...s, running: false }));
+      const startDate = new Date(timer.startIso!);
+      const endDate = new Date();
+      if (endDate.getTime() - startDate.getTime() < 60_000) {
+        endDate.setTime(startDate.getTime() + 60_000); // ensure at least 1 minute
+      }
       setEntries([
         ...entries,
         {
           id: uuid(),
           projectId: activeProject.id,
-          start: timer.startIso!,
-          end: new Date().toISOString(),
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
         },
       ]);
       setProjects(projects.map((p) => (p.id === activeProject.id ? { ...p, updatedAt: new Date().toISOString() } : p)));
@@ -102,9 +107,27 @@ export default function App() {
     setEntries(entries.filter((e) => e.projectId !== id));
   };
 
+  // ─── Entry helpers ─────────────────────────────────────────────────────────
+  const deleteEntry = (id: string) => {
+    setEntries(entries.filter((e) => e.id !== id));
+  };
+
+  const changeEntryProject = (id: string, pid: string) => {
+    setEntries(entries.map((e) => (e.id === id ? { ...e, projectId: pid } : e)));
+  };
+
+  const editEntry = (entry: TimeEntry) => {
+    const note = prompt('Edit note', entry.note || '');
+    if (note === null) return;
+    setEntries(entries.map((e) => (e.id === entry.id ? { ...e, note } : e)));
+  };
+
   // ─── UI fragments ─────────────────────────────────────────────────────────
 
   const TrackTab = () => {
+    const [projectMenu, setProjectMenu] = useState<string | null>(null);
+    const [entryMenu, setEntryMenu] = useState<string | null>(null);
+
     // build week grid for current week
     const now = new Date();
     const weekStart = (() => {
@@ -136,9 +159,6 @@ export default function App() {
 
     return (
       <>
-        <div className="card">
-          <button onClick={addProject}>+ Add project</button>
-        </div>
         <div className="week-grid">
           <div className="header" />
           {days.map((d) => (
@@ -148,22 +168,59 @@ export default function App() {
           ))}
           {projects.map((p) => (
             <React.Fragment key={p.id}>
-              <div className="cell header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="cell header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
                 <span>{p.name}</span>
-                <span>
-                  <button onClick={() => renameProject(p.id)}>✎</button>{' '}
-                  <button onClick={() => deleteProject(p.id)}>🗑</button>
+                <span
+                  className="dropdown-toggle"
+                  onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}
+                >
+                  ▾
                 </span>
+                {projectMenu === p.id && (
+                  <div className="dropdown-menu" onMouseLeave={() => setProjectMenu(null)}>
+                    <div onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</div>
+                    <div onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</div>
+                  </div>
+                )}
               </div>
               {days.map((d) => (
                 <div key={d.toDateString()} className="cell">
                   {getEntriesForProjectDay(p.id, d).map((e) => (
-                    <div key={e.id}>{formatHours(e)}</div>
+                    <div key={e.id} style={{ position: 'relative' }}>
+                      <span
+                        className="dropdown-toggle"
+                        onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}
+                      >
+                        ▾ {formatHours(e)}
+                      </span>
+                      {entryMenu === e.id && (
+                        <div className="dropdown-menu" onMouseLeave={() => setEntryMenu(null)}>
+                          <div onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</div>
+                          <div onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</div>
+                          <div>
+                            Change project:
+                            <select
+                              value={e.projectId}
+                              onChange={(ev) => { setEntryMenu(null); changeEntryProject(e.id, ev.target.value); }}
+                            >
+                              {projects.map((pr) => (
+                                <option key={pr.id} value={pr.id}>
+                                  {pr.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               ))}
             </React.Fragment>
           ))}
+        </div>
+        <div className="card" style={{ marginTop: '1rem' }}>
+          <button onClick={addProject}>+ Add project</button>
         </div>
       </>
     );

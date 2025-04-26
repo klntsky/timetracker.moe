@@ -1,92 +1,3 @@
-// package.json
-```
-{
-  "name": "harvest-clone",
-  "version": "0.2.0",
-  "private": true,
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "uuid": "^9.0.1",
-    "clsx": "^2.1.0"
-  },
-  "devDependencies": {
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.2.0",
-    "typescript": "^5.5.0",
-    "vite": "^5.2.0"
-  }
-}
-```
-
-// vite.config.ts
-```
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
-export default defineConfig({
-  plugins: [react()],
-});
-```
-
-// tsconfig.json
-```
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"]
-}
-```
-
-// index.html
-```
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Harvest Clone</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-```
-
-// src/main.tsx
-```
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
-```
-
 // src/index.css
 ```
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -134,180 +45,12 @@ button { cursor:pointer; }
 input, select { padding:0.3rem 0.4rem; font-size:0.85rem; }
 .week-grid { display:grid; grid-template-columns: 120px repeat(7,1fr); gap:0.5rem; }
 .week-grid .header { font-weight:600; }
-.week-grid .cell { min-height:40px; border:1px solid #eee; padding:0.2rem; background:#fafafa; font-size:0.8rem; }
-```
-
-// src/types.ts
-```
-export interface TimeEntry {
-  id: string;
-  projectId: string;
-  start: string; // ISO
-  end: string;   // ISO
-  note?: string;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  updatedAt: string; // for last‑used detection
-}
-
-export interface Settings {
-  weekEndsOn: 'sunday' | 'saturday';
-}
-```
-
-// src/hooks/useLocalStorage.ts
-```
-import { useCallback, useEffect, useState } from 'react';
-
-export function useLocalStorage<T>(key: string, initial: T) {
-  const read = () => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : initial;
-    } catch {
-      return initial;
-    }
-  };
-
-  const [value, setValue] = useState<T>(read);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {/* ignore */}
-  }, [key, value]);
-
-  const clear = useCallback(() => {
-    localStorage.removeItem(key);
-    setValue(initial);
-  }, [key]);
-
-  return [value, setValue, clear] as const;
-}
-```
-
-// src/utils/dateRanges.ts
-```
-import { Settings } from '../types';
-
-export type PresetRange =
-  | 'THIS_WEEK'
-  | 'LAST_WEEK'
-  | 'TWO_WEEKS'
-  | 'LAST_TWO_WEEKS'
-  | 'THIS_MONTH'
-  | 'LAST_MONTH'
-  | 'CUSTOM';
-
-export function getRange(range: PresetRange, settings: Settings, custom?: {from?:string;to?:string;}): [Date, Date] {
-  const now = new Date();
-  let start = new Date();
-  let end = new Date();
-
-  const weekStartOffset = settings.weekEndsOn === 'sunday' ? 1 : 0;
-
-  switch (range) {
-    case 'THIS_WEEK': {
-      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
-      start.setDate(now.getDate() - diff);
-      end = now;
-      break;
-    }
-    case 'LAST_WEEK': {
-      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
-      end.setDate(now.getDate() - diff - 1);
-      start = new Date(end);
-      start.setDate(end.getDate() - 6);
-      break;
-    }
-    case 'TWO_WEEKS': {
-      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
-      start.setDate(now.getDate() - diff - 13);
-      end = now;
-      break;
-    }
-    case 'LAST_TWO_WEEKS': {
-      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
-      end.setDate(now.getDate() - diff - 1);
-      start = new Date(end);
-      start.setDate(end.getDate() - 13);
-      break;
-    }
-    case 'THIS_MONTH': {
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
-      end = now;
-      break;
-    }
-    case 'LAST_MONTH': {
-      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      end = new Date(now.getFullYear(), now.getMonth(), 0);
-      break;
-    }
-    case 'CUSTOM': {
-      start = custom?.from ? new Date(custom.from) : now;
-      end = custom?.to ? new Date(custom.to) : now;
-      break;
-    }
-  }
-  return [start, end];
-}
-```
-
-// src/components/TopBar.tsx
-```
-import React from 'react';
-import { clsx } from 'clsx';
-import { Project } from '../types';
-
-interface Props {
-  tabs: { id: string; label: string }[];
-  current: string;
-  changeTab: (id: string) => void;
-  activeProject: Project | null;
-  isRunning: boolean;
-  toggleTimer: () => void;
-  elapsedMs: number;
-}
-
-export default function TopBar({ tabs, current, changeTab, activeProject, isRunning, toggleTimer, elapsedMs }: Props) {
-  const hrs = Math.floor(elapsedMs / 3600000)
-    .toString()
-    .padStart(2, '0');
-  const mins = Math.floor((elapsedMs % 3600000) / 60000)
-    .toString()
-    .padStart(2, '0');
-  const secs = Math.floor((elapsedMs % 60000) / 1000)
-    .toString()
-    .padStart(2, '0');
-
-  return (
-    <header>
-      <button onClick={toggleTimer}>{isRunning ? '⏸' : '▶︎'}</button>
-      {activeProject ? (
-        <span>
-          {activeProject.name} · {hrs}:{mins}:{secs}
-        </span>
-      ) : (
-        <span>No project</span>
-      )}
-      <nav style={{ marginLeft: 'auto', display: 'flex', gap: '0.3rem' }}>
-        {tabs.map((t) => (
-          <a
-            key={t.id}
-            onClick={() => changeTab(t.id)}
-            className={clsx({ active: current === t.id })}
-            style={{ cursor: 'pointer' }}
-          >
-            {t.label}
-          </a>
-        ))}
-      </nav>
-    </header>
-  );
-}
+.week-grid .cell { min-height:40px; border:1px solid #eee; padding:0.2rem; background:#fafafa; font-size:0.8rem; position:relative; }
+/* ─── Dropdown helpers ───────────────────────────────── */
+.dropdown-toggle { cursor:pointer; user-select:none; }
+.dropdown-menu { position:absolute; right:0; top:100%; background:#fff; border:1px solid #ddd; border-radius:4px; padding:0.2rem 0; font-size:0.75rem; z-index:100; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+.dropdown-menu div { padding:0.25rem 0.8rem; white-space:nowrap; cursor:pointer; }
+.dropdown-menu div:hover { background:#f0f0f0; }
 ```
 
 // src/App.tsx
@@ -379,13 +122,18 @@ export default function App() {
       // stop & create entry
       timer.stop();
       setTimerStore((s) => ({ ...s, running: false }));
+      const startDate = new Date(timer.startIso!);
+      const endDate = new Date();
+      if (endDate.getTime() - startDate.getTime() < 60_000) {
+        endDate.setTime(startDate.getTime() + 60_000); // ensure at least 1 minute
+      }
       setEntries([
         ...entries,
         {
           id: uuid(),
           projectId: activeProject.id,
-          start: timer.startIso!,
-          end: new Date().toISOString(),
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
         },
       ]);
       setProjects(projects.map((p) => (p.id === activeProject.id ? { ...p, updatedAt: new Date().toISOString() } : p)));
@@ -416,9 +164,27 @@ export default function App() {
     setEntries(entries.filter((e) => e.projectId !== id));
   };
 
+  // ─── Entry helpers ─────────────────────────────────────────────────────────
+  const deleteEntry = (id: string) => {
+    setEntries(entries.filter((e) => e.id !== id));
+  };
+
+  const changeEntryProject = (id: string, pid: string) => {
+    setEntries(entries.map((e) => (e.id === id ? { ...e, projectId: pid } : e)));
+  };
+
+  const editEntry = (entry: TimeEntry) => {
+    const note = prompt('Edit note', entry.note || '');
+    if (note === null) return;
+    setEntries(entries.map((e) => (e.id === entry.id ? { ...e, note } : e)));
+  };
+
   // ─── UI fragments ─────────────────────────────────────────────────────────
 
   const TrackTab = () => {
+    const [projectMenu, setProjectMenu] = useState<string | null>(null);
+    const [entryMenu, setEntryMenu] = useState<string | null>(null);
+
     // build week grid for current week
     const now = new Date();
     const weekStart = (() => {
@@ -450,9 +216,6 @@ export default function App() {
 
     return (
       <>
-        <div className="card">
-          <button onClick={addProject}>+ Add project</button>
-        </div>
         <div className="week-grid">
           <div className="header" />
           {days.map((d) => (
@@ -462,22 +225,59 @@ export default function App() {
           ))}
           {projects.map((p) => (
             <React.Fragment key={p.id}>
-              <div className="cell header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="cell header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
                 <span>{p.name}</span>
-                <span>
-                  <button onClick={() => renameProject(p.id)}>✎</button>{' '}
-                  <button onClick={() => deleteProject(p.id)}>🗑</button>
+                <span
+                  className="dropdown-toggle"
+                  onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}
+                >
+                  ▾
                 </span>
+                {projectMenu === p.id && (
+                  <div className="dropdown-menu" onMouseLeave={() => setProjectMenu(null)}>
+                    <div onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</div>
+                    <div onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</div>
+                  </div>
+                )}
               </div>
               {days.map((d) => (
                 <div key={d.toDateString()} className="cell">
                   {getEntriesForProjectDay(p.id, d).map((e) => (
-                    <div key={e.id}>{formatHours(e)}</div>
+                    <div key={e.id} style={{ position: 'relative' }}>
+                      <span
+                        className="dropdown-toggle"
+                        onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}
+                      >
+                        ▾ {formatHours(e)}
+                      </span>
+                      {entryMenu === e.id && (
+                        <div className="dropdown-menu" onMouseLeave={() => setEntryMenu(null)}>
+                          <div onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</div>
+                          <div onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</div>
+                          <div>
+                            Change project:
+                            <select
+                              value={e.projectId}
+                              onChange={(ev) => { setEntryMenu(null); changeEntryProject(e.id, ev.target.value); }}
+                            >
+                              {projects.map((pr) => (
+                                <option key={pr.id} value={pr.id}>
+                                  {pr.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               ))}
             </React.Fragment>
           ))}
+        </div>
+        <div className="card" style={{ marginTop: '1rem' }}>
+          <button onClick={addProject}>+ Add project</button>
         </div>
       </>
     );
