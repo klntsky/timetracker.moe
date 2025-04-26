@@ -1,0 +1,629 @@
+// package.json
+```
+{
+  "name": "harvest-clone",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "uuid": "^9.0.1",
+    "clsx": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.2.0"
+  }
+}
+```
+
+// vite.config.ts
+```
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});
+```
+
+// tsconfig.json
+```
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
+```
+
+// index.html
+```
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harvest Clone</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+// src/main.tsx
+```
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+```
+
+// src/index.css
+```
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, sans-serif;
+  color: #111;
+  background-color: #f9f9f9;
+  line-height: 1.45;
+  padding: 0;
+}
+header {
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+nav a {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  text-decoration: none;
+  color: inherit;
+}
+nav a.active {
+  background: #e3e3e3;
+}
+main {
+  padding: 1rem;
+}
+.card {
+  background: white;
+  border: 1px solid #e3e3e3;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td { padding: 0.3rem 0.2rem; border-bottom: 1px solid #ddd; text-align:left; font-size:0.85rem; }
+button { cursor:pointer; }
+input, select { padding:0.3rem 0.4rem; font-size:0.85rem; }
+.week-grid { display:grid; grid-template-columns: 120px repeat(7,1fr); gap:0.5rem; }
+.week-grid .header { font-weight:600; }
+.week-grid .cell { min-height:40px; border:1px solid #eee; padding:0.2rem; background:#fafafa; font-size:0.8rem; }
+```
+
+// src/types.ts
+```
+export interface TimeEntry {
+  id: string;
+  projectId: string;
+  start: string; // ISO
+  end: string;   // ISO
+  note?: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  updatedAt: string; // for last‑used detection
+}
+
+export interface Settings {
+  weekEndsOn: 'sunday' | 'saturday';
+}
+```
+
+// src/hooks/useLocalStorage.ts
+```
+import { useCallback, useEffect, useState } from 'react';
+
+export function useLocalStorage<T>(key: string, initial: T) {
+  const read = () => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? (JSON.parse(raw) as T) : initial;
+    } catch {
+      return initial;
+    }
+  };
+
+  const [value, setValue] = useState<T>(read);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {/* ignore */}
+  }, [key, value]);
+
+  const clear = useCallback(() => {
+    localStorage.removeItem(key);
+    setValue(initial);
+  }, [key]);
+
+  return [value, setValue, clear] as const;
+}
+```
+
+// src/utils/dateRanges.ts
+```
+import { Settings } from '../types';
+
+export type PresetRange =
+  | 'THIS_WEEK'
+  | 'LAST_WEEK'
+  | 'TWO_WEEKS'
+  | 'LAST_TWO_WEEKS'
+  | 'THIS_MONTH'
+  | 'LAST_MONTH'
+  | 'CUSTOM';
+
+export function getRange(range: PresetRange, settings: Settings, custom?: {from?:string;to?:string;}): [Date, Date] {
+  const now = new Date();
+  let start = new Date();
+  let end = new Date();
+
+  const weekStartOffset = settings.weekEndsOn === 'sunday' ? 1 : 0;
+
+  switch (range) {
+    case 'THIS_WEEK': {
+      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
+      start.setDate(now.getDate() - diff);
+      end = now;
+      break;
+    }
+    case 'LAST_WEEK': {
+      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
+      end.setDate(now.getDate() - diff - 1);
+      start = new Date(end);
+      start.setDate(end.getDate() - 6);
+      break;
+    }
+    case 'TWO_WEEKS': {
+      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
+      start.setDate(now.getDate() - diff - 13);
+      end = now;
+      break;
+    }
+    case 'LAST_TWO_WEEKS': {
+      const diff = (now.getDay() + 7 - weekStartOffset) % 7;
+      end.setDate(now.getDate() - diff - 1);
+      start = new Date(end);
+      start.setDate(end.getDate() - 13);
+      break;
+    }
+    case 'THIS_MONTH': {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = now;
+      break;
+    }
+    case 'LAST_MONTH': {
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
+      break;
+    }
+    case 'CUSTOM': {
+      start = custom?.from ? new Date(custom.from) : now;
+      end = custom?.to ? new Date(custom.to) : now;
+      break;
+    }
+  }
+  return [start, end];
+}
+```
+
+// src/components/TopBar.tsx
+```
+import React from 'react';
+import { clsx } from 'clsx';
+import { Project } from '../types';
+
+interface Props {
+  tabs: { id: string; label: string }[];
+  current: string;
+  changeTab: (id: string) => void;
+  activeProject: Project | null;
+  isRunning: boolean;
+  toggleTimer: () => void;
+  elapsedMs: number;
+}
+
+export default function TopBar({ tabs, current, changeTab, activeProject, isRunning, toggleTimer, elapsedMs }: Props) {
+  const hrs = Math.floor(elapsedMs / 3600000)
+    .toString()
+    .padStart(2, '0');
+  const mins = Math.floor((elapsedMs % 3600000) / 60000)
+    .toString()
+    .padStart(2, '0');
+  const secs = Math.floor((elapsedMs % 60000) / 1000)
+    .toString()
+    .padStart(2, '0');
+
+  return (
+    <header>
+      <button onClick={toggleTimer}>{isRunning ? '⏸' : '▶︎'}</button>
+      {activeProject ? (
+        <span>
+          {activeProject.name} · {hrs}:{mins}:{secs}
+        </span>
+      ) : (
+        <span>No project</span>
+      )}
+      <nav style={{ marginLeft: 'auto', display: 'flex', gap: '0.3rem' }}>
+        {tabs.map((t) => (
+          <a
+            key={t.id}
+            onClick={() => changeTab(t.id)}
+            className={clsx({ active: current === t.id })}
+            style={{ cursor: 'pointer' }}
+          >
+            {t.label}
+          </a>
+        ))}
+      </nav>
+    </header>
+  );
+}
+```
+
+// src/App.tsx
+```
+import React, { useEffect, useMemo, useState } from 'react';
+import { v4 as uuid } from 'uuid';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { TimeEntry, Project, Settings } from './types';
+import TopBar from './components/TopBar';
+import { PresetRange, getRange } from './utils/dateRanges';
+
+// ─── Helper hooks ────────────────────────────────────────────────────────────
+
+function useTimer(initialRunning: boolean, initialStart: string | null) {
+  const [running, setRunning] = useState(initialRunning);
+  const [startIso, setStartIso] = useState<string | null>(initialStart);
+  const [tick, setTick] = useState(0);
+
+  // tick each second when running
+  useEffect(() => {
+    if (!running) return;
+    const int = setInterval(() => setTick(Date.now()), 1000);
+    return () => clearInterval(int);
+  }, [running]);
+
+  const start = () => {
+    setRunning(true);
+    setStartIso(new Date().toISOString());
+  };
+
+  const stop = () => {
+    setRunning(false);
+  };
+
+  const elapsedMs = running && startIso ? Date.now() - new Date(startIso).getTime() : 0;
+  return { running, startIso, start, stop, elapsedMs } as const;
+}
+
+// ─── Main App ────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [projects, setProjects] = useLocalStorage<Project[]>('harvest.projects', []);
+  const [entries, setEntries] = useLocalStorage<TimeEntry[]>('harvest.entries', []);
+  const [settings, setSettings] = useLocalStorage<Settings>('harvest.settings', { weekEndsOn: 'sunday' });
+  const [tab, setTab] = useState<'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'>('TRACK');
+
+  // active project = last updated or single
+  const activeProject = useMemo(() => {
+    if (!projects.length) return null;
+    if (projects.length === 1) return projects[0];
+    return projects.reduce((a, b) => (a.updatedAt > b.updatedAt ? a : b));
+  }, [projects]);
+
+  // timer state stored in localStorage to survive reload
+  const [timerStore, setTimerStore] = useLocalStorage<{ running: boolean; start: string | null; projectId: string | null }>(
+    'harvest.timer',
+    { running: false, start: null, projectId: null },
+  );
+  const timer = useTimer(timerStore.running, timerStore.start);
+
+  useEffect(() => {
+    setTimerStore({ running: timer.running, start: timer.startIso, projectId: timerStore.projectId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timer.running, timer.startIso]);
+
+  const toggleTimer = () => {
+    if (!activeProject) return alert('Create a project first');
+    if (timer.running) {
+      // stop & create entry
+      timer.stop();
+      setTimerStore((s) => ({ ...s, running: false }));
+      setEntries([
+        ...entries,
+        {
+          id: uuid(),
+          projectId: activeProject.id,
+          start: timer.startIso!,
+          end: new Date().toISOString(),
+        },
+      ]);
+      setProjects(projects.map((p) => (p.id === activeProject.id ? { ...p, updatedAt: new Date().toISOString() } : p)));
+    } else {
+      timer.start();
+      setTimerStore({ running: true, start: new Date().toISOString(), projectId: activeProject.id });
+    }
+  };
+
+  // ─── Project CRUD ──────────────────────────────────────────────────────────
+
+  const addProject = () => {
+    const name = prompt('Project name?');
+    if (!name) return;
+    const proj: Project = { id: uuid(), name, updatedAt: new Date().toISOString() };
+    setProjects([...projects, proj]);
+  };
+
+  const renameProject = (id: string) => {
+    const name = prompt('New name?');
+    if (!name) return;
+    setProjects(projects.map((p) => (p.id === id ? { ...p, name } : p)));
+  };
+
+  const deleteProject = (id: string) => {
+    if (!confirm('Delete project and its entries?')) return;
+    setProjects(projects.filter((p) => p.id !== id));
+    setEntries(entries.filter((e) => e.projectId !== id));
+  };
+
+  // ─── UI fragments ─────────────────────────────────────────────────────────
+
+  const TrackTab = () => {
+    // build week grid for current week
+    const now = new Date();
+    const weekStart = (() => {
+      const ws = new Date(now);
+      const offset = settings.weekEndsOn === 'sunday' ? 1 : 0;
+      const diff = (now.getDay() + 7 - offset) % 7;
+      ws.setDate(now.getDate() - diff);
+      ws.setHours(0, 0, 0, 0);
+      return ws;
+    })();
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    });
+
+    const getEntriesForProjectDay = (projId: string, d: Date) => {
+      return entries.filter((e) => {
+        if (e.projectId !== projId) return false;
+        const st = new Date(e.start);
+        return st >= d && st < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+      });
+    };
+
+    const formatHours = (entry: TimeEntry) => {
+      const h = (new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5;
+      return h.toFixed(2);
+    };
+
+    return (
+      <>
+        <div className="card">
+          <button onClick={addProject}>+ Add project</button>
+        </div>
+        <div className="week-grid">
+          <div className="header" />
+          {days.map((d) => (
+            <div key={d.toDateString()} className="header">
+              {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
+            </div>
+          ))}
+          {projects.map((p) => (
+            <React.Fragment key={p.id}>
+              <div className="cell header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{p.name}</span>
+                <span>
+                  <button onClick={() => renameProject(p.id)}>✎</button>{' '}
+                  <button onClick={() => deleteProject(p.id)}>🗑</button>
+                </span>
+              </div>
+              {days.map((d) => (
+                <div key={d.toDateString()} className="cell">
+                  {getEntriesForProjectDay(p.id, d).map((e) => (
+                    <div key={e.id}>{formatHours(e)}</div>
+                  ))}
+                </div>
+              ))}
+            </React.Fragment>
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  const ReportsTab = () => {
+    const [preset, setPreset] = useState<PresetRange>('THIS_WEEK');
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+    const [start, end] = getRange(preset, settings, { from, to });
+
+    const filtered = entries.filter((e) => {
+      return new Date(e.start) >= start && new Date(e.end) <= end;
+    });
+
+    const totals = useMemo(() => {
+      const m = new Map<string, number>();
+      filtered.forEach((e) => {
+        const h = (new Date(e.end).getTime() - new Date(e.start).getTime()) / 36e5;
+        m.set(e.projectId, (m.get(e.projectId) || 0) + h);
+      });
+      return Array.from(m.entries());
+    }, [filtered]);
+
+    const pidToName = (pid: string) => projects.find((p) => p.id === pid)?.name || '???';
+
+    return (
+      <div className="card">
+        <h3>Reports</h3>
+        <select value={preset} onChange={(e) => setPreset(e.target.value as PresetRange)}>
+          <option value="THIS_WEEK">This week</option>
+          <option value="LAST_WEEK">Last week</option>
+          <option value="TWO_WEEKS">Two weeks</option>
+          <option value="LAST_TWO_WEEKS">Last two weeks</option>
+          <option value="THIS_MONTH">This month</option>
+          <option value="LAST_MONTH">Last month</option>
+          <option value="CUSTOM">Custom</option>
+        </select>
+        {preset === 'CUSTOM' && (
+          <>
+            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </>
+        )}
+        <table style={{ marginTop: '0.5rem' }}>
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            {totals.map(([pid, h]) => (
+              <tr key={pid}>
+                <td>{pidToName(pid)}</td>
+                <td>{h.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <small>
+          Period: {start.toLocaleDateString()} – {end.toLocaleDateString()} ({filtered.length} entries)
+        </small>
+      </div>
+    );
+  };
+
+  const SettingsTab = () => (
+    <div className="card">
+      <h3>Settings</h3>
+      <label>
+        Week ends on:
+        <select
+          value={settings.weekEndsOn}
+          onChange={(e) => setSettings({ weekEndsOn: e.target.value as Settings['weekEndsOn'] })}
+        >
+          <option value="sunday">Sunday</option>
+          <option value="saturday">Saturday</option>
+        </select>
+      </label>
+    </div>
+  );
+
+  const BackupTab = () => {
+    const download = () => {
+      const blob = new Blob([JSON.stringify(localStorage, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `harvest-data-${new Date().toISOString()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    const restore = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result as string);
+          for (const [k, v] of Object.entries(data)) {
+            localStorage.setItem(k, v as string);
+          }
+          window.location.reload();
+        } catch {
+          alert('Bad file');
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    return (
+      <div className="card">
+        <h3>Backup</h3>
+        <button onClick={download}>Download data</button>
+        <input type="file" accept="application/json" onChange={restore} style={{ marginLeft: '1rem' }} />
+      </div>
+    );
+  };
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+
+  return (
+    <>
+      <TopBar
+        tabs={[
+          { id: 'TRACK', label: 'Time tracking' },
+          { id: 'REPORTS', label: 'Reports' },
+          { id: 'SETTINGS', label: 'Settings' },
+          { id: 'BACKUP', label: 'Backup' },
+        ]}
+        current={tab}
+        changeTab={(id) => setTab(id as any)}
+        activeProject={activeProject}
+        isRunning={timer.running}
+        toggleTimer={toggleTimer}
+        elapsedMs={timer.elapsedMs}
+      />
+      <main>
+        {tab === 'TRACK' && <TrackTab />}
+        {tab === 'REPORTS' && <ReportsTab />}
+        {tab === 'SETTINGS' && <SettingsTab />}
+        {tab === 'BACKUP' && <BackupTab />}
+      </main>
+    </>
+  );
+}
+```
