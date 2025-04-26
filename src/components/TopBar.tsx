@@ -1,5 +1,5 @@
 import React from 'react';
-import { Project, TimeEntry } from '../types';
+import { TimeEntry } from '../types';
 import clsx from 'clsx';
 
 interface Props {
@@ -32,12 +32,10 @@ export default function TopBar({ tabs, current, changeTab, activeEntry, isRunnin
         <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
         {isRunning ? 'Pause' : 'Start'}
       </button>
-      {activeEntry ? (
+      {activeEntry && (
         <span className="fw-semibold text-nowrap">
           {hrs}:{mins}:{secs}
         </span>
-      ) : (
-        <span>No active entry</span>
       )}
       <nav className="ms-auto d-flex gap-2">
         {tabs.map((t) => (
