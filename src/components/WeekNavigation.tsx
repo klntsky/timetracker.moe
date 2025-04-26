@@ -40,7 +40,7 @@ const WeekNavigation: React.FC<WeekNavigationProps> = ({
           onClick={goToCurrentWeek}
           title="Go to today's date"
         >
-          <i className="fas fa-clock"></i>
+          <i className="fas fa-home"></i>
         </button>
       )}
     </div>
