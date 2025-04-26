@@ -2,7 +2,7 @@ export interface TimeEntry {
   id: string;
   projectId: string;
   start: string; // ISO
-  end: string;   // ISO
+  end?: string;  // ISO - optional for active/running entries
   note?: string;
 }
 
