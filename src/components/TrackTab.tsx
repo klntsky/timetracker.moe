@@ -11,6 +11,7 @@ interface Props {
   deleteEntry: (id: string) => void;
   changeEntryProject: (id: string, pid: string) => void;
   editEntry: (entry: TimeEntry) => void;
+  resumeEntry: (entry: TimeEntry) => void;
 }
 
 function TrackTabComponent({
@@ -23,6 +24,7 @@ function TrackTabComponent({
   deleteEntry,
   changeEntryProject,
   editEntry,
+  resumeEntry,
 }: Props) {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
@@ -42,10 +44,16 @@ function TrackTabComponent({
     return d;
   });
 
-  const getEntriesForProjectDay = (projId: string, d: Date) =>
-    entries.filter((e) => e.projectId === projId && new Date(e.start) >= d && new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
+  const entriesForDay = (projId: string, d: Date) =>
+    entries.filter(
+      (e) =>
+        e.projectId === projId &&
+        new Date(e.start) >= d &&
+        new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
+    );
 
-  const formatHours = (entry: TimeEntry) => ((new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5).toFixed(2);
+  const formatHours = (entry: TimeEntry) =>
+    ((new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5).toFixed(2);
 
   return (
     <>
@@ -58,33 +66,35 @@ function TrackTabComponent({
         ))}
         {projects.map((p) => (
           <React.Fragment key={p.id}>
-            <div
-              className="cell header"
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}
-            >
+            <div className="cell header d-flex justify-content-between align-items-center">
               <span>{p.name}</span>
-              <span className="dropdown-toggle" onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}>▾</span>
+              <button className="ellipsis-btn" onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}>
+                <i className="fas fa-ellipsis-v"></i>
+              </button>
               {projectMenu === p.id && (
-                <div className="dropdown-menu" onMouseLeave={() => setProjectMenu(null)}>
-                  <div onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</div>
-                  <div onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</div>
+                <div className="dropdown-menu show" style={{ left: 'auto', right: 0 }}>
+                  <button className="dropdown-item" onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</button>
+                  <button className="dropdown-item" onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</button>
                 </div>
               )}
             </div>
             {days.map((d) => (
               <div key={d.toDateString()} className="cell">
-                {getEntriesForProjectDay(p.id, d).map((e) => (
-                  <div key={e.id} style={{ position: 'relative' }}>
-                    <span className="dropdown-toggle" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
-                      ▾ {formatHours(e)}
-                    </span>
+                {entriesForDay(p.id, d).map((e) => (
+                  <div key={e.id} className="d-flex justify-content-between align-items-center">
+                    <span>{formatHours(e)}</span>
+                    <button className="ellipsis-btn" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
+                      <i className="fas fa-ellipsis-v"></i>
+                    </button>
                     {entryMenu === e.id && (
-                      <div className="dropdown-menu" onMouseLeave={() => setEntryMenu(null)}>
-                        <div onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</div>
-                        <div onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</div>
-                        <div>
+                      <div className="dropdown-menu show" style={{ left: 'auto', right: 0 }}>
+                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); resumeEntry(e); }}>Resume</button>
+                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</button>
+                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</button>
+                        <div className="dropdown-item">
                           Change project:
                           <select
+                            className="form-select form-select-sm mt-1"
                             value={e.projectId}
                             onChange={(ev) => { setEntryMenu(null); changeEntryProject(e.id, ev.target.value); }}
                           >
@@ -102,9 +112,7 @@ function TrackTabComponent({
           </React.Fragment>
         ))}
       </div>
-      <div className="card" style={{ marginTop: '1rem' }}>
-        <button onClick={addProject}>+ Add project</button>
-      </div>
+      <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>
     </>
   );
 }

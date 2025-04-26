@@ -1,55 +1,117 @@
+// package.json
+```
+{
+  "name": "harvest-clone",
+  "version": "0.3.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "uuid": "^9.0.1",
+    "clsx": "^2.1.0",
+    "bootstrap": "^5.3.3",
+    "@fortawesome/fontawesome-free": "^6.5.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.2.0"
+  }
+}
+```
+
+// index.html
+```
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harvest Clone</title>
+    <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css" />
+  </head>
+  <body class="bg-light">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
 // src/index.css
 ```
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: system-ui, sans-serif;
-  color: #111;
-  background-color: #f9f9f9;
-  line-height: 1.45;
-  padding: 0;
+/* override / tweaks on top of bootstrap */
+.week-grid { display: grid; grid-template-columns: 200px repeat(7, 1fr); gap: .5rem; }
+.week-grid .header { font-weight: 600; text-align: center; }
+.week-grid .cell { min-height: 48px; border: 1px solid #dee2e6; padding: .25rem; background: #fff; font-size: .875rem; position: relative; }
+.ellipsis-btn { border: none; background: transparent; color: #6c757d; cursor: pointer; }
+.ellipsis-btn:hover { color: #000; }
+```
+
+// src/components/TopBar.tsx
+```
+import React from 'react';
+import { Project, TimeEntry } from '../types';
+import clsx from 'clsx';
+
+interface Props {
+  tabs: { id: string; label: string }[];
+  current: string;
+  changeTab: (id: string) => void;
+  activeEntry: TimeEntry | null;
+  isRunning: boolean;
+  toggleTimer: () => void;
+  elapsedMs: number;
 }
-header {
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-  padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+
+export default function TopBar({ tabs, current, changeTab, activeEntry, isRunning, toggleTimer, elapsedMs }: Props) {
+  const hrs = Math.floor(elapsedMs / 3600000)
+    .toString()
+    .padStart(2, '0');
+  const mins = Math.floor((elapsedMs % 3600000) / 60000)
+    .toString()
+    .padStart(2, '0');
+  const secs = Math.floor((elapsedMs % 60000) / 1000)
+    .toString()
+    .padStart(2, '0');
+
+  return (
+    <header className="d-flex align-items-center border-bottom p-2 bg-white gap-3">
+      <button
+        className={clsx('btn', isRunning ? 'btn-danger' : 'btn-success', 'd-flex align-items-center gap-2')}
+        onClick={toggleTimer}
+      >
+        <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
+        {isRunning ? 'Pause' : 'Start'}
+      </button>
+      {activeEntry ? (
+        <span className="fw-semibold text-nowrap">
+          {hrs}:{mins}:{secs}
+        </span>
+      ) : (
+        <span>No active entry</span>
+      )}
+      <nav className="ms-auto d-flex gap-2">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            className={clsx('btn btn-link text-decoration-none', current === t.id && 'fw-bold')}
+            onClick={() => changeTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+    </header>
+  );
 }
-nav a {
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  text-decoration: none;
-  color: inherit;
-}
-nav a.active {
-  background: #e3e3e3;
-}
-main {
-  padding: 1rem;
-}
-.card {
-  background: white;
-  border: 1px solid #e3e3e3;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th, td { padding: 0.3rem 0.2rem; border-bottom: 1px solid #ddd; text-align:left; font-size:0.85rem; }
-button { cursor:pointer; }
-input, select { padding:0.3rem 0.4rem; font-size:0.85rem; }
-.week-grid { display:grid; grid-template-columns: 120px repeat(7,1fr); gap:0.5rem; }
-.week-grid .header { font-weight:600; }
-.week-grid .cell { min-height:40px; border:1px solid #eee; padding:0.2rem; background:#fafafa; font-size:0.8rem; position:relative; }
-.dropdown-toggle { cursor:pointer; user-select:none; }
-.dropdown-menu { position:absolute; right:0; top:100%; background:#fff; border:1px solid #ddd; border-radius:4px; padding:0.2rem 0; font-size:0.75rem; z-index:100; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
-.dropdown-menu div { padding:0.25rem 0.8rem; white-space:nowrap; cursor:pointer; }
-.dropdown-menu div:hover { background:#f0f0f0; }
 ```
 
 // src/components/TrackTab.tsx
@@ -67,6 +129,7 @@ interface Props {
   deleteEntry: (id: string) => void;
   changeEntryProject: (id: string, pid: string) => void;
   editEntry: (entry: TimeEntry) => void;
+  resumeEntry: (entry: TimeEntry) => void;
 }
 
 function TrackTabComponent({
@@ -79,6 +142,7 @@ function TrackTabComponent({
   deleteEntry,
   changeEntryProject,
   editEntry,
+  resumeEntry,
 }: Props) {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
@@ -98,10 +162,16 @@ function TrackTabComponent({
     return d;
   });
 
-  const getEntriesForProjectDay = (projId: string, d: Date) =>
-    entries.filter((e) => e.projectId === projId && new Date(e.start) >= d && new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
+  const entriesForDay = (projId: string, d: Date) =>
+    entries.filter(
+      (e) =>
+        e.projectId === projId &&
+        new Date(e.start) >= d &&
+        new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
+    );
 
-  const formatHours = (entry: TimeEntry) => ((new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5).toFixed(2);
+  const formatHours = (entry: TimeEntry) =>
+    ((new Date(entry.end).getTime() - new Date(entry.start).getTime()) / 36e5).toFixed(2);
 
   return (
     <>
@@ -114,33 +184,35 @@ function TrackTabComponent({
         ))}
         {projects.map((p) => (
           <React.Fragment key={p.id}>
-            <div
-              className="cell header"
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}
-            >
+            <div className="cell header d-flex justify-content-between align-items-center">
               <span>{p.name}</span>
-              <span className="dropdown-toggle" onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}>▾</span>
+              <button className="ellipsis-btn" onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}>
+                <i className="fas fa-ellipsis-v"></i>
+              </button>
               {projectMenu === p.id && (
-                <div className="dropdown-menu" onMouseLeave={() => setProjectMenu(null)}>
-                  <div onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</div>
-                  <div onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</div>
+                <div className="dropdown-menu show" style={{ left: 'auto', right: 0 }}>
+                  <button className="dropdown-item" onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</button>
+                  <button className="dropdown-item" onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</button>
                 </div>
               )}
             </div>
             {days.map((d) => (
               <div key={d.toDateString()} className="cell">
-                {getEntriesForProjectDay(p.id, d).map((e) => (
-                  <div key={e.id} style={{ position: 'relative' }}>
-                    <span className="dropdown-toggle" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
-                      ▾ {formatHours(e)}
-                    </span>
+                {entriesForDay(p.id, d).map((e) => (
+                  <div key={e.id} className="d-flex justify-content-between align-items-center">
+                    <span>{formatHours(e)}</span>
+                    <button className="ellipsis-btn" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
+                      <i className="fas fa-ellipsis-v"></i>
+                    </button>
                     {entryMenu === e.id && (
-                      <div className="dropdown-menu" onMouseLeave={() => setEntryMenu(null)}>
-                        <div onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</div>
-                        <div onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</div>
-                        <div>
+                      <div className="dropdown-menu show" style={{ left: 'auto', right: 0 }}>
+                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); resumeEntry(e); }}>Resume</button>
+                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</button>
+                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</button>
+                        <div className="dropdown-item">
                           Change project:
                           <select
+                            className="form-select form-select-sm mt-1"
                             value={e.projectId}
                             onChange={(ev) => { setEntryMenu(null); changeEntryProject(e.id, ev.target.value); }}
                           >
@@ -158,9 +230,7 @@ function TrackTabComponent({
           </React.Fragment>
         ))}
       </div>
-      <div className="card" style={{ marginTop: '1rem' }}>
-        <button onClick={addProject}>+ Add project</button>
-      </div>
+      <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>
     </>
   );
 }
@@ -178,12 +248,10 @@ import TopBar from './components/TopBar';
 import TrackTab from './components/TrackTab';
 import { PresetRange, getRange } from './utils/dateRanges';
 
-// ─── Timer Hook ─────────────────────────────────────────────────────────────
-
+// ─── Timer hook ────────────────────────────────────────────────────────────
 function useTimer(initialRunning: boolean, initialStart: string | null) {
   const [running, setRunning] = useState(initialRunning);
   const [startIso, setStartIso] = useState<string | null>(initialStart);
-  // local tick so App re‑renders once a second, TrackTab (memo) stays put
   const [, force] = useState(0);
 
   useEffect(() => {
@@ -202,60 +270,62 @@ function useTimer(initialRunning: boolean, initialStart: string | null) {
   return { running, startIso, start, stop, elapsedMs } as const;
 }
 
-// ─── App ────────────────────────────────────────────────────────────────────
-
+// ─── App component ─────────────────────────────────────────────────────────
 export default function App() {
-  // persistent data
+  // persistent stores
   const [projects, setProjects] = useLocalStorage<Project[]>('harvest.projects', []);
   const [entries, setEntries] = useLocalStorage<TimeEntry[]>('harvest.entries', []);
   const [settings, setSettings] = useLocalStorage<Settings>('harvest.settings', { weekEndsOn: 'sunday' });
+
+  // ui state
   const [tab, setTab] = useState<'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'>('TRACK');
 
-  // active project: last‑used
-  const activeProject = useMemo(() => {
-    if (!projects.length) return null;
-    if (projects.length === 1) return projects[0];
-    return projects.reduce((a, b) => (a.updatedAt > b.updatedAt ? a : b));
-  }, [projects]);
+  // active (running) entry – one without end
+  const activeEntry = useMemo(() => entries.find((e) => !e.end), [entries]);
 
   // timer persistence
-  const [timerStore, setTimerStore] = useLocalStorage<{ running: boolean; start: string | null; projectId: string | null }>(
-    'harvest.timer',
-    { running: false, start: null, projectId: null },
-  );
+  const [timerStore, setTimerStore] = useLocalStorage<{
+    running: boolean;
+    start: string | null;
+    entryId: string | null;
+  }>('harvest.timer', { running: false, start: null, entryId: null });
   const timer = useTimer(timerStore.running, timerStore.start);
 
   useEffect(() => {
-    setTimerStore({ running: timer.running, start: timer.startIso, projectId: timerStore.projectId });
+    setTimerStore({ running: timer.running, start: timer.startIso, entryId: timerStore.entryId });
   }, [timer.running, timer.startIso]);
 
-  // ─── Timer toggle ─────────────────────────────────────────────────────────
+  // ─── Timer control ───────────────────────────────────────────────────────
+  const stopEntry = (entryId: string) => {
+    setEntries((es) => es.map((e) => (e.id === entryId ? { ...e, end: new Date().toISOString() } : e)));
+  };
+
+  const startNewEntry = (projectId: string, resumeId?: string) => {
+    const id = resumeId ?? uuid();
+    const newEntry: TimeEntry = { id, projectId, start: new Date().toISOString() };
+    setEntries((es) => (resumeId ? es.map((e) => (e.id === id ? { ...e, start: newEntry.start, end: undefined } : e)) : [...es, newEntry]));
+    setTimerStore({ running: true, start: newEntry.start, entryId: id });
+    timer.start();
+  };
 
   const toggleTimer = () => {
-    if (!activeProject) return alert('Create a project first');
-
     if (timer.running) {
+      // stop current entry
       timer.stop();
-      setTimerStore((s) => ({ ...s, running: false }));
-      const startDate = new Date(timer.startIso!);
-      let endDate = new Date();
-      // ensure >= 1 minute
-      if (endDate.getTime() - startDate.getTime() < 60_000) {
-        endDate = new Date(startDate.getTime() + 60_000);
-      }
-      setEntries((es) => [
-        ...es,
-        { id: uuid(), projectId: activeProject.id, start: startDate.toISOString(), end: endDate.toISOString() },
-      ]);
-      setProjects((ps) => ps.map((p) => (p.id === activeProject.id ? { ...p, updatedAt: new Date().toISOString() } : p)));
+      if (timerStore.entryId) stopEntry(timerStore.entryId);
+      setTimerStore({ running: false, start: null, entryId: null });
     } else {
-      timer.start();
-      setTimerStore({ running: true, start: new Date().toISOString(), projectId: activeProject.id });
+      // resume last paused entry if exists, else create on first project
+      if (timerStore.entryId) {
+        startNewEntry(entries.find((e) => e.id === timerStore.entryId)!.projectId, timerStore.entryId);
+      } else {
+        if (!projects.length) return alert('Create a project first');
+        startNewEntry(projects[0].id);
+      }
     }
   };
 
-  // ─── Project CRUD ─────────────────────────────────────────────────────────
-
+  // ─── Project helpers ─────────────────────────────────────────────────────
   const addProject = () => {
     const name = prompt('Project name?');
     if (!name) return;
@@ -272,8 +342,7 @@ export default function App() {
     setEntries(entries.filter((e) => e.projectId !== id));
   };
 
-  // ─── Entry helpers ────────────────────────────────────────────────────────
-
+  // ─── Entry helpers for TrackTab ─────────────────────────────────────────--
   const deleteEntry = (id: string) => setEntries(entries.filter((e) => e.id !== id));
   const changeEntryProject = (id: string, pid: string) => setEntries(entries.map((e) => (e.id === id ? { ...e, projectId: pid } : e)));
   const editEntry = (entry: TimeEntry) => {
@@ -281,21 +350,27 @@ export default function App() {
     if (note === null) return;
     setEntries(entries.map((e) => (e.id === entry.id ? { ...e, note } : e)));
   };
+  const resumeEntry = (entry: TimeEntry) => {
+    if (timer.running) toggleTimer(); // pause current first
+    startNewEntry(entry.projectId, entry.id);
+  };
 
-  // ─── ReportsTab ───────────────────────────────────────────────────────────
-
+  // ─── Reports Tab ─────────────────────────────────────────────────────────
   const ReportsTab = () => {
-    const [preset, setPreset] = useState<PresetRange>('THIS_WEEK');
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
+    const [preset, setPreset] = useState<PresetRange>('CUSTOM');
+    const defaultFrom = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().substring(0, 10);
+    const defaultTo = new Date().toISOString().substring(0, 10);
+    const [from, setFrom] = useState(defaultFrom);
+    const [to, setTo] = useState(defaultTo);
     const [start, end] = getRange(preset, settings, { from, to });
 
-    const filtered = entries.filter((e) => new Date(e.start) >= start && new Date(e.end) <= end);
+    const filtered = entries.filter((e) => new Date(e.start) >= start && new Date(e.end ?? new Date()) <= end);
 
     const totals = useMemo(() => {
       const m = new Map<string, number>();
       filtered.forEach((e) => {
-        const h = (new Date(e.end).getTime() - new Date(e.start).getTime()) / 36e5;
+        const finish = e.end ? new Date(e.end) : new Date();
+        const h = (finish.getTime() - new Date(e.start).getTime()) / 36e5;
         m.set(e.projectId, (m.get(e.projectId) || 0) + h);
       });
       return Array.from(m.entries());
@@ -304,36 +379,32 @@ export default function App() {
     const pidToName = (pid: string) => projects.find((p) => p.id === pid)?.name || '???';
 
     return (
-      <div className="card">
+      <div className="card p-3 mt-3">
         <h3>Reports</h3>
-        <select value={preset} onChange={(e) => setPreset(e.target.value as PresetRange)}>
-          <option value="THIS_WEEK">This week</option>
-          <option value="LAST_WEEK">Last week</option>
-          <option value="TWO_WEEKS">Two weeks</option>
-          <option value="LAST_TWO_WEEKS">Last two weeks</option>
-          <option value="THIS_MONTH">This month</option>
-          <option value="LAST_MONTH">Last month</option>
-          <option value="CUSTOM">Custom</option>
-        </select>
-        {preset === 'CUSTOM' && (
-          <>
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-          </>
-        )}
-        <table style={{ marginTop: '0.5rem' }}>
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <select className="form-select w-auto" value={preset} onChange={(e) => setPreset(e.target.value as PresetRange)}>
+            <option value="THIS_WEEK">This week</option>
+            <option value="LAST_WEEK">Last week</option>
+            <option value="TWO_WEEKS">Two weeks</option>
+            <option value="LAST_TWO_WEEKS">Last two weeks</option>
+            <option value="THIS_MONTH">This month</option>
+            <option value="LAST_MONTH">Last month</option>
+            <option value="CUSTOM">Custom</option>
+          </select>
+          {preset === 'CUSTOM' && (
+            <>
+              <input type="date" className="form-control" value={from} onChange={(e) => setFrom(e.target.value)} />
+              <input type="date" className="form-control" value={to} onChange={(e) => setTo(e.target.value)} />
+            </>
+          )}
+        </div>
+        <table className="table table-sm mt-3">
           <thead>
-            <tr>
-              <th>Project</th>
-              <th>Hours</th>
-            </tr>
+            <tr><th>Project</th><th className="text-end">Hours</th></tr>
           </thead>
           <tbody>
             {totals.map(([pid, h]) => (
-              <tr key={pid}>
-                <td>{pidToName(pid)}</td>
-                <td>{h.toFixed(2)}</td>
-              </tr>
+              <tr key={pid}><td>{pidToName(pid)}</td><td className="text-end">{h.toFixed(2)}</td></tr>
             ))}
           </tbody>
         </table>
@@ -344,14 +415,13 @@ export default function App() {
     );
   };
 
-  // ─── SettingsTab ──────────────────────────────────────────────────────────
-
+  // ─── Settings Tab ────────────────────────────────────────────────────────
   const SettingsTab = () => (
-    <div className="card">
+    <div className="card p-3 mt-3">
       <h3>Settings</h3>
-      <label>
-        Week ends on:{' '}
-        <select value={settings.weekEndsOn} onChange={(e) => setSettings({ weekEndsOn: e.target.value as Settings['weekEndsOn'] })}>
+      <label className="form-label">
+        Week ends on:
+        <select className="form-select w-auto d-inline-block ms-2" value={settings.weekEndsOn} onChange={(e) => setSettings({ weekEndsOn: e.target.value as Settings['weekEndsOn'] })}>
           <option value="sunday">Sunday</option>
           <option value="saturday">Saturday</option>
         </select>
@@ -359,8 +429,7 @@ export default function App() {
     </div>
   );
 
-  // ─── BackupTab ────────────────────────────────────────────────────────────
-
+  // ─── Backup Tab ─────────────────────────────────────────────────────────-
   const BackupTab = () => {
     const download = () => {
       const blob = new Blob([JSON.stringify(localStorage, null, 2)], { type: 'application/json' });
@@ -389,33 +458,27 @@ export default function App() {
     };
 
     return (
-      <div className="card">
+      <div className="card p-3 mt-3">
         <h3>Backup</h3>
-        <button onClick={download}>Download data</button>
-        <input type="file" accept="application/json" onChange={restore} style={{ marginLeft: '1rem' }} />
+        <button className="btn btn-outline-primary" onClick={download}>Download data</button>
+        <input type="file" accept="application/json" onChange={restore} className="form-control d-inline-block w-auto ms-3" />
       </div>
     );
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-
+  // ─── Render ──────────────────────────────────────────────────────────────
   return (
     <>
       <TopBar
-        tabs={[
-          { id: 'TRACK', label: 'Time tracking' },
-          { id: 'REPORTS', label: 'Reports' },
-          { id: 'SETTINGS', label: 'Settings' },
-          { id: 'BACKUP', label: 'Backup' },
-        ]}
+        tabs={[{ id: 'TRACK', label: 'Time tracking' }, { id: 'REPORTS', label: 'Reports' }, { id: 'SETTINGS', label: 'Settings' }, { id: 'BACKUP', label: 'Backup' }]}
         current={tab}
         changeTab={(id) => setTab(id as any)}
-        activeProject={activeProject}
+        activeEntry={activeEntry ?? null}
         isRunning={timer.running}
         toggleTimer={toggleTimer}
         elapsedMs={timer.elapsedMs}
       />
-      <main>
+      <main className="container-fluid p-3">
         {tab === 'TRACK' && (
           <TrackTab
             projects={projects}
@@ -427,6 +490,7 @@ export default function App() {
             deleteEntry={deleteEntry}
             changeEntryProject={changeEntryProject}
             editEntry={editEntry}
+            resumeEntry={resumeEntry}
           />
         )}
         {tab === 'REPORTS' && <ReportsTab />}
