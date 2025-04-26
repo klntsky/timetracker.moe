@@ -46,6 +46,7 @@
   grid-template-columns: 200px repeat(7, 1fr);
   gap: 6px;
   margin-bottom: 20px;
+  position: relative; /* Add positioning context for absolute elements */
 }
 
 .header {
@@ -66,6 +67,46 @@
   border: 1px solid #e9ecef;
   border-radius: 4px;
   min-height: 40px;
+  overflow: visible; /* Allow dropdown to overflow */
+}
+
+/* Dropdown styling */
+.dropdown {
+  position: static; /* Changed from relative to avoid containment issues */
+}
+
+.dropdown-trigger {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: fixed; /* Use fixed instead of absolute */
+  z-index: 1000;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+  min-width: 180px;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 1rem;
+  clear: both;
+  text-align: left;
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.form-select-sm {
+  width: 100%;
 }
 
 .active-entry {

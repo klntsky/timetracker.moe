@@ -1,4 +1,4 @@
-import React, { useState, useRef, ReactNode, useCallback } from 'react';
+import React, { useState, useRef, ReactNode, useCallback, useEffect } from 'react';
 import { useClickOutside } from '../hooks/useClickOutside';
 
 interface DropdownProps {
@@ -29,6 +29,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   const isOpen = isControlled ? controlledIsOpen : uncontrolledIsOpen;
   
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   
   // Handle opening and closing
   const handleOpenChange = useCallback((open: boolean) => {
@@ -47,16 +49,41 @@ const Dropdown: React.FC<DropdownProps> = ({
   // Handle click outside
   useClickOutside(dropdownRef, () => handleOpenChange(false), isOpen);
   
+  // Position the dropdown menu relative to the trigger button
+  useEffect(() => {
+    if (isOpen && triggerRef.current && menuRef.current) {
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const menuRect = menuRef.current.getBoundingClientRect();
+      
+      let top = triggerRect.bottom;
+      let left = position === 'left' ? triggerRect.left : triggerRect.right - menuRect.width;
+      
+      // Ensure the menu stays within viewport
+      if (top + menuRect.height > window.innerHeight) {
+        top = triggerRect.top - menuRect.height;
+      }
+      
+      if (left < 0) {
+        left = 0;
+      } else if (left + menuRect.width > window.innerWidth) {
+        left = window.innerWidth - menuRect.width;
+      }
+      
+      menuRef.current.style.top = `${top}px`;
+      menuRef.current.style.left = `${left}px`;
+    }
+  }, [isOpen, position]);
+  
   return (
     <div className={`dropdown ${className}`} ref={dropdownRef}>
-      <div onClick={toggle} className="dropdown-trigger">
+      <div onClick={toggle} className="dropdown-trigger" ref={triggerRef}>
         {trigger}
       </div>
       
       {isOpen && (
         <div 
           className="dropdown-menu show" 
-          style={{ left: position === 'left' ? 0 : 'auto', right: position === 'right' ? 0 : 'auto' }}
+          ref={menuRef}
         >
           {children}
         </div>
