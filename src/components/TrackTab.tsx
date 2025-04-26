@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Project, TimeEntry, Settings } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import Dropdown from './Dropdown';
+import WeekNavigation from './WeekNavigation';
+import './TrackTab.css';
 
 interface Props {
   projects: Project[];
@@ -32,21 +34,39 @@ function TrackTabComponent({
 }: Props) {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, -1 = last week, 1 = next week
 
+  // Get current date
   const now = new Date();
-  const weekStart = (() => {
+  
+  // Calculate the start of the week with offset
+  const weekStart = useMemo(() => {
     const ws = new Date(now);
     const offset = settings.weekEndsOn === 'sunday' ? 1 : 0;
-    const diff = (now.getDay() + 7 - offset) % 7;
-    ws.setDate(now.getDate() - diff);
+    const diff = (ws.getDay() + 7 - offset) % 7;
+    ws.setDate(ws.getDate() - diff + (weekOffset * 7)); // Apply week offset
     ws.setHours(0, 0, 0, 0);
     return ws;
-  })();
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
-    return d;
-  });
+  }, [settings.weekEndsOn, weekOffset, now]);
+  
+  // Generate the days of the week
+  const days = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    });
+  }, [weekStart]);
+
+  // Check if we're on the current week
+  const isCurrentWeek = useMemo(() => {
+    return weekOffset === 0;
+  }, [weekOffset]);
+
+  // Week navigation functions
+  const goToPreviousWeek = () => setWeekOffset(weekOffset - 1);
+  const goToCurrentWeek = () => setWeekOffset(0);
+  const goToNextWeek = () => setWeekOffset(weekOffset + 1);
 
   const entriesForDay = (projId: string, d: Date) =>
     entries.filter(
@@ -59,12 +79,22 @@ function TrackTabComponent({
   return (
     <>
       <div className="week-grid">
-        <div className="header" />
+        <div className="header">
+          {/* Week navigation component */}
+          <WeekNavigation
+            weekOffset={weekOffset}
+            goToPreviousWeek={goToPreviousWeek}
+            goToCurrentWeek={goToCurrentWeek}
+            goToNextWeek={goToNextWeek}
+          />
+        </div>
+        
         {days.map((d) => (
           <div key={d.toDateString()} className="header">
             {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
           </div>
         ))}
+        
         {projects.map((p) => (
           <React.Fragment key={p.id}>
             <div className="cell header d-flex justify-content-between align-items-center">
