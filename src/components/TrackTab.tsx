@@ -17,6 +17,7 @@ interface Props {
   editEntry: (entry: TimeEntry) => void;
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
+  shouldShowResume: boolean;
 }
 
 function TrackTabComponent({
@@ -31,6 +32,7 @@ function TrackTabComponent({
   editEntry,
   resumeEntry,
   toggleTimer,
+  shouldShowResume
 }: Props) {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);

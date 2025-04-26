@@ -20,13 +20,15 @@ export default function App() {
   const {
     entries,
     setEntries,
-    activeEntry,
+    lastUsedEntry,
     timer,
     toggleTimer,
     deleteEntry,
     changeEntryProject,
     editEntry,
-    resumeEntry
+    resumeEntry,
+    elapsedMs,
+    canResume
   } = useTimeEntries();
 
   // projects management
@@ -45,6 +47,23 @@ export default function App() {
     { id: 'BACKUP', label: 'Backup' },
   ];
 
+  // Handle timer toggling
+  const handleToggleTimer = () => {
+    // If no projects exist but they try to toggle, create one
+    if (projects.length === 0) {
+      addProject();
+      // Wait for the project to be created, then toggle the timer
+      setTimeout(() => {
+        toggleTimer([...projects]);
+      }, 100);
+    } else {
+      toggleTimer(projects);
+    }
+  };
+
+  // Check if resume button should be shown
+  const shouldShowResume = canResume(projects);
+
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
     <>
@@ -52,10 +71,11 @@ export default function App() {
         tabs={tabs}
         current={tab}
         changeTab={(id) => setTab(id as any)}
-        activeEntry={activeEntry ?? null}
+        lastUsedEntry={lastUsedEntry}
         isRunning={timer.running}
-        toggleTimer={() => toggleTimer(projects)}
-        elapsedMs={timer.elapsedMs}
+        toggleTimer={handleToggleTimer}
+        elapsedMs={elapsedMs}
+        showResumeButton={shouldShowResume}
       />
       <main className="container-fluid p-3">
         {tab === 'TRACK' && (
@@ -70,7 +90,8 @@ export default function App() {
             changeEntryProject={changeEntryProject}
             editEntry={editEntry}
             resumeEntry={resumeEntry}
-            toggleTimer={() => toggleTimer(projects)}
+            toggleTimer={handleToggleTimer}
+            shouldShowResume={shouldShowResume}
           />
         )}
         {tab === 'REPORTS' && 
@@ -78,7 +99,7 @@ export default function App() {
             projects={projects} 
             entries={entries} 
             settings={settings} 
-            timerElapsedMs={timer.elapsedMs} 
+            timerElapsedMs={elapsedMs} 
           />
         }
         {tab === 'SETTINGS' && 

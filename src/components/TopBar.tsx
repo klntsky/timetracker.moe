@@ -9,45 +9,50 @@ interface Props {
   tabs: { id: string; label: string }[];
   current: string;
   changeTab: (id: string) => void;
-  activeEntry: TimeEntry | null;
+  lastUsedEntry: TimeEntry | null;
   isRunning: boolean;
   toggleTimer: () => void;
   elapsedMs: number;
+  showResumeButton: boolean;
 }
 
 export default function TopBar({
   tabs,
   current,
   changeTab,
-  activeEntry,
+  lastUsedEntry,
   isRunning,
   toggleTimer,
   elapsedMs,
+  showResumeButton
 }: Props) {
   // Format time using our utility functions
   const displayTime = formatTimeHHMM(elapsedMs);
   const fullTime = formatTimeHHMMSS(elapsedMs);
 
+  // Only show the timer button if it's running or if we can resume
+  const shouldShowTimerButton = isRunning || showResumeButton;
+
   return (
     <header className="d-flex align-items-center border-bottom p-2 bg-white gap-3">
-      <button
-        className={clsx(
-          'btn',
-          isRunning ? 'btn-danger' : 'btn-success',
-          'd-flex align-items-center gap-2'
-        )}
-        onClick={toggleTimer}
-      >
-        <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
-        {isRunning ? 'Pause' : 'Start'}
-      </button>
+      {shouldShowTimerButton && (
+        <button
+          className={clsx(
+            'btn',
+            isRunning ? 'btn-danger' : 'btn-success',
+            'd-flex align-items-center gap-2'
+          )}
+          onClick={toggleTimer}
+        >
+          <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
+          {isRunning ? 'Pause' : 'Start'}
+        </button>
+      )}
 
-      {activeEntry ? (
+      {isRunning && (
         <span className="fw-semibold text-nowrap" title={fullTime}>
           {displayTime}
         </span>
-      ) : (
-        <span>No active entry</span>
       )}
 
       <div className="ms-auto tab-container">
