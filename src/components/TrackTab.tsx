@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project, TimeEntry, Settings } from '../types';
-import { formatTimeHHMM, formatTimeHHMMSS, formatDecimalHours } from '../utils/timeFormatters';
+import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
+import Dropdown from './Dropdown';
 
 interface Props {
   projects: Project[];
@@ -68,15 +69,39 @@ function TrackTabComponent({
           <React.Fragment key={p.id}>
             <div className="cell header d-flex justify-content-between align-items-center">
               <span>{p.name}</span>
-              <button className="ellipsis-btn" onClick={() => setProjectMenu(projectMenu === p.id ? null : p.id)}>
-                <i className="fas fa-ellipsis-v"></i>
-              </button>
-              {projectMenu === p.id && (
-                <div className="dropdown-menu show" style={{ left: 'auto', right: 0 }}>
-                  <button className="dropdown-item" onClick={() => { setProjectMenu(null); renameProject(p.id); }}>Edit</button>
-                  <button className="dropdown-item" onClick={() => { setProjectMenu(null); deleteProject(p.id); }}>Delete</button>
-                </div>
-              )}
+              
+              <Dropdown 
+                isOpen={projectMenu === p.id}
+                onOpenChange={(isOpen) => {
+                  setProjectMenu(isOpen ? p.id : null);
+                  // Close entry menu when opening project menu
+                  if (isOpen && entryMenu) setEntryMenu(null);
+                }}
+                trigger={
+                  <button className="ellipsis-btn">
+                    <i className="fas fa-ellipsis-v"></i>
+                  </button>
+                }
+              >
+                <button 
+                  className="dropdown-item" 
+                  onClick={() => {
+                    setProjectMenu(null);
+                    renameProject(p.id);
+                  }}
+                >
+                  Edit
+                </button>
+                <button 
+                  className="dropdown-item" 
+                  onClick={() => {
+                    setProjectMenu(null);
+                    deleteProject(p.id);
+                  }}
+                >
+                  Delete
+                </button>
+              </Dropdown>
             </div>
             {days.map((d) => (
               <div key={d.toDateString()} className="cell">
@@ -100,30 +125,65 @@ function TrackTabComponent({
                         </button>
                       )}
                     </span>
-                    <button className="ellipsis-btn" onClick={() => setEntryMenu(entryMenu === e.id ? null : e.id)}>
-                      <i className="fas fa-ellipsis-v"></i>
-                    </button>
-                    {entryMenu === e.id && (
-                      <div className="dropdown-menu show" style={{ left: 'auto', right: 0 }}>
-                        {!e.active && (
-                          <button className="dropdown-item" onClick={() => { setEntryMenu(null); resumeEntry(e); }}>Resume</button>
-                        )}
-                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); editEntry(e); }}>Edit</button>
-                        <button className="dropdown-item" onClick={() => { setEntryMenu(null); deleteEntry(e.id); }}>Delete</button>
-                        <div className="dropdown-item">
-                          Change project:
-                          <select
-                            className="form-select form-select-sm mt-1"
-                            value={e.projectId}
-                            onChange={(ev) => { setEntryMenu(null); changeEntryProject(e.id, ev.target.value); }}
-                          >
-                            {projects.map((pr) => (
-                              <option key={pr.id} value={pr.id}>{pr.name}</option>
-                            ))}
-                          </select>
-                        </div>
+                    
+                    <Dropdown
+                      isOpen={entryMenu === e.id}
+                      onOpenChange={(isOpen) => {
+                        setEntryMenu(isOpen ? e.id : null);
+                        // Close project menu when opening entry menu
+                        if (isOpen && projectMenu) setProjectMenu(null);
+                      }}
+                      trigger={
+                        <button className="ellipsis-btn">
+                          <i className="fas fa-ellipsis-v"></i>
+                        </button>
+                      }
+                    >
+                      {!e.active && (
+                        <button 
+                          className="dropdown-item" 
+                          onClick={() => {
+                            setEntryMenu(null);
+                            resumeEntry(e);
+                          }}
+                        >
+                          Resume
+                        </button>
+                      )}
+                      <button 
+                        className="dropdown-item" 
+                        onClick={() => {
+                          setEntryMenu(null);
+                          editEntry(e);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="dropdown-item" 
+                        onClick={() => {
+                          setEntryMenu(null);
+                          deleteEntry(e.id);
+                        }}
+                      >
+                        Delete
+                      </button>
+                      <div className="dropdown-item">
+                        Change project:
+                        <select
+                          className="form-select form-select-sm mt-1"
+                          value={e.projectId}
+                          onChange={(ev) => {
+                            setEntryMenu(null);
+                            changeEntryProject(e.id, ev.target.value);
+                          }}
+                        >
+                          {projects.map((pr) => (
+                            <option key={pr.id} value={pr.id}>{pr.name}</option>
+                          ))}
+                        </select>
                       </div>
-                    )}
+                    </Dropdown>
                   </div>
                 ))}
               </div>
