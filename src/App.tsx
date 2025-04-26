@@ -41,7 +41,7 @@ export default function App() {
   return (
     <>
       <TopBar
-        tabs={[{ id: 'TRACK', label: 'Time tracking' }, { id: 'REPORTS', label: 'Reports' }, { id: 'SETTINGS', label: 'Settings' }, { id: 'BACKUP', label: 'Backup' }]}
+        tabs={[{ id: 'TRACK', label: 'Time' }, { id: 'REPORTS', label: 'Reports' }, { id: 'SETTINGS', label: 'Settings' }, { id: 'BACKUP', label: 'Backup' }]}
         current={tab}
         changeTab={(id) => setTab(id as any)}
         activeEntry={activeEntry ?? null}

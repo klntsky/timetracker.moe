@@ -3,6 +3,7 @@ import React from 'react';
 import { TimeEntry } from '../types';
 import clsx from 'clsx';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
+import './TopBar.css'; // We'll create this file next
 
 interface Props {
   tabs: { id: string; label: string }[];
@@ -49,20 +50,20 @@ export default function TopBar({
         <span>No active entry</span>
       )}
 
-      <nav className="ms-auto d-flex gap-2">
+      <div className="ms-auto tab-container">
         {tabs.map((t) => (
-          <button
+          <div
             key={t.id}
             className={clsx(
-              'btn btn-link text-decoration-none',
-              current === t.id && 'fw-bold'
+              'tab-item',
+              current === t.id && 'tab-active'
             )}
             onClick={() => changeTab(t.id)}
           >
             {t.label}
-          </button>
+          </div>
         ))}
-      </nav>
+      </div>
     </header>
   );
 }
