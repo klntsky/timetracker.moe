@@ -54,9 +54,10 @@ export default function App() {
       addProject();
       // Wait for the project to be created, then toggle the timer
       setTimeout(() => {
-        toggleTimer([...projects]);
+        toggleTimer(projects);
       }, 100);
     } else {
+      // Always pass the projects array to toggleTimer
       toggleTimer(projects);
     }
   };

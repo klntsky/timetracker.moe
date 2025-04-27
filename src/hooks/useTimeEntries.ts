@@ -1,40 +1,49 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { TimeEntry, Project } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { useTimer } from './useTimer';
-
-interface TimerStore {
-  running: boolean;
-  start: string | null;
-  lastEntryId: string | null;
-  lastProjectId: string | null;
-}
+import { match, P } from 'ts-pattern';
+import { isToday, calculateElapsedMs, ensureArray } from '../utils/timeUtils';
+import { findEntryById, projectExists, shouldShowResumeButton } from '../utils/stateUtils';
+import { timerReducer, TimerState, timerActions } from '../reducers/timerReducer';
+import { entriesReducer, EntriesState, entriesActions } from '../reducers/entriesReducer';
 
 export function useTimeEntries() {
-  // Store time entries in localStorage
-  const [entries, setEntries] = useLocalStorage<TimeEntry[]>('harnesstime.entries', []);
+  // Get initial entries from localStorage
+  const [storedEntries, setStoredEntries] = useLocalStorage<TimeEntry[]>(
+    'harnesstime.entries', 
+    []
+  );
   
-  // Track timer and last used entry/project in localStorage
-  const [timer, setTimer] = useLocalStorage<TimerStore>('harnesstime.timer', { 
-    running: false, 
-    start: null, 
-    lastEntryId: null,
-    lastProjectId: null 
-  });
+  // Get initial timer state from localStorage
+  const [storedTimer, setStoredTimer] = useLocalStorage<TimerState>(
+    'harnesstime.timer', 
+    { running: false, start: null, lastEntryId: null, lastProjectId: null }
+  );
+  
+  // Set up reducers with initial state from localStorage
+  const [timerState, dispatchTimer] = useReducer(timerReducer, storedTimer);
+  const [entriesState, dispatchEntries] = useReducer(entriesReducer, { entries: storedEntries });
+  
+  // Set up timer instance
+  const timerInstance = useTimer(timerState.running, timerState.start);
 
-  const timerInstance = useTimer(timer.running, timer.start);
-  
-  // Update timer from timer instance
+  // Sync reducer state back to localStorage whenever it changes
   useEffect(() => {
-    if (timerInstance.running !== timer.running || timerInstance.startIso !== timer.start) {
-      setTimer({
-        ...timer,
-        running: timerInstance.running,
-        start: timerInstance.startIso
-      });
+    setStoredTimer(timerState);
+  }, [timerState, setStoredTimer]);
+
+  useEffect(() => {
+    setStoredEntries(entriesState.entries);
+  }, [entriesState.entries, setStoredEntries]);
+  
+  // Sync timer instance state with reducer state
+  useEffect(() => {
+    if (timerInstance.running !== timerState.running || timerInstance.startIso !== timerState.start) {
+      dispatchTimer(timerActions.updateTimerState(timerInstance.running, timerInstance.startIso));
     }
-  }, [timerInstance.running, timerInstance.startIso, timer, setTimer]);
+  }, [timerInstance.running, timerInstance.startIso, timerState.running, timerState.start]);
 
   // Add a new time entry
   const addEntry = useCallback(
@@ -47,20 +56,11 @@ export function useTimeEntries() {
         note,
       };
       
-      setEntries([...entries, newEntry]);
+      dispatchEntries(entriesActions.addEntry(newEntry));
       return newEntry;
     },
-    [entries, setEntries],
+    [],
   );
-
-  // Helper function to check if a date is today
-  const isToday = (dateString: string): boolean => {
-    const date = new Date(dateString);
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
-  };
 
   // Start the timer on a specific entry
   const startTimer = useCallback(
@@ -74,173 +74,143 @@ export function useTimeEntries() {
         targetEntryId = newEntry.id;
       }
       
-      // Update timer state
-      setTimer({
-        running: true,
-        start: now,
-        lastEntryId: targetEntryId,
-        lastProjectId: projectId
-      });
-      
       // Start the timer instance
       timerInstance.start();
+      
+      // Update the timer state
+      dispatchTimer(timerActions.startTimer(targetEntryId, projectId, now));
     },
-    [addEntry, setTimer, timerInstance],
+    [addEntry, timerInstance],
   );
 
   // Stop the active timer
   const stopTimer = useCallback(() => {
-    if (!timer.running || !timer.start) return;
+    if (!timerState.running || !timerState.start) return;
     
     const now = new Date();
-    const startTime = new Date(timer.start);
+    const startTime = new Date(timerState.start);
     const elapsedMs = now.getTime() - startTime.getTime();
     
     // Update the entry with accumulated time if it exists
-    if (timer.lastEntryId) {
-      setEntries(
-        entries.map((e) => {
-          if (e.id === timer.lastEntryId) {
-            return {
-              ...e,
-              duration: e.duration + elapsedMs,
-            };
-          }
-          return e;
-        }),
-      );
+    if (timerState.lastEntryId) {
+      const entryExists = entriesState.entries.some(e => e.id === timerState.lastEntryId);
+      if (entryExists) {
+        dispatchEntries(entriesActions.updateEntryDuration(timerState.lastEntryId, elapsedMs));
+      }
     }
     
     // Stop the timer instance
     timerInstance.stop();
     
-    // Update timer state (keep last entry and project references)
-    setTimer({
-      ...timer,
-      running: false,
-      start: null
-    });
-  }, [timer, entries, setEntries, setTimer, timerInstance]);
+    // Update timer state
+    dispatchTimer(timerActions.stopTimer());
+  }, [timerState, entriesState.entries, timerInstance]);
 
   // Toggle timer (start/stop)
-  const toggleTimer = useCallback((projects: Project[]) => {
-    if (timer.running) {
+  const toggleTimer = useCallback((projects: Project[] = []) => {
+    if (timerState.running) {
       stopTimer();
     } else {
+      const safeProjects = ensureArray(projects);
       // Try to resume the previously active entry
-      const existingEntry = timer.lastEntryId ? entries.find(e => e.id === timer.lastEntryId) : null;
+      const existingEntry = findEntryById(entriesState.entries, timerState.lastEntryId);
       
-      if (existingEntry) {
-        // Case 1: Last entry exists
-        if (isToday(existingEntry.start)) {
-          // If the entry is from today, resume it
-          startTimer(existingEntry.projectId, existingEntry.id);
-        } else {
-          // If the entry is from a different day, create a new entry with the same note
-          startTimer(existingEntry.projectId, undefined, existingEntry.note);
-        }
-      } else if (timer.lastProjectId) {
-        // Case 2: Entry was deleted but project still exists
-        const projectExists = projects.some(p => p.id === timer.lastProjectId);
-        
-        if (projectExists) {
-          // Create a new entry in the same project
-          startTimer(timer.lastProjectId);
-        } else if (projects.length === 1) {
-          // Project doesn't exist but there's exactly one project
+      match({ 
+        existingEntry, 
+        lastProjectId: timerState.lastProjectId, 
+        projectsLength: safeProjects.length,
+        projects: safeProjects
+      })
+        .with({ existingEntry: P.not(P.nullish) }, ({ existingEntry, projects }) => {
+          // Check if the project still exists
+          const projectStillExists = projectExists(projects, existingEntry.projectId);
+          
+          if (projectStillExists) {
+            // Case 1: Last entry exists and its project exists
+            if (isToday(existingEntry.start)) {
+              // If the entry is from today, resume it
+              startTimer(existingEntry.projectId, existingEntry.id);
+            } else {
+              // If the entry is from a different day, create a new entry with the same note
+              startTimer(existingEntry.projectId, undefined, existingEntry.note);
+            }
+          } else if (projects.length === 1) {
+            // Project doesn't exist but there's exactly one project
+            startTimer(projects[0].id, undefined, existingEntry.note);
+          }
+          // If no projects or multiple projects exist, the button should be hidden by canResume
+        })
+        .with({ 
+          existingEntry: P.nullish, 
+          lastProjectId: P.not(P.nullish),
+          projects: P.when(p => p.some(proj => proj.id === timerState.lastProjectId))
+        }, ({ lastProjectId }) => {
+          // Case 2: Entry was deleted but project still exists
+          startTimer(lastProjectId);
+        })
+        .with({ 
+          existingEntry: P.nullish, 
+          projectsLength: 1 
+        }, ({ projects }) => {
+          // Case 3: No previous entry or project, but there's exactly one project
+          // Always start timer on the only project available
           startTimer(projects[0].id);
-        }
-        // If multiple projects exist but we don't know which one to use,
-        // we'll rely on canResume to determine if button should be shown
-      } else if (projects.length === 1) {
-        // Case 3: No previous entry or project, but there's only one project
-        // Always start timer on the only project available
-        startTimer(projects[0].id);
-      }
-      // If none of these conditions are met, the button should be hidden by canResume
+        })
+        .otherwise(() => {
+          // If none of these conditions are met, the button should be hidden by canResume
+        });
     }
-  }, [timer, entries, stopTimer, startTimer]);
+  }, [timerState, entriesState.entries, stopTimer, startTimer]);
 
   // Check if Resume button should be shown
-  const canResume = useCallback((projects: Project[]) => {
-    if (timer.running) {
-      return false; // Don't show resume if already running
-    }
-    
-    // Case 1: Last entry exists - show button
-    if (timer.lastEntryId && entries.some(e => e.id === timer.lastEntryId)) {
-      return true;
-    }
-    
-    // Case 2: Last project exists - show button
-    if (timer.lastProjectId && projects.some(p => p.id === timer.lastProjectId)) {
-      return true;
-    }
-    
-    // Case 3: No last project but exactly one project exists - show button
-    if (projects.length === 1) {
-      return true;
-    }
-    
-    // Otherwise: Don't show button
-    return false;
-  }, [timer.running, timer.lastEntryId, timer.lastProjectId, entries]);
+  const canResume = useCallback((projects: Project[] = []) => {
+    return shouldShowResumeButton(
+      timerState.running,
+      timerState.lastEntryId,
+      entriesState.entries,
+      timerState.lastProjectId,
+      ensureArray(projects)
+    );
+  }, [timerState.running, timerState.lastEntryId, timerState.lastProjectId, entriesState.entries]);
 
   // Edit an existing entry
   const editEntry = useCallback(
     (entry: TimeEntry) => {
-      setEntries(
-        entries.map((e) => {
-          if (e.id === entry.id) {
-            return entry;
-          }
-          return e;
-        }),
-      );
+      dispatchEntries(entriesActions.updateEntry(entry.id, entry));
     },
-    [entries, setEntries],
+    [],
   );
 
   // Delete an entry
   const deleteEntry = useCallback(
     (id: string) => {
       // If deleting the currently running entry, stop the timer
-      if (timer.running && timer.lastEntryId === id) {
+      if (timerState.running && timerState.lastEntryId === id) {
         stopTimer();
       }
       
-      setEntries(entries.filter((e) => e.id !== id));
+      dispatchEntries(entriesActions.deleteEntry(id));
     },
-    [entries, setEntries, timer, stopTimer],
+    [timerState, stopTimer],
   );
 
   // Change the project of an entry
   const changeEntryProject = useCallback(
     (id: string, projectId: string) => {
-      // If changing the last used entry's project, update the lastProjectId
-      if (timer.lastEntryId === id) {
-        setTimer({
-          ...timer,
-          lastProjectId: projectId
-        });
+      // If changing the last used entry's project, update the timer state
+      if (timerState.lastEntryId === id) {
+        dispatchTimer(timerActions.updateProjectId(projectId));
       }
       
-      setEntries(
-        entries.map((e) => {
-          if (e.id === id) {
-            return { ...e, projectId };
-          }
-          return e;
-        }),
-      );
+      dispatchEntries(entriesActions.changeEntryProject(id, projectId));
     },
-    [entries, setEntries, timer, setTimer],
+    [timerState.lastEntryId],
   );
 
   // Resume an existing entry
   const resumeEntry = useCallback(
     (entry: TimeEntry) => {
-      if (timer.running) {
+      if (timerState.running) {
         stopTimer();
       }
       
@@ -249,33 +219,39 @@ export function useTimeEntries() {
         startTimer(entry.projectId, entry.id);
       } else {
         // If the entry is from a different day, create a new entry with the same note
-        startTimer(entry.projectId, undefined, entry.note || undefined);
+        startTimer(entry.projectId, undefined, entry.note || '');
       }
     },
-    [timer, stopTimer, startTimer],
+    [timerState.running, stopTimer, startTimer],
   );
 
   // Get the last used entry if it still exists
   const getLastUsedEntry = useCallback(() => {
-    if (!timer.lastEntryId) return null;
-    return entries.find(e => e.id === timer.lastEntryId) || null;
-  }, [entries, timer.lastEntryId]);
+    return findEntryById(entriesState.entries, timerState.lastEntryId);
+  }, [entriesState.entries, timerState.lastEntryId]);
 
   // Calculate elapsed milliseconds if timer is running
-  const elapsedMs = useCallback(() => {
-    if (timer.running && timer.start) {
-      return new Date().getTime() - new Date(timer.start).getTime();
-    }
-    return 0;
-  }, [timer.running, timer.start]);
+  const getElapsedMs = useCallback(() => {
+    return match({ running: timerState.running, start: timerState.start })
+      .with({ running: true, start: P.not(P.nullish) }, ({ start }) => 
+        calculateElapsedMs(start)
+      )
+      .otherwise(() => 0);
+  }, [timerState.running, timerState.start]);
+  
+  // For backward compatibility and easier migration
+  const setEntries = useCallback((entries: TimeEntry[]) => {
+    dispatchEntries(entriesActions.setEntries(entries));
+  }, []);
 
+  // Return an object with all the required functions and state
   return {
-    entries,
+    entries: entriesState.entries,
     setEntries,
-    timer,
+    timer: timerState,
     lastUsedEntry: getLastUsedEntry(),
-    isRunning: timer.running,
-    elapsedMs: elapsedMs(),
+    isRunning: timerState.running,
+    elapsedMs: getElapsedMs(),
     canResume,
     addEntry,
     startTimer,
