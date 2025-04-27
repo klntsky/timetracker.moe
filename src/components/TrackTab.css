@@ -129,4 +129,27 @@
 
 .time-display {
   margin-right: 8px;
+}
+
+.project-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  display: inline-block;
+  padding: 2px 5px;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.project-name:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.project-name-edit {
+  padding: 1px 4px;
+  margin: -1px 0;
+  font-size: 14px;
+  line-height: 1;
 } 

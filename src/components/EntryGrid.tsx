@@ -2,33 +2,54 @@ import React, { useState } from 'react';
 import { Project, TimeEntry } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import Dropdown from './Dropdown';
+import EditableProjectName from './EditableProjectName';
 
 interface EntryGridProps {
   days: Date[];
+  projects: Project[];
+  entries: TimeEntry[];
+  renameProject: (id: string, newName: string) => void;
+  deleteProject: (id: string) => void;
+  deleteEntry: (id: string) => void;
+  changeEntryProject: (id: string, pid: string) => void;
+  editEntry: (entry: TimeEntry) => void;
+  resumeEntry: (entry: TimeEntry) => void;
+  toggleTimer: () => void;
+  shouldShowResume?: boolean;
 }
 
-const EntryGrid: React.FC<EntryGridProps> = ({ days }) => {
-  // We'll need to get these from parent component or context in a real implementation
+const EntryGrid: React.FC<EntryGridProps> = ({ 
+  days,
+  projects,
+  entries,
+  renameProject,
+  deleteProject,
+  deleteEntry,
+  changeEntryProject,
+  editEntry,
+  resumeEntry,
+  toggleTimer,
+  shouldShowResume = true
+}) => {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
   
-  // In a production app, these would come from props or a context/store
-  const projects: Project[] = [];
-  const entries: TimeEntry[] = [];
-  
-  // These would be real functions in a production app
-  const entriesForDay = (projId: string, d: Date): TimeEntry[] => [];
-  const renameProject = (id: string) => {};
-  const deleteProject = (id: string) => {};
-  const editEntry = (entry: TimeEntry) => {};
-  const deleteEntry = (id: string) => {};
-  const resumeEntry = (entry: TimeEntry) => {};
-  const changeEntryProject = (id: string, projectId: string) => {};
-  const toggleTimer = () => {};
+  const entriesForDay = (projId: string, d: Date): TimeEntry[] => {
+    const startOfDay = new Date(d);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(d);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    return entries.filter(
+      e => e.projectId === projId && 
+           new Date(e.start).getTime() >= startOfDay.getTime() && 
+           new Date(e.start).getTime() <= endOfDay.getTime()
+    );
+  };
 
   return (
     <>
-      <div className="header" />
       {days.map((d) => (
         <div key={d.toDateString()} className="header">
           {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
@@ -38,7 +59,10 @@ const EntryGrid: React.FC<EntryGridProps> = ({ days }) => {
       {projects.map((p) => (
         <React.Fragment key={p.id}>
           <div className="cell header d-flex justify-content-between align-items-center">
-            <span>{p.name}</span>
+            <EditableProjectName 
+              name={p.name} 
+              onRename={(newName) => renameProject(p.id, newName)} 
+            />
             
             <Dropdown 
               isOpen={projectMenu === p.id}
@@ -53,15 +77,6 @@ const EntryGrid: React.FC<EntryGridProps> = ({ days }) => {
                 </button>
               }
             >
-              <button 
-                className="dropdown-item" 
-                onClick={() => {
-                  setProjectMenu(null);
-                  renameProject(p.id);
-                }}
-              >
-                Edit
-              </button>
               <button 
                 className="dropdown-item" 
                 onClick={() => {
@@ -110,7 +125,7 @@ const EntryGrid: React.FC<EntryGridProps> = ({ days }) => {
                       </button>
                     }
                   >
-                    {!e.active && (
+                    {shouldShowResume && !e.active && (
                       <button 
                         className="dropdown-item" 
                         onClick={() => {

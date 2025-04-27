@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { Settings } from './types';
+import { Settings, Project, TimeEntry } from './types';
 import TopBar from './components/TopBar';
 import TrackTab from './components/TrackTab';
 import ReportsTab from './components/ReportsTab';
@@ -8,6 +9,7 @@ import SettingsTab from './components/SettingsTab';
 import BackupTab from './components/BackupTab';
 import { useTimeEntries } from './hooks/useTimeEntries';
 import { useProjects } from './hooks/useProjects';
+import { generateUniqueProjectName } from './utils/projectUtils';
 
 export default function App() {
   // settings state

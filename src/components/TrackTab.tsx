@@ -3,6 +3,7 @@ import { Project, TimeEntry, Settings } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import Dropdown from './Dropdown';
 import WeekNavigation from './WeekNavigation';
+import EditableProjectName from './EditableProjectName';
 import './TrackTab.css';
 import { isToday, getWeekDays } from '../utils/timeUtils';
 import EntryGrid from './EntryGrid';
@@ -12,7 +13,7 @@ interface Props {
   entries: TimeEntry[];
   settings: Settings;
   addProject: () => void;
-  renameProject: (id: string) => void;
+  renameProject: (id: string, newName: string) => void;
   deleteProject: (id: string) => void;
   deleteEntry: (id: string) => void;
   changeEntryProject: (id: string, pid: string) => void;
@@ -55,124 +56,33 @@ function TrackTabComponent({
         new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
     );
 
+  const handleRenameProject = (projectId: string, newName: string) => {
+    renameProject(projectId, newName);
+  };
+
   return (
     <>
       <div className="week-grid">
-        <div className="header">
-          <WeekNavigation 
-            weekOffset={weekOffset}
-            goToPreviousWeek={goToPreviousWeek}
-            goToCurrentWeek={goToCurrentWeek}
-            goToNextWeek={goToNextWeek}
-          />
-        </div>
+        <WeekNavigation 
+          weekOffset={weekOffset}
+          goToPreviousWeek={goToPreviousWeek}
+          goToCurrentWeek={goToCurrentWeek}
+          goToNextWeek={goToNextWeek}
+        />
         
-        {days.map((d) => (
-          <div key={d.toDateString()} className="header">
-            {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
-          </div>
-        ))}
-        
-        {projects.map((p) => (
-          <React.Fragment key={p.id}>
-            <div className="cell header d-flex justify-content-between align-items-center">
-              <span>{p.name}</span>
-              
-              <Dropdown 
-                isOpen={false}
-                onOpenChange={() => {}}
-                trigger={
-                  <button className="ellipsis-btn">
-                    <i className="fas fa-ellipsis-v"></i>
-                  </button>
-                }
-              >
-                <button 
-                  className="dropdown-item" 
-                  onClick={() => renameProject(p.id)}
-                >
-                  Edit
-                </button>
-                <button 
-                  className="dropdown-item" 
-                  onClick={() => deleteProject(p.id)}
-                >
-                  Delete
-                </button>
-              </Dropdown>
-            </div>
-            
-            {days.map((d) => (
-              <div key={d.toDateString()} className="cell">
-                {entriesForDay(p.id, d).map((e) => (
-                  <div key={e.id} className={`d-flex justify-content-between align-items-center ${e.active ? 'active-entry' : ''}`}>
-                    <span 
-                      title={formatTimeHHMMSS(e.duration)}
-                      className="time-display"
-                    >
-                      {formatTimeHHMM(e.duration)}
-                      {e.active && (
-                        <button 
-                          className="btn btn-sm btn-danger ms-2 py-0 px-1" 
-                          title="Pause this entry"
-                          onClick={(evt) => {
-                            evt.stopPropagation();
-                            toggleTimer();
-                          }}
-                        >
-                          <i className="fas fa-pause"></i>
-                        </button>
-                      )}
-                    </span>
-                    
-                    <Dropdown
-                      isOpen={false}
-                      onOpenChange={() => {}}
-                      trigger={
-                        <button className="ellipsis-btn">
-                          <i className="fas fa-ellipsis-v"></i>
-                        </button>
-                      }
-                    >
-                      {!e.active && (
-                        <button 
-                          className="dropdown-item" 
-                          onClick={() => resumeEntry(e)}
-                        >
-                          Resume
-                        </button>
-                      )}
-                      <button 
-                        className="dropdown-item" 
-                        onClick={() => editEntry(e)}
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        className="dropdown-item" 
-                        onClick={() => deleteEntry(e.id)}
-                      >
-                        Delete
-                      </button>
-                      <div className="dropdown-item">
-                        Change project:
-                        <select
-                          className="form-select form-select-sm mt-1"
-                          value={e.projectId}
-                          onChange={(ev) => changeEntryProject(e.id, ev.target.value)}
-                        >
-                          {projects.map((pr) => (
-                            <option key={pr.id} value={pr.id}>{pr.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </Dropdown>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </React.Fragment>
-        ))}
+        <EntryGrid 
+          days={days}
+          projects={projects}
+          entries={entries}
+          renameProject={renameProject}
+          deleteProject={deleteProject}
+          deleteEntry={deleteEntry}
+          changeEntryProject={changeEntryProject}
+          editEntry={editEntry}
+          resumeEntry={resumeEntry}
+          toggleTimer={toggleTimer}
+          shouldShowResume={shouldShowResume}
+        />
       </div>
       <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>
     </>
