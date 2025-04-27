@@ -50,6 +50,22 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, ti
   }, [filtered, timerElapsedMs]);
 
   const pidToName = (pid: string) => projects.find((p) => p.id === pid)?.name || '???';
+  
+  const getBillableAmount = (pid: string, totalMs: number) => {
+    const project = projects.find(p => p.id === pid);
+    if (!project || !project.billableRate) return null;
+    
+    const hours = totalMs / 3600000; // Convert ms to hours
+    return {
+      amount: hours * project.billableRate.amount,
+      currency: project.billableRate.currency
+    };
+  };
+  
+  const formatBillableAmount = (billable: { amount: number, currency: string } | null) => {
+    if (!billable) return '-';
+    return `${billable.currency} ${billable.amount.toFixed(2)}`;
+  };
 
   return (
     <div className="card p-3 mt-3">
@@ -73,13 +89,18 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, ti
       </div>
       <table className="table table-sm mt-3">
         <thead>
-          <tr><th>Project</th><th className="text-end">Hours</th></tr>
+          <tr>
+            <th>Project</th>
+            <th className="text-end">Hours</th>
+            <th className="text-end">Billable Amount</th>
+          </tr>
         </thead>
         <tbody>
           {totals.map(([pid, ms]) => (
             <tr key={pid}>
               <td>{pidToName(pid)}</td>
               <td className="text-end">{formatDecimalHours(ms)}</td>
+              <td className="text-end">{formatBillableAmount(getBillableAmount(pid, ms))}</td>
             </tr>
           ))}
         </tbody>

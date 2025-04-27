@@ -14,6 +14,7 @@ interface Props {
   settings: Settings;
   addProject: () => void;
   renameProject: (id: string, newName: string) => void;
+  updateProject: (updatedProject: Project) => void;
   deleteProject: (id: string) => void;
   deleteEntry: (id: string) => void;
   changeEntryProject: (id: string, pid: string) => void;
@@ -29,6 +30,7 @@ function TrackTabComponent({
   settings,
   addProject,
   renameProject,
+  updateProject,
   deleteProject,
   deleteEntry,
   changeEntryProject,
@@ -75,6 +77,7 @@ function TrackTabComponent({
           projects={projects}
           entries={entries}
           renameProject={renameProject}
+          updateProject={updateProject}
           deleteProject={deleteProject}
           deleteEntry={deleteEntry}
           changeEntryProject={changeEntryProject}

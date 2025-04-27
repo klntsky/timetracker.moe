@@ -11,6 +11,10 @@ export interface Project {
   id: string;
   name: string;
   updatedAt: string; // for last‑used detection
+  billableRate?: {
+    amount: number;
+    currency: string;
+  };
 }
 
 export interface Settings {

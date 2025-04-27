@@ -3,12 +3,15 @@ import { Project, TimeEntry } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import Dropdown from './Dropdown';
 import EditableProjectName from './EditableProjectName';
+import Popup from './Popup';
+import BillableRateEditor from './BillableRateEditor';
 
 interface EntryGridProps {
   days: Date[];
   projects: Project[];
   entries: TimeEntry[];
   renameProject: (id: string, newName: string) => void;
+  updateProject: (updatedProject: Project) => void;
   deleteProject: (id: string) => void;
   deleteEntry: (id: string) => void;
   changeEntryProject: (id: string, pid: string) => void;
@@ -23,6 +26,7 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   projects,
   entries,
   renameProject,
+  updateProject,
   deleteProject,
   deleteEntry,
   changeEntryProject,
@@ -33,6 +37,7 @@ const EntryGrid: React.FC<EntryGridProps> = ({
 }) => {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
+  const [editingBillableRate, setEditingBillableRate] = useState<Project | null>(null);
   
   const entriesForDay = (projId: string, d: Date): TimeEntry[] => {
     const startOfDay = new Date(d);
@@ -48,6 +53,12 @@ const EntryGrid: React.FC<EntryGridProps> = ({
     );
   };
 
+  const handleUpdateBillableRate = (updatedProject: Project) => {
+    updateProject(updatedProject);
+    setEditingBillableRate(null);
+    setProjectMenu(null);
+  };
+
   return (
     <>
       {days.map((d) => (
@@ -58,35 +69,46 @@ const EntryGrid: React.FC<EntryGridProps> = ({
       
       {projects.map((p) => (
         <React.Fragment key={p.id}>
-          <div className="cell header d-flex justify-content-between align-items-center">
-            <EditableProjectName 
-              name={p.name} 
-              onRename={(newName) => renameProject(p.id, newName)} 
-            />
-            
-            <Dropdown 
-              isOpen={projectMenu === p.id}
-              onOpenChange={(isOpen) => {
-                setProjectMenu(isOpen ? p.id : null);
-                // Close entry menu when opening project menu
-                if (isOpen && entryMenu) setEntryMenu(null);
-              }}
-              trigger={
-                <button className="ellipsis-btn">
-                  <i className="fas fa-ellipsis-v"></i>
-                </button>
-              }
-            >
-              <button 
-                className="dropdown-item" 
-                onClick={() => {
-                  setProjectMenu(null);
-                  deleteProject(p.id);
+          <div className="cell header d-flex flex-column">
+            <div className="d-flex justify-content-between align-items-center">
+              <EditableProjectName 
+                name={p.name} 
+                onRename={(newName) => renameProject(p.id, newName)} 
+              />
+              
+              <Dropdown 
+                isOpen={projectMenu === p.id}
+                onOpenChange={(isOpen) => {
+                  setProjectMenu(isOpen ? p.id : null);
+                  // Close entry menu when opening project menu
+                  if (isOpen && entryMenu) setEntryMenu(null);
                 }}
+                trigger={
+                  <button className="ellipsis-btn">
+                    <i className="fas fa-ellipsis-v"></i>
+                  </button>
+                }
               >
-                Delete
-              </button>
-            </Dropdown>
+                <button 
+                  className="dropdown-item" 
+                  onClick={() => {
+                    setProjectMenu(null);
+                    deleteProject(p.id);
+                  }}
+                >
+                  Delete
+                </button>
+                <button 
+                  className="dropdown-item" 
+                  onClick={() => {
+                    setProjectMenu(null);
+                    setEditingBillableRate(p);
+                  }}
+                >
+                  {p.billableRate ? 'Edit billable rate' : 'Set billable rate'}
+                </button>
+              </Dropdown>
+            </div>
           </div>
           
           {days.map((d) => (
@@ -176,6 +198,21 @@ const EntryGrid: React.FC<EntryGridProps> = ({
           ))}
         </React.Fragment>
       ))}
+
+      {/* Billable Rate Editor Popup */}
+      {editingBillableRate && (
+        <Popup
+          isOpen={!!editingBillableRate}
+          onClose={() => setEditingBillableRate(null)}
+          title={`${editingBillableRate.billableRate ? 'Edit' : 'Set'} Billable Rate - ${editingBillableRate.name}`}
+        >
+          <BillableRateEditor
+            project={editingBillableRate}
+            onSave={handleUpdateBillableRate}
+            onCancel={() => setEditingBillableRate(null)}
+          />
+        </Popup>
+      )}
     </>
   );
 };

@@ -38,6 +38,7 @@ export default function App() {
     projects,
     addProject,
     renameProject,
+    updateProject,
     deleteProject
   } = useProjects(entries, setEntries);
 
@@ -88,6 +89,7 @@ export default function App() {
             settings={settings}
             addProject={addProject}
             renameProject={renameProject}
+            updateProject={updateProject}
             deleteProject={deleteProject}
             deleteEntry={deleteEntry}
             changeEntryProject={changeEntryProject}

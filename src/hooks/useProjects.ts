@@ -53,6 +53,25 @@ export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntr
     [projects, setProjects]
   );
 
+  // Update project details
+  const updateProject = useCallback(
+    (updatedProject: Project) => {
+      // Find the project to update
+      const project = projects.find(p => p.id === updatedProject.id);
+      if (!project) return;
+      
+      // Update the project
+      setProjects(
+        projects.map(p =>
+          p.id === updatedProject.id
+            ? { ...updatedProject, updatedAt: new Date().toISOString() }
+            : p
+        )
+      );
+    },
+    [projects, setProjects]
+  );
+
   // Delete a project and all its entries
   const deleteProject = useCallback(
     (id: string) => {
@@ -69,6 +88,7 @@ export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntr
     projects,
     addProject,
     renameProject,
+    updateProject,
     deleteProject,
   };
 } 
