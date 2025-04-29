@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Project, TimeEntry } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import Dropdown from './Dropdown';
 import EditableProjectName from './EditableProjectName';
 import Popup from './Popup';
 import BillableRateEditor from './BillableRateEditor';
+import TimeEditor from './TimeEditor';
 
 interface EntryGridProps {
   days: Date[];
@@ -38,6 +39,7 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
   const [editingBillableRate, setEditingBillableRate] = useState<Project | null>(null);
+  const [editingTimeId, setEditingTimeId] = useState<string | null>(null);
   
   const entriesForDay = (projId: string, d: Date): TimeEntry[] => {
     const startOfDay = new Date(d);
@@ -57,6 +59,14 @@ const EntryGrid: React.FC<EntryGridProps> = ({
     updateProject(updatedProject);
     setEditingBillableRate(null);
     setProjectMenu(null);
+  };
+
+  const handleTimeUpdate = (entry: TimeEntry, newDuration: number) => {
+    editEntry({
+      ...entry,
+      duration: newDuration
+    });
+    setEditingTimeId(null);
   };
 
   return (
@@ -115,24 +125,34 @@ const EntryGrid: React.FC<EntryGridProps> = ({
             <div key={d.toDateString()} className="cell">
               {entriesForDay(p.id, d).map((e: TimeEntry) => (
                 <div key={e.id} className={`d-flex justify-content-between align-items-center ${e.active ? 'active-entry' : ''}`}>
-                  <span 
-                    title={formatTimeHHMMSS(e.duration)}
-                    className="time-display"
-                  >
-                    {formatTimeHHMM(e.duration)}
-                    {e.active && (
-                      <button 
-                        className="btn btn-sm btn-danger ms-2 py-0 px-1" 
-                        title="Pause this entry"
-                        onClick={(evt) => {
-                          evt.stopPropagation();
-                          toggleTimer();
-                        }}
-                      >
-                        <i className="fas fa-pause"></i>
-                      </button>
-                    )}
-                  </span>
+                  {editingTimeId === e.id ? (
+                    <TimeEditor
+                      duration={e.duration}
+                      onSave={(newDuration) => handleTimeUpdate(e, newDuration)}
+                      onCancel={() => setEditingTimeId(null)}
+                    />
+                  ) : (
+                    <span 
+                      title={formatTimeHHMMSS(e.duration)}
+                      className="time-display"
+                      onClick={() => !e.active && setEditingTimeId(e.id)}
+                      style={{ cursor: e.active ? 'default' : 'pointer' }}
+                    >
+                      {formatTimeHHMM(e.duration)}
+                      {e.active && (
+                        <button 
+                          className="btn btn-sm btn-danger ms-2 py-0 px-1" 
+                          title="Pause this entry"
+                          onClick={(evt) => {
+                            evt.stopPropagation();
+                            toggleTimer();
+                          }}
+                        >
+                          <i className="fas fa-pause"></i>
+                        </button>
+                      )}
+                    </span>
+                  )}
                   
                   <Dropdown
                     isOpen={entryMenu === e.id}

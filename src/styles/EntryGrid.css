@@ -1,0 +1,43 @@
+.time-editor {
+  width: 70px;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: inherit;
+  font-family: inherit;
+  text-align: center;
+  background-color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.time-editor:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.time-editor.invalid {
+  background-color: #ffebee;
+  border-color: #f44336;
+}
+
+.time-editor-fade-out {
+  animation: fade-out-bg 0.8s ease;
+}
+
+@keyframes fade-out-bg {
+  0% { background-color: #e3f2fd; }
+  100% { background-color: #fff; }
+}
+
+.time-display {
+  min-width: 70px;
+  display: inline-block;
+}
+
+.time-display:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+} 
