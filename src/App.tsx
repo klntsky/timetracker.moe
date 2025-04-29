@@ -99,6 +99,7 @@ export default function App() {
             toggleTimer={handleToggleTimer}
             shouldShowResume={shouldShowResume}
             addEntry={addEntry}
+            lastUsedEntry={lastUsedEntry}
           />
         )}
         {tab === 'REPORTS' && 

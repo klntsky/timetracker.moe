@@ -22,6 +22,7 @@ interface EntryGridProps {
   toggleTimer: () => void;
   shouldShowResume?: boolean;
   addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
+  lastUsedEntry?: TimeEntry | null;
 }
 
 const EntryGrid: React.FC<EntryGridProps> = ({ 
@@ -37,7 +38,8 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   resumeEntry,
   toggleTimer,
   shouldShowResume = true,
-  addEntry
+  addEntry,
+  lastUsedEntry
 }) => {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
@@ -156,7 +158,13 @@ const EntryGrid: React.FC<EntryGridProps> = ({
               data-day={d.toDateString()}
             >
               {entriesForDay(p.id, d).map((e: TimeEntry) => (
-                <div key={e.id} className={`d-flex justify-content-between align-items-center ${e.active ? 'active-entry' : ''}`}>
+                <div 
+                  key={e.id} 
+                  className={`d-flex justify-content-between align-items-center 
+                    ${e.active ? 'active-entry' : ''} 
+                    ${lastUsedEntry && e.id === lastUsedEntry.id ? 'last-used-entry' : ''}
+                  `}
+                >
                   {editingTimeId === e.id ? (
                     <TimeEditor
                       duration={e.duration}

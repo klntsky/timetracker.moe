@@ -50,7 +50,7 @@
 
 .add-entry-button {
   position: absolute;
-  bottom: 4px;
+  bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
   width: 24px;
@@ -59,6 +59,7 @@
   border: none;
   border-radius: 12px;
   display: flex;
+  z-index: 100;
   align-items: center;
   justify-content: center;
   opacity: 0;
@@ -74,4 +75,12 @@
 .add-entry-button:hover {
   background-color: #dee2e6;
   color: #212529;
+}
+
+/* Style for the last used entry */
+.last-used-entry {
+  outline: 1px solid rgba(173, 181, 189, 0.5);
+  border-radius: 4px;
+  position: relative;
+  background-color: rgba(173, 181, 189, 0.02);
 } 
