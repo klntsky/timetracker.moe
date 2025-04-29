@@ -22,6 +22,7 @@ interface Props {
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
   shouldShowResume: boolean;
+  addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
 }
 
 function TrackTabComponent({
@@ -37,7 +38,8 @@ function TrackTabComponent({
   editEntry,
   resumeEntry,
   toggleTimer,
-  shouldShowResume
+  shouldShowResume,
+  addEntry
 }: Props) {
   const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, -1 = last week, 1 = next week
 
@@ -85,6 +87,7 @@ function TrackTabComponent({
           resumeEntry={resumeEntry}
           toggleTimer={toggleTimer}
           shouldShowResume={shouldShowResume}
+          addEntry={typeof addEntry === 'function' ? addEntry : undefined}
         />
       </div>
       <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>

@@ -6,6 +6,7 @@ import EditableProjectName from './EditableProjectName';
 import Popup from './Popup';
 import BillableRateEditor from './BillableRateEditor';
 import TimeEditor from './TimeEditor';
+import '../styles/EntryGrid.css';
 
 interface EntryGridProps {
   days: Date[];
@@ -20,6 +21,7 @@ interface EntryGridProps {
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
   shouldShowResume?: boolean;
+  addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
 }
 
 const EntryGrid: React.FC<EntryGridProps> = ({ 
@@ -34,7 +36,8 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   editEntry,
   resumeEntry,
   toggleTimer,
-  shouldShowResume = true
+  shouldShowResume = true,
+  addEntry
 }) => {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
@@ -67,6 +70,30 @@ const EntryGrid: React.FC<EntryGridProps> = ({
       duration: newDuration
     });
     setEditingTimeId(null);
+  };
+
+  const addNewEntry = (projectId: string, day: Date) => {
+    if (typeof addEntry !== 'function') {
+      console.error('addEntry function is not available');
+      return;
+    }
+
+    try {
+      // Create a new entry with the project ID and date
+      const entryDate = new Date(day);
+      const now = new Date();
+      entryDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+      
+      // Create a new entry with 0 duration and the current time (adjusted to the selected day)
+      const newEntry = addEntry(projectId, 0, '', entryDate.toISOString());
+      
+      // Immediately set this entry for editing
+      setTimeout(() => {
+        setEditingTimeId(newEntry.id);
+      }, 100);
+    } catch (error) {
+      console.error('Error adding entry:', error);
+    }
   };
 
   return (
@@ -122,7 +149,12 @@ const EntryGrid: React.FC<EntryGridProps> = ({
           </div>
           
           {days.map((d) => (
-            <div key={d.toDateString()} className="cell">
+            <div 
+              key={d.toDateString()} 
+              className="cell day-cell"
+              data-project-id={p.id}
+              data-day={d.toDateString()}
+            >
               {entriesForDay(p.id, d).map((e: TimeEntry) => (
                 <div key={e.id} className={`d-flex justify-content-between align-items-center ${e.active ? 'active-entry' : ''}`}>
                   {editingTimeId === e.id ? (
@@ -214,6 +246,15 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                   </Dropdown>
                 </div>
               ))}
+              
+              {/* Add entry button that appears on hover */}
+              <button 
+                className="add-entry-button"
+                onClick={() => addNewEntry(p.id, d)}
+                title={`Add time entry to ${p.name} on ${d.toLocaleDateString()}`}
+              >
+                <i className="fas fa-plus"></i>
+              </button>
             </div>
           ))}
         </React.Fragment>

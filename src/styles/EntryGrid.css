@@ -40,4 +40,38 @@
   border-radius: 4px;
   padding: 2px 4px;
   margin: -2px -4px;
+}
+
+/* Styles for the add entry button */
+.day-cell {
+  position: relative;
+  min-height: 50px; /* Ensure there's space for the button */
+}
+
+.add-entry-button {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  background-color: #e9ecef;
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+  color: #495057;
+}
+
+.day-cell:hover .add-entry-button {
+  opacity: 1;
+}
+
+.add-entry-button:hover {
+  background-color: #dee2e6;
+  color: #212529;
 } 
