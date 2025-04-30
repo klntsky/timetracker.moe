@@ -36,17 +36,17 @@ export default function TopBar({
   return (
     <header className="d-flex align-items-center border-bottom p-2 bg-white gap-3">
       {shouldShowTimerButton && (
-        <button
-          className={clsx(
-            'btn',
-            isRunning ? 'btn-danger' : 'btn-success',
-            'd-flex align-items-center gap-2'
-          )}
-          onClick={toggleTimer}
-        >
-          <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
-          {isRunning ? 'Pause' : 'Start'}
-        </button>
+      <button
+        className={clsx(
+          'btn',
+          isRunning ? 'btn-danger' : 'btn-success',
+          'd-flex align-items-center gap-2'
+        )}
+        onClick={toggleTimer}
+      >
+        <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
+        {isRunning ? 'Pause' : 'Start'}
+      </button>
       )}
 
       {isRunning && (

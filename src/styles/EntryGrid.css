@@ -139,14 +139,14 @@
   position: relative;
 }
 
-/* Make the blue dot position absolute and completely outside the container */
-.last-used-entry:before {
-  content: "";
+/* Indicator dot for last used entry */
+.last-used-indicator {
   position: absolute;
-  top: 0; /* Position at the top */
-  left: -3px; /* Move it slightly to the left to be outside */
-  width: 7px;
-  height: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  left: -10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background-color: #007bff;
   display: block;

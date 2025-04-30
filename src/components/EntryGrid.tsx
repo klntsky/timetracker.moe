@@ -165,6 +165,11 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                     ${lastUsedEntry && e.id === lastUsedEntry.id ? 'last-used-entry' : ''}
                   `}
                 >
+                  {/* Blue indicator dot for last used entry */}
+                  {lastUsedEntry && e.id === lastUsedEntry.id && (
+                    <div className="last-used-indicator" title="Last used time entry"></div>
+                  )}
+                  
                   {editingTimeId === e.id ? (
                     <div className="time-editor-container">
                       <TimeEditor
