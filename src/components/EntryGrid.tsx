@@ -192,6 +192,17 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                         >
                           <i className="fas fa-pause"></i>
                         </button>
+                      ) : shouldShowResume ? (
+                        <button 
+                          className="btn btn-sm btn-success resume-button" 
+                          title="Resume this entry"
+                          onClick={(evt) => {
+                            evt.stopPropagation();
+                            resumeEntry(e);
+                          }}
+                        >
+                          <i className="fas fa-play"></i>
+                        </button>
                       ) : (
                         <span className="pause-placeholder"></span>
                       )}
