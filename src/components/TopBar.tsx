@@ -38,7 +38,7 @@ export default function TopBar({
       {shouldShowTimerButton && (
       <button
         className={clsx(
-          'btn',
+          'btn timer-btn',
           isRunning ? 'btn-danger' : 'btn-success',
           'd-flex align-items-center gap-2'
         )}
