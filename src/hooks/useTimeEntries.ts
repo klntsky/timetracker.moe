@@ -72,6 +72,9 @@ export function useTimeEntries() {
       if (!targetEntryId) {
         const newEntry = addEntry(projectId, 0, note, now);
         targetEntryId = newEntry.id;
+      } else {
+        // If we're resuming an existing entry, mark it as active
+        dispatchEntries(entriesActions.updateEntry(targetEntryId, { active: true }));
       }
       
       // Start the timer instance
@@ -80,7 +83,7 @@ export function useTimeEntries() {
       // Update the timer state
       dispatchTimer(timerActions.startTimer(targetEntryId, projectId, now));
     },
-    [addEntry, timerInstance],
+    [addEntry, timerInstance, dispatchEntries],
   );
 
   // Stop the active timer
@@ -95,7 +98,9 @@ export function useTimeEntries() {
     if (timerState.lastEntryId) {
       const entryExists = entriesState.entries.some(e => e.id === timerState.lastEntryId);
       if (entryExists) {
+        // Update the duration and set active to false
         dispatchEntries(entriesActions.updateEntryDuration(timerState.lastEntryId, elapsedMs));
+        dispatchEntries(entriesActions.updateEntry(timerState.lastEntryId, { active: false }));
       }
     }
     
@@ -104,7 +109,7 @@ export function useTimeEntries() {
     
     // Update timer state
     dispatchTimer(timerActions.stopTimer());
-  }, [timerState, entriesState.entries, timerInstance]);
+  }, [timerState, entriesState.entries, timerInstance, dispatchEntries]);
 
   // Toggle timer (start/stop)
   const toggleTimer = useCallback((projects: Project[] = []) => {
@@ -214,13 +219,8 @@ export function useTimeEntries() {
         stopTimer();
       }
       
-      if (isToday(entry.start)) {
-        // If the entry is from today, resume it
-        startTimer(entry.projectId, entry.id);
-      } else {
-        // If the entry is from a different day, create a new entry with the same note
-        startTimer(entry.projectId, undefined, entry.note || '');
-      }
+      // Always resume the exact entry clicked
+      startTimer(entry.projectId, entry.id);
     },
     [timerState.running, stopTimer, startTimer],
   );
