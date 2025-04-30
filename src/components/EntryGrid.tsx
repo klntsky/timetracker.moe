@@ -17,12 +17,11 @@ interface EntryGridProps {
   deleteProject: (id: string) => void;
   deleteEntry: (id: string) => void;
   changeEntryProject: (id: string, pid: string) => void;
-  editEntry: (entry: TimeEntry) => void;
-  resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
   shouldShowResume?: boolean;
   addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
+  resumeEntry: (entry: TimeEntry) => void;
 }
 
 const EntryGrid: React.FC<EntryGridProps> = ({ 
@@ -34,12 +33,11 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   deleteProject,
   deleteEntry,
   changeEntryProject,
-  editEntry,
-  resumeEntry,
   toggleTimer,
   shouldShowResume = true,
   addEntry,
-  lastUsedEntry
+  lastUsedEntry,
+  resumeEntry
 }) => {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
@@ -67,10 +65,12 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   };
 
   const handleTimeUpdate = (entry: TimeEntry, newDuration: number) => {
-    editEntry({
+    const updatedEntry = {
       ...entry,
       duration: newDuration
-    });
+    };
+    
+    resumeEntry(updatedEntry);
     setEditingTimeId(null);
   };
 
@@ -222,26 +222,6 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                       </button>
                     }
                   >
-                    {shouldShowResume && !e.active && (
-                      <button 
-                        className="dropdown-item" 
-                        onClick={() => {
-                          setEntryMenu(null);
-                          resumeEntry(e);
-                        }}
-                      >
-                        Resume
-                      </button>
-                    )}
-                    <button 
-                      className="dropdown-item" 
-                      onClick={() => {
-                        setEntryMenu(null);
-                        editEntry(e);
-                      }}
-                    >
-                      Edit
-                    </button>
                     <button 
                       className="dropdown-item" 
                       onClick={() => {

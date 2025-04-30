@@ -94,7 +94,6 @@ export default function App() {
             deleteProject={deleteProject}
             deleteEntry={deleteEntry}
             changeEntryProject={changeEntryProject}
-            editEntry={editEntry}
             resumeEntry={resumeEntry}
             toggleTimer={handleToggleTimer}
             shouldShowResume={shouldShowResume}

@@ -18,7 +18,6 @@ interface Props {
   deleteProject: (id: string) => void;
   deleteEntry: (id: string) => void;
   changeEntryProject: (id: string, pid: string) => void;
-  editEntry: (entry: TimeEntry) => void;
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
   shouldShowResume: boolean;
@@ -36,7 +35,6 @@ function TrackTabComponent({
   deleteProject,
   deleteEntry,
   changeEntryProject,
-  editEntry,
   resumeEntry,
   toggleTimer,
   shouldShowResume,
@@ -85,7 +83,6 @@ function TrackTabComponent({
           deleteProject={deleteProject}
           deleteEntry={deleteEntry}
           changeEntryProject={changeEntryProject}
-          editEntry={editEntry}
           resumeEntry={resumeEntry}
           toggleTimer={toggleTimer}
           shouldShowResume={shouldShowResume}
