@@ -54,7 +54,6 @@ export function useTimeEntries() {
         start,
         duration,
         note,
-        active: true,
       };
       
       dispatchEntries(entriesActions.addEntry(newEntry));
@@ -73,6 +72,8 @@ export function useTimeEntries() {
       if (!targetEntryId) {
         const newEntry = addEntry(projectId, 0, note, now);
         targetEntryId = newEntry.id;
+        // Set the newly created entry to active
+        dispatchEntries(entriesActions.updateEntry(targetEntryId, { active: true }));
       } else {
         // If we're resuming an existing entry, mark it as active
         dispatchEntries(entriesActions.updateEntry(targetEntryId, { active: true }));
