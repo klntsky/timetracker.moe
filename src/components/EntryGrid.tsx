@@ -166,11 +166,13 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                   `}
                 >
                   {editingTimeId === e.id ? (
-                    <TimeEditor
-                      duration={e.duration}
-                      onSave={(newDuration) => handleTimeUpdate(e, newDuration)}
-                      onCancel={() => setEditingTimeId(null)}
-                    />
+                    <div className="time-editor-container">
+                      <TimeEditor
+                        duration={e.duration}
+                        onSave={(newDuration) => handleTimeUpdate(e, newDuration)}
+                        onCancel={() => setEditingTimeId(null)}
+                      />
+                    </div>
                   ) : (
                     <span 
                       title={formatTimeHHMMSS(e.duration)}
@@ -178,10 +180,10 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                       onClick={() => !e.active && setEditingTimeId(e.id)}
                       style={{ cursor: e.active ? 'default' : 'pointer' }}
                     >
-                      {formatTimeHHMM(e.duration)}
-                      {e.active && (
+                      <span className="time-text">{formatTimeHHMM(e.duration)}</span>
+                      {e.active ? (
                         <button 
-                          className="btn btn-sm btn-danger ms-2 py-0 px-1" 
+                          className="btn btn-sm btn-danger" 
                           title="Pause this entry"
                           onClick={(evt) => {
                             evt.stopPropagation();
@@ -190,6 +192,8 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                         >
                           <i className="fas fa-pause"></i>
                         </button>
+                      ) : (
+                        <span className="pause-placeholder"></span>
                       )}
                     </span>
                   )}

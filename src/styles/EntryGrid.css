@@ -1,13 +1,68 @@
+/* -------------------- Time Display Styles -------------------- */
+.time-display {
+  width: 110px; /* Fixed width */
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* This spreads items evenly */
+  padding: 2px 4px;
+  height: 26px; /* Slightly taller for better appearance */
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  margin: 0; /* Ensure consistent margin */
+}
+
+.time-text {
+  flex-shrink: 0; /* Prevent shrinking */
+  width: 70px; /* Fixed width for time text */
+  text-align: left;
+  overflow: hidden; /* Prevent overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.pause-placeholder {
+  width: 24px;
+  height: 20px;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.time-display:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.time-display .btn-danger {
+  width: 24px;
+  height: 20px;
+  flex-shrink: 0; /* Prevent shrinking */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 10px; /* Smaller icon */
+  border-radius: 3px; /* More subtle rounded corners */
+}
+
+/* -------------------- Time Editor Styles -------------------- */
+.time-editor-container {
+  width: 110px; /* Match time-display width exactly */
+  height: 26px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
 .time-editor {
-  width: 70px;
+  width: 100%;
+  height: 26px;
   padding: 2px 4px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: inherit;
   font-family: inherit;
-  text-align: center;
+  text-align: left;
   background-color: #fff;
   transition: background-color 0.3s ease;
+  box-sizing: border-box;
 }
 
 .time-editor:focus {
@@ -28,18 +83,6 @@
 @keyframes fade-out-bg {
   0% { background-color: #e3f2fd; }
   100% { background-color: #fff; }
-}
-
-.time-display {
-  min-width: 70px;
-  display: inline-block;
-}
-
-.time-display:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  padding: 2px 4px;
-  margin: -2px -4px;
 }
 
 /* Styles for the add entry button */
@@ -79,8 +122,37 @@
 
 /* Style for the last used entry */
 .last-used-entry {
-  outline: 1px solid rgba(173, 181, 189, 0.5);
-  border-radius: 4px;
   position: relative;
-  background-color: rgba(173, 181, 189, 0.02);
+}
+
+/* Make the blue dot position absolute and completely outside the container */
+.last-used-entry:before {
+  content: "";
+  position: absolute;
+  top: 0; /* Position at the top */
+  left: -3px; /* Move it slightly to the left to be outside */
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #007bff;
+  display: block;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.6);
+  z-index: 2;
+}
+
+/* Style for the entire entry row */
+.d-flex.justify-content-between.align-items-center {
+  min-height: 26px; /* Ensure consistent height */
+  height: 26px; /* Fixed height */
+  margin: 2px 0; /* Add some spacing between entries */
+  box-sizing: border-box; /* Include padding in width/height calculation */
+  position: relative; /* Establish positioning context */
+  padding: 0; /* No padding that might affect layout */
+}
+
+/* Style for active entries */
+.active-entry {
+  background-color: rgba(248, 248, 248, 0.7);
+  border-radius: 3px;
+  /* No padding needed since we use fixed-width inner elements */
 } 
