@@ -54,6 +54,7 @@ export function useTimeEntries() {
         start,
         duration,
         note,
+        active: true,
       };
       
       dispatchEntries(entriesActions.addEntry(newEntry));
