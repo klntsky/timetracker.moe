@@ -6,6 +6,8 @@ import EditableProjectName from './EditableProjectName';
 import Popup from './Popup';
 import BillableRateEditor from './BillableRateEditor';
 import TimeEditor from './TimeEditor';
+import TimeGridHeader from './TimeGridHeader';
+import ProjectHeader from './ProjectHeader';
 import '../styles/EntryGrid.css';
 
 interface EntryGridProps {
@@ -22,6 +24,10 @@ interface EntryGridProps {
   addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
   resumeEntry: (entry: TimeEntry) => void;
+  weekOffset: number;
+  goToPreviousWeek: () => void;
+  goToCurrentWeek: () => void;
+  goToNextWeek: () => void;
 }
 
 const EntryGrid: React.FC<EntryGridProps> = ({ 
@@ -37,7 +43,11 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   shouldShowResume = true,
   addEntry,
   lastUsedEntry,
-  resumeEntry
+  resumeEntry,
+  weekOffset,
+  goToPreviousWeek,
+  goToCurrentWeek,
+  goToNextWeek
 }) => {
   const [projectMenu, setProjectMenu] = useState<string | null>(null);
   const [entryMenu, setEntryMenu] = useState<string | null>(null);
@@ -62,6 +72,10 @@ const EntryGrid: React.FC<EntryGridProps> = ({
     updateProject(updatedProject);
     setEditingBillableRate(null);
     setProjectMenu(null);
+  };
+
+  const openBillableRateEditor = (project: Project) => {
+    setEditingBillableRate(project);
   };
 
   const handleTimeUpdate = (entry: TimeEntry, newDuration: number) => {
@@ -100,56 +114,31 @@ const EntryGrid: React.FC<EntryGridProps> = ({
 
   return (
     <>
-      {days.map((d) => (
-        <div key={d.toDateString()} className="header">
-          {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
-        </div>
-      ))}
+      {/* Header row with day names */}
+      <TimeGridHeader 
+        days={days} 
+        weekOffset={weekOffset}
+        goToPreviousWeek={goToPreviousWeek}
+        goToCurrentWeek={goToCurrentWeek}
+        goToNextWeek={goToNextWeek}
+      />
       
+      {/* Project rows */}
       {projects.map((p) => (
         <React.Fragment key={p.id}>
-          <div className="cell header d-flex flex-column">
-            <div className="d-flex justify-content-between align-items-center">
-              <EditableProjectName 
-                name={p.name} 
-                onRename={(newName) => renameProject(p.id, newName)} 
-              />
-              
-              <Dropdown 
-                isOpen={projectMenu === p.id}
-                onOpenChange={(isOpen) => {
-                  setProjectMenu(isOpen ? p.id : null);
-                  // Close entry menu when opening project menu
-                  if (isOpen && entryMenu) setEntryMenu(null);
-                }}
-                trigger={
-                  <button className="ellipsis-btn">
-                    <i className="fas fa-ellipsis-v"></i>
-                  </button>
-                }
-              >
-                <button 
-                  className="dropdown-item" 
-                  onClick={() => {
-                    setProjectMenu(null);
-                    deleteProject(p.id);
-                  }}
-                >
-                  Delete
-                </button>
-                <button 
-                  className="dropdown-item" 
-                  onClick={() => {
-                    setProjectMenu(null);
-                    setEditingBillableRate(p);
-                  }}
-                >
-                  {p.billableRate ? 'Edit billable rate' : 'Set billable rate'}
-                </button>
-              </Dropdown>
-            </div>
-          </div>
+          {/* Project header cell */}
+          <ProjectHeader 
+            project={p}
+            renameProject={renameProject}
+            deleteProject={deleteProject}
+            openBillableRateEditor={openBillableRateEditor}
+            projectMenu={projectMenu}
+            setProjectMenu={setProjectMenu}
+            entryMenu={entryMenu}
+            setEntryMenu={setEntryMenu}
+          />
           
+          {/* Day cells for this project */}
           {days.map((d) => (
             <div 
               key={d.toDateString()} 

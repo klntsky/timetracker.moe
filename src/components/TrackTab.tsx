@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Project, TimeEntry, Settings } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import Dropdown from './Dropdown';
-import WeekNavigation from './WeekNavigation';
 import EditableProjectName from './EditableProjectName';
 import './TrackTab.css';
 import { isToday, getWeekDays } from '../utils/timeUtils';
@@ -67,13 +66,6 @@ function TrackTabComponent({
   return (
     <>
       <div className="week-grid">
-        <WeekNavigation 
-          weekOffset={weekOffset}
-          goToPreviousWeek={goToPreviousWeek}
-          goToCurrentWeek={goToCurrentWeek}
-          goToNextWeek={goToNextWeek}
-        />
-        
         <EntryGrid 
           days={days}
           projects={projects}
@@ -88,6 +80,10 @@ function TrackTabComponent({
           shouldShowResume={shouldShowResume}
           addEntry={typeof addEntry === 'function' ? addEntry : undefined}
           lastUsedEntry={lastUsedEntry}
+          weekOffset={weekOffset}
+          goToPreviousWeek={goToPreviousWeek}
+          goToCurrentWeek={goToCurrentWeek}
+          goToNextWeek={goToNextWeek}
         />
       </div>
       <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>
