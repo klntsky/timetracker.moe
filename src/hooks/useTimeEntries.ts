@@ -21,7 +21,6 @@ export function useTimeEntries() {
     entries, 
     addEntry, 
     updateEntry, 
-    replaceEntry, 
     deleteEntry: deleteEntryBase, 
     changeEntryProject: changeEntryProjectBase, 
     updateEntryDuration,
@@ -214,9 +213,9 @@ export function useTimeEntries() {
     startTimer,
     stopTimer,
     toggleTimer,
-    editEntry: replaceEntry,
     deleteEntry,
     changeEntryProject,
     resumeEntry,
+    updateEntry,
   };
 } 

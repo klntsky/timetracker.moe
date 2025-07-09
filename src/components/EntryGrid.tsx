@@ -24,6 +24,7 @@ interface EntryGridProps {
   addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
   resumeEntry: (entry: TimeEntry) => void;
+  updateEntry?: (entryId: string, updates: Partial<TimeEntry>) => void;
   weekOffset: number;
   goToPreviousWeek: () => void;
   goToCurrentWeek: () => void;
@@ -44,6 +45,7 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   addEntry,
   lastUsedEntry,
   resumeEntry,
+  updateEntry,
   weekOffset,
   goToPreviousWeek,
   goToCurrentWeek,
@@ -79,12 +81,13 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   };
 
   const handleTimeUpdate = (entry: TimeEntry, newDuration: number) => {
-    const updatedEntry = {
-      ...entry,
-      duration: newDuration
-    };
+    if (typeof updateEntry === 'function') {
+      // Just update the duration without starting the timer
+      updateEntry(entry.id, { duration: newDuration });
+    } else {
+      console.error('updateEntry function is not available');
+    }
     
-    resumeEntry(updatedEntry);
     setEditingTimeId(null);
   };
 

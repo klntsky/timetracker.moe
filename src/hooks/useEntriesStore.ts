@@ -48,14 +48,6 @@ export function useEntriesStore() {
     [],
   );
 
-  // Replace an entry with a completely new one
-  const replaceEntry = useCallback(
-    (entry: TimeEntry) => {
-      dispatchEntries(entriesActions.updateEntry(entry.id, entry));
-    },
-    [],
-  );
-
   // Delete an entry
   const deleteEntry = useCallback(
     (id: string) => {
@@ -89,7 +81,6 @@ export function useEntriesStore() {
     entries: entriesState.entries,
     addEntry,
     updateEntry,
-    replaceEntry,
     deleteEntry,
     changeEntryProject,
     updateEntryDuration,

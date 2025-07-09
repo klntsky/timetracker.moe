@@ -27,11 +27,11 @@ export default function App() {
     toggleTimer,
     deleteEntry,
     changeEntryProject,
-    editEntry,
     resumeEntry,
     elapsedMs,
     canResume,
-    addEntry
+    addEntry,
+    updateEntry
   } = useTimeEntries();
 
   // projects management
@@ -99,6 +99,7 @@ export default function App() {
             shouldShowResume={shouldShowResume}
             addEntry={addEntry}
             lastUsedEntry={lastUsedEntry}
+            updateEntry={updateEntry}
           />
         )}
         {tab === 'REPORTS' && 

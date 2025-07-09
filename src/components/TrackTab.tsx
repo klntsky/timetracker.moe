@@ -22,6 +22,7 @@ interface Props {
   shouldShowResume: boolean;
   addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
+  updateEntry?: (entryId: string, updates: Partial<TimeEntry>) => void;
 }
 
 function TrackTabComponent({
@@ -38,7 +39,8 @@ function TrackTabComponent({
   toggleTimer,
   shouldShowResume,
   addEntry,
-  lastUsedEntry
+  lastUsedEntry,
+  updateEntry
 }: Props) {
   const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, -1 = last week, 1 = next week
 
@@ -80,6 +82,7 @@ function TrackTabComponent({
           shouldShowResume={shouldShowResume}
           addEntry={typeof addEntry === 'function' ? addEntry : undefined}
           lastUsedEntry={lastUsedEntry}
+          updateEntry={updateEntry}
           weekOffset={weekOffset}
           goToPreviousWeek={goToPreviousWeek}
           goToCurrentWeek={goToCurrentWeek}
