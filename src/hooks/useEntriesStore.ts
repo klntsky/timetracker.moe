@@ -1,5 +1,5 @@
 import { useCallback, useReducer, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from '../utils/idGenerator';
 import { TimeEntry } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { entriesReducer, EntriesState, entriesActions } from '../reducers/entriesReducer';
@@ -25,9 +25,9 @@ export function useEntriesStore() {
 
   // Add a new time entry
   const addEntry = useCallback(
-    (projectId: string, duration: number = 0, note: string = '', start: string = new Date().toISOString()) => {
+    (projectId: number, duration: number = 0, note: string = '', start: string = new Date().toISOString()) => {
       const newEntry: TimeEntry = {
-        id: uuidv4(),
+        id: generateId(),
         projectId,
         start,
         duration,
@@ -42,7 +42,7 @@ export function useEntriesStore() {
 
   // Edit an existing entry
   const updateEntry = useCallback(
-    (entryId: string, updates: Partial<TimeEntry>) => {
+    (entryId: number, updates: Partial<TimeEntry>) => {
       dispatchEntries(entriesActions.updateEntry(entryId, updates));
     },
     [],
@@ -50,7 +50,7 @@ export function useEntriesStore() {
 
   // Delete an entry
   const deleteEntry = useCallback(
-    (id: string) => {
+    (id: number) => {
       dispatchEntries(entriesActions.deleteEntry(id));
     },
     [],
@@ -58,7 +58,7 @@ export function useEntriesStore() {
 
   // Change the project of an entry
   const changeEntryProject = useCallback(
-    (id: string, projectId: string) => {
+    (id: number, projectId: number) => {
       dispatchEntries(entriesActions.changeEntryProject(id, projectId));
     },
     [],
@@ -66,7 +66,7 @@ export function useEntriesStore() {
 
   // Add duration to an entry
   const updateEntryDuration = useCallback(
-    (entryId: string, additionalDuration: number) => {
+    (entryId: number, additionalDuration: number) => {
       dispatchEntries(entriesActions.updateEntryDuration(entryId, additionalDuration));
     },
     [],

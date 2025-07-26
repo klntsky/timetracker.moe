@@ -51,10 +51,10 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   goToCurrentWeek,
   goToNextWeek
 }) => {
-  const [projectMenu, setProjectMenu] = useState<string | null>(null);
-  const [entryMenu, setEntryMenu] = useState<string | null>(null);
+  const [projectMenu, setProjectMenu] = useState<number | null>(null);
+  const [entryMenu, setEntryMenu] = useState<number | null>(null);
   const [editingBillableRate, setEditingBillableRate] = useState<Project | null>(null);
-  const [editingTimeId, setEditingTimeId] = useState<string | null>(null);
+  const [editingTimeId, setEditingTimeId] = useState<number | null>(null);
   
   const entriesForDay = (projId: string, d: Date): TimeEntry[] => {
     const startOfDay = new Date(d);

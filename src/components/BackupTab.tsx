@@ -1,4 +1,7 @@
 import React from 'react';
+import { resyncCounter } from '../utils/idGenerator';
+import { readFromLocalStorage } from '../utils/localStorageUtils';
+import { TimeEntry, Project } from '../types';
 
 const BackupTab: React.FC = () => {
   const exportData = () => {
@@ -29,6 +32,13 @@ const BackupTab: React.FC = () => {
         for (const key in data) {
           localStorage.setItem(key, JSON.stringify(data[key]));
         }
+        
+        // Resync the ID counter to prevent conflicts with imported data
+        // Read the newly imported data using our safe parsing utilities
+        const projects = readFromLocalStorage<Project[]>('harnesstime.projects', []);
+        const entries = readFromLocalStorage<TimeEntry[]>('harnesstime.entries', []);
+        resyncCounter(projects, entries);
+        
         alert('Data imported successfully. Please refresh the page.');
       } catch (err) {
         alert('Failed to import data. Please try again with a valid backup file.');

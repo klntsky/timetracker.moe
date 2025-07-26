@@ -10,7 +10,7 @@ import { TimeEntry, Project } from '../types';
  * @param entryId ID of the entry to find
  * @returns The found entry or null
  */
-export function findEntryById(entries: TimeEntry[], entryId: string | null): TimeEntry | null {
+export function findEntryById(entries: TimeEntry[], entryId: number | null): TimeEntry | null {
   if (!entryId) return null;
   return entries.find(e => e.id === entryId) || null;
 }
@@ -21,7 +21,7 @@ export function findEntryById(entries: TimeEntry[], entryId: string | null): Tim
  * @param projectId ID of the project to find
  * @returns true if the project exists
  */
-export function projectExists(projects: Project[], projectId: string | null): boolean {
+export function projectExists(projects: Project[], projectId: number | null): boolean {
   if (!projectId) return false;
   return projects.some(p => p.id === projectId);
 }
@@ -48,9 +48,9 @@ export function entryProjectExists(entry: TimeEntry | null, projects: Project[])
  */
 export function shouldShowResumeButton(
   isRunning: boolean,
-  lastEntryId: string | null,
+  lastEntryId: number | null,
   entries: TimeEntry[],
-  lastProjectId: string | null,
+  lastProjectId: number | null,
   projects: Project[]
 ): boolean {
   // Don't show resume if timer is running

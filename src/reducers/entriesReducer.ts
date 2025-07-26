@@ -9,10 +9,10 @@ export interface EntriesState {
 // Define possible actions for the entries reducer
 export type EntriesAction = 
   | { type: 'ADD_ENTRY'; entry: TimeEntry }
-  | { type: 'UPDATE_ENTRY'; entryId: string; updates: Partial<TimeEntry> }
-  | { type: 'DELETE_ENTRY'; entryId: string }
-  | { type: 'UPDATE_ENTRY_DURATION'; entryId: string; additionalDuration: number }
-  | { type: 'CHANGE_ENTRY_PROJECT'; entryId: string; projectId: string }
+  | { type: 'UPDATE_ENTRY'; entryId: number; updates: Partial<TimeEntry> }
+  | { type: 'DELETE_ENTRY'; entryId: number }
+  | { type: 'UPDATE_ENTRY_DURATION'; entryId: number; additionalDuration: number }
+  | { type: 'CHANGE_ENTRY_PROJECT'; entryId: number; projectId: number }
   | { type: 'SET_ENTRIES'; entries: TimeEntry[] };
 
 // Entries action creator functions
@@ -22,24 +22,24 @@ export const entriesActions = {
     entry
   }),
   
-  updateEntry: (entryId: string, updates: Partial<TimeEntry>): EntriesAction => ({
+  updateEntry: (entryId: number, updates: Partial<TimeEntry>): EntriesAction => ({
     type: 'UPDATE_ENTRY',
     entryId,
     updates
   }),
   
-  deleteEntry: (entryId: string): EntriesAction => ({
+  deleteEntry: (entryId: number): EntriesAction => ({
     type: 'DELETE_ENTRY',
     entryId
   }),
   
-  updateEntryDuration: (entryId: string, additionalDuration: number): EntriesAction => ({
+  updateEntryDuration: (entryId: number, additionalDuration: number): EntriesAction => ({
     type: 'UPDATE_ENTRY_DURATION',
     entryId,
     additionalDuration
   }),
   
-  changeEntryProject: (entryId: string, projectId: string): EntriesAction => ({
+  changeEntryProject: (entryId: number, projectId: number): EntriesAction => ({
     type: 'CHANGE_ENTRY_PROJECT',
     entryId,
     projectId
@@ -58,17 +58,17 @@ export function entriesReducer(state: EntriesState, action: EntriesAction): Entr
       ...state,
       entries: [...state.entries, entry]
     }))
-    .with({ type: 'UPDATE_ENTRY' }, ({ entryId, updates }: { entryId: string; updates: Partial<TimeEntry> }) => ({
+    .with({ type: 'UPDATE_ENTRY' }, ({ entryId, updates }: { entryId: number; updates: Partial<TimeEntry> }) => ({
       ...state,
       entries: state.entries.map(e => 
         e.id === entryId ? { ...e, ...updates } : e
       )
     }))
-    .with({ type: 'DELETE_ENTRY' }, ({ entryId }: { entryId: string }) => ({
+    .with({ type: 'DELETE_ENTRY' }, ({ entryId }: { entryId: number }) => ({
       ...state,
       entries: state.entries.filter(e => e.id !== entryId)
     }))
-    .with({ type: 'UPDATE_ENTRY_DURATION' }, ({ entryId, additionalDuration }: { entryId: string; additionalDuration: number }) => ({
+    .with({ type: 'UPDATE_ENTRY_DURATION' }, ({ entryId, additionalDuration }: { entryId: number; additionalDuration: number }) => ({
       ...state,
       entries: state.entries.map(e => 
         e.id === entryId 
@@ -76,7 +76,7 @@ export function entriesReducer(state: EntriesState, action: EntriesAction): Entr
           : e
       )
     }))
-    .with({ type: 'CHANGE_ENTRY_PROJECT' }, ({ entryId, projectId }: { entryId: string; projectId: string }) => ({
+    .with({ type: 'CHANGE_ENTRY_PROJECT' }, ({ entryId, projectId }: { entryId: number; projectId: number }) => ({
       ...state,
       entries: state.entries.map(e => 
         e.id === entryId 

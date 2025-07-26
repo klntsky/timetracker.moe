@@ -4,20 +4,20 @@ import { match } from 'ts-pattern';
 export interface TimerState {
   running: boolean;
   start: string | null;
-  lastEntryId: string | null;
-  lastProjectId: string | null;
+  lastEntryId: number | null;
+  lastProjectId: number | null;
 }
 
 // Define possible actions for the timer reducer
 export type TimerAction =
-  | { type: 'START_TIMER'; entryId: string; projectId: string; startTime: string }
+  | { type: 'START_TIMER'; entryId: number; projectId: number; startTime: string }
   | { type: 'STOP_TIMER' }
   | { type: 'UPDATE_TIMER_STATE'; running: boolean; start: string | null }
-  | { type: 'UPDATE_PROJECT_ID'; projectId: string };
+  | { type: 'UPDATE_PROJECT_ID'; projectId: number };
 
 // Timer action creator functions
 export const timerActions = {
-  startTimer: (entryId: string, projectId: string, startTime: string): TimerAction => ({
+  startTimer: (entryId: number, projectId: number, startTime: string): TimerAction => ({
     type: 'START_TIMER',
     entryId,
     projectId,
@@ -34,7 +34,7 @@ export const timerActions = {
     start
   }),
   
-  updateProjectId: (projectId: string): TimerAction => ({
+  updateProjectId: (projectId: number): TimerAction => ({
     type: 'UPDATE_PROJECT_ID',
     projectId
   })
@@ -43,7 +43,7 @@ export const timerActions = {
 // Timer reducer function with ts-pattern
 export function timerReducer(state: TimerState, action: TimerAction): TimerState {
   return match(action)
-    .with({ type: 'START_TIMER' }, ({ entryId, projectId, startTime }: { entryId: string; projectId: string; startTime: string }) => ({
+    .with({ type: 'START_TIMER' }, ({ entryId, projectId, startTime }: { entryId: number; projectId: number; startTime: string }) => ({
       ...state,
       running: true,
       start: startTime,
@@ -60,7 +60,7 @@ export function timerReducer(state: TimerState, action: TimerAction): TimerState
       running,
       start
     }))
-    .with({ type: 'UPDATE_PROJECT_ID' }, ({ projectId }: { projectId: string }) => ({
+    .with({ type: 'UPDATE_PROJECT_ID' }, ({ projectId }: { projectId: number }) => ({
       ...state,
       lastProjectId: projectId
     }))

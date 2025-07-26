@@ -38,7 +38,7 @@ export function useTimeEntries() {
 
   // Create a new entry and start timer on it
   const startNewEntry = useCallback(
-    (projectId: string, note: string = '') => {
+    (projectId: number, note: string = '') => {
       const now = new Date().toISOString();
       // Create the entry
       const newEntry = addEntry(projectId, 0, note, now);
@@ -53,7 +53,7 @@ export function useTimeEntries() {
 
   // Start the timer on a specific entry (new or existing)
   const startTimer = useCallback(
-    (projectId: string, entryId?: string, note: string = '') => {
+    (projectId: number, entryId?: number, note: string = '') => {
       const now = new Date().toISOString();
       
       if (entryId) {

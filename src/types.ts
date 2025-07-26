@@ -1,6 +1,6 @@
 export interface TimeEntry {
-  id: string;
-  projectId: string;
+  id: number;
+  projectId: number;
   start: string; // ISO
   duration: number; // duration in milliseconds
   note?: string;
@@ -8,7 +8,7 @@ export interface TimeEntry {
 }
 
 export interface Project {
-  id: string;
+  id: number;
   name: string;
   updatedAt: string; // for last‑used detection
   billableRate?: {

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Project, TimeEntry } from '../types';
 import { useLocalStorage } from './useLocalStorage';
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from '../utils/idGenerator';
 import { generateUniqueProjectName } from '../utils/projectUtils';
 
 export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntry[]) => void) {
@@ -14,7 +14,7 @@ export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntr
     const name = generateUniqueProjectName('New Project', projects);
     
     const newProject: Project = {
-      id: uuidv4(),
+      id: generateId(),
       name,
       updatedAt: new Date().toISOString(),
     };
@@ -25,7 +25,7 @@ export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntr
 
   // Rename a project, ensuring unique names
   const renameProject = useCallback(
-    (id: string, newName: string) => {
+    (id: number, newName: string) => {
       // Find the project to rename
       const project = projects.find(p => p.id === id);
       if (!project) return;
@@ -74,7 +74,7 @@ export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntr
 
   // Delete a project and all its entries
   const deleteProject = useCallback(
-    (id: string) => {
+    (id: number) => {
       // Remove the project
       setProjects(projects.filter(p => p.id !== id));
       

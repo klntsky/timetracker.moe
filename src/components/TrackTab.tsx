@@ -12,17 +12,17 @@ interface Props {
   entries: TimeEntry[];
   settings: Settings;
   addProject: () => void;
-  renameProject: (id: string, newName: string) => void;
+  renameProject: (id: number, newName: string) => void;
   updateProject: (updatedProject: Project) => void;
-  deleteProject: (id: string) => void;
-  deleteEntry: (id: string) => void;
-  changeEntryProject: (id: string, pid: string) => void;
+  deleteProject: (id: number) => void;
+  deleteEntry: (id: number) => void;
+  changeEntryProject: (id: number, pid: number) => void;
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
   shouldShowResume: boolean;
-  addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
+  addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
-  updateEntry?: (entryId: string, updates: Partial<TimeEntry>) => void;
+  updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
 }
 
 function TrackTabComponent({
@@ -53,7 +53,7 @@ function TrackTabComponent({
   const goToCurrentWeek = () => setWeekOffset(0);
   const goToNextWeek = () => setWeekOffset(weekOffset + 1);
 
-  const entriesForDay = (projId: string, d: Date) =>
+  const entriesForDay = (projId: number, d: Date) =>
     entries.filter(
       (e: TimeEntry) =>
         e.projectId === projId &&
@@ -61,7 +61,7 @@ function TrackTabComponent({
         new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
     );
 
-  const handleRenameProject = (projectId: string, newName: string) => {
+  const handleRenameProject = (projectId: number, newName: string) => {
     renameProject(projectId, newName);
   };
 

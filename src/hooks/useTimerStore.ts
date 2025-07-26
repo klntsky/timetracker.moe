@@ -34,7 +34,7 @@ export function useTimerStore() {
 
   // Start the timer
   const startTimer = useCallback(
-    (entryId: string, projectId: string, startTime: string = new Date().toISOString()) => {
+    (entryId: number, projectId: number, startTime: string = new Date().toISOString()) => {
       timerInstance.start();
       dispatchTimer(timerActions.startTimer(entryId, projectId, startTime));
     },
@@ -49,7 +49,7 @@ export function useTimerStore() {
 
   // Update the project ID in timer state
   const updateProjectId = useCallback(
-    (projectId: string) => {
+    (projectId: number) => {
       dispatchTimer(timerActions.updateProjectId(projectId));
     },
     [],

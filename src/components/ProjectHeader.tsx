@@ -5,13 +5,13 @@ import Dropdown from './Dropdown';
 
 interface ProjectHeaderProps {
   project: Project;
-  renameProject: (id: string, newName: string) => void;
-  deleteProject: (id: string) => void;
+  renameProject: (id: number, newName: string) => void;
+  deleteProject: (id: number) => void;
   openBillableRateEditor: (project: Project) => void;
-  projectMenu: string | null;
-  setProjectMenu: (id: string | null) => void;
-  entryMenu: string | null;
-  setEntryMenu: (id: string | null) => void;
+  projectMenu: number | null;
+  setProjectMenu: (id: number | null) => void;
+  entryMenu: number | null;
+  setEntryMenu: (id: number | null) => void;
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
