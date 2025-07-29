@@ -9,6 +9,14 @@ interface TimeGridHeaderProps {
   goToNextWeek: () => void;
 }
 
+// Helper function to check if a date is today
+const isToday = (date: Date): boolean => {
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+         date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
+};
+
 const TimeGridHeader: React.FC<TimeGridHeaderProps> = ({ 
   days, 
   weekOffset,
@@ -30,7 +38,7 @@ const TimeGridHeader: React.FC<TimeGridHeaderProps> = ({
       
       {/* Day headers */}
       {days.map((d) => (
-        <div key={d.toDateString()} className="header">
+        <div key={d.toDateString()} className={`header ${isToday(d) ? 'today' : ''}`}>
           {d.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
         </div>
       ))}
