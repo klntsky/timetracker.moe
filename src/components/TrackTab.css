@@ -80,6 +80,7 @@
   border-radius: 4px;
   min-height: 40px;
   overflow: visible; /* Allow dropdown to overflow */
+  max-width: 100%; /* Prevent cells from expanding beyond grid allocation */
 }
 
 /* Dropdown styling */

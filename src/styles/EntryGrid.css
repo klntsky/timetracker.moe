@@ -1,6 +1,8 @@
 /* -------------------- Time Display Styles -------------------- */
 .time-display {
-  width: 110px; /* Fixed width */
+  min-width: 110px; /* Minimum width, can expand */
+  width: 100%; /* Allow expansion to full cell width */
+  max-width: 100%; /* Don't exceed container width */
   display: flex;
   align-items: center;
   justify-content: space-between; /* This spreads items evenly */
@@ -10,6 +12,7 @@
   transition: background-color 0.2s;
   margin: 0; /* Ensure consistent margin */
   position: relative; /* Ensure positioned elements inside have proper context */
+  overflow: hidden; /* Prevent content from overflowing */
 }
 
 .time-text {
@@ -19,6 +22,14 @@
   overflow: hidden; /* Prevent overflow */
   text-overflow: ellipsis; /* Add ellipsis for overflow */
   white-space: nowrap; /* Prevent wrapping */
+}
+
+.time-display-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 0; /* Allow container to shrink */
+  overflow: hidden; /* Prevent overflow */
 }
 
 .pause-placeholder {
@@ -31,9 +42,8 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Style for pause button */
-.time-display .btn-danger,
-.time-display .btn-success {
+/* Base class for small buttons in time display */
+.time-display-button {
   width: 24px;
   height: 20px;
   flex-shrink: 0;
@@ -43,6 +53,12 @@
   padding: 0;
   font-size: 10px;
   border-radius: 3px;
+}
+
+/* Style for pause button */
+.time-display .btn-danger,
+.time-display .btn-success {
+  /* Inherits common properties from .time-display-button via class usage */
 }
 
 /* Resume button only shows on hover */
@@ -58,7 +74,8 @@
 
 /* -------------------- Time Editor Styles -------------------- */
 .time-editor-container {
-  width: 110px; /* Match time-display width exactly */
+  min-width: 110px; /* Match time-display minimum width */
+  width: 100%; /* Allow expansion to full cell width */
   height: 26px;
   display: flex;
   align-items: center;
@@ -169,4 +186,82 @@
   background-color: rgba(248, 248, 248, 0.7);
   border-radius: 3px;
   /* No padding needed since we use fixed-width inner elements */
+}
+
+/* -------------------- Comment Display and Editor Styles -------------------- */
+.comment-text {
+  flex: 1;
+  margin-right: 4px;
+  font-size: 12px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0; /* Allow flex item to shrink below content size */
+  max-width: 80px; /* Smaller constraint to ensure buttons fit */
+}
+
+.comment-edit-button {
+  /* Inherits common properties from .time-display-button via class usage */
+  margin-right: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background-color: #6c757d;
+  border: none;
+  color: white;
+}
+
+.time-display:hover .comment-edit-button {
+  opacity: 1;
+}
+
+.comment-edit-button:hover {
+  background-color: #5a6268;
+}
+
+/* Comment Editor Popup Styles */
+.comment-editor-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 1040;
+}
+
+.comment-editor-popup {
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 280px;
+  height: 120px;
+}
+
+.comment-editor-body {
+  padding: 3px;
+}
+
+.comment-editor-body textarea {
+  width: 100%;
+  resize: none;
+  height: 90px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+}
+
+.comment-editor-footer {
+  display: flex;
+  justify-content: center;
+  padding: 2px 12px 2px;
+}
+
+.comment-editor-shortcuts {
+  font-size: 11px;
+  color: #6c757d;
+  text-align: center;
+}
+
+.comment-editor-shortcuts b {
+  color: #495057;
 } 

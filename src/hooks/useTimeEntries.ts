@@ -158,7 +158,7 @@ export function useTimeEntries() {
 
   // Delete an entry with timer handling
   const deleteEntry = useCallback(
-    (id: string) => {
+    (id: number) => {
       // If deleting the currently running entry, stop the timer
       if (isRunning && timer.lastEntryId === id) {
         stopTimer();
@@ -171,7 +171,7 @@ export function useTimeEntries() {
 
   // Change the project of an entry
   const changeEntryProject = useCallback(
-    (id: string, projectId: string) => {
+    (id: number, projectId: number) => {
       // If changing the last used entry's project, update the timer state
       if (timer.lastEntryId === id) {
         updateProjectId(projectId);

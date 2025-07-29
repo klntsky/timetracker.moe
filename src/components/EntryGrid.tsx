@@ -6,6 +6,7 @@ import EditableProjectName from './EditableProjectName';
 import Popup from './Popup';
 import BillableRateEditor from './BillableRateEditor';
 import TimeEditor from './TimeEditor';
+import CommentEditor from './CommentEditor';
 import TimeGridHeader from './TimeGridHeader';
 import ProjectHeader from './ProjectHeader';
 import '../styles/EntryGrid.css';
@@ -14,17 +15,17 @@ interface EntryGridProps {
   days: Date[];
   projects: Project[];
   entries: TimeEntry[];
-  renameProject: (id: string, newName: string) => void;
+  renameProject: (id: number, newName: string) => void;
   updateProject: (updatedProject: Project) => void;
-  deleteProject: (id: string) => void;
-  deleteEntry: (id: string) => void;
-  changeEntryProject: (id: string, pid: string) => void;
+  deleteProject: (id: number) => void;
+  deleteEntry: (id: number) => void;
+  changeEntryProject: (id: number, pid: number) => void;
   toggleTimer: () => void;
   shouldShowResume?: boolean;
-  addEntry?: (projectId: string, duration: number, note?: string, start?: string) => TimeEntry;
+  addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
   resumeEntry: (entry: TimeEntry) => void;
-  updateEntry?: (entryId: string, updates: Partial<TimeEntry>) => void;
+  updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
   weekOffset: number;
   goToPreviousWeek: () => void;
   goToCurrentWeek: () => void;
@@ -55,8 +56,10 @@ const EntryGrid: React.FC<EntryGridProps> = ({
   const [entryMenu, setEntryMenu] = useState<number | null>(null);
   const [editingBillableRate, setEditingBillableRate] = useState<Project | null>(null);
   const [editingTimeId, setEditingTimeId] = useState<number | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [commentEditorPosition, setCommentEditorPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   
-  const entriesForDay = (projId: string, d: Date): TimeEntry[] => {
+  const entriesForDay = (projId: number, d: Date): TimeEntry[] => {
     const startOfDay = new Date(d);
     startOfDay.setHours(0, 0, 0, 0);
     
@@ -91,7 +94,49 @@ const EntryGrid: React.FC<EntryGridProps> = ({
     setEditingTimeId(null);
   };
 
-  const addNewEntry = (projectId: string, day: Date) => {
+  const handleCommentUpdate = (entry: TimeEntry, newComment: string) => {
+    if (typeof updateEntry === 'function') {
+      updateEntry(entry.id, { note: newComment });
+    } else {
+      console.error('updateEntry function is not available');
+    }
+  };
+
+  const openCommentEditor = (entry: TimeEntry, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const buttonX = rect.left + rect.width / 2;
+    const buttonY = rect.top;
+
+    // Fixed popup dimensions (matching CSS)
+    const POPUP_WIDTH = 280;
+    const POPUP_HEIGHT = 120;
+    
+    // Calculate smart position upfront
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    const margin = 10;
+
+    let left = buttonX - POPUP_WIDTH / 2;
+    let top = buttonY - POPUP_HEIGHT - margin; // try above by default
+
+    // If not enough space above, place below the button
+    if (top < margin) {
+      top = buttonY + margin;
+    }
+
+    // Constrain horizontally within viewport
+    if (left < margin) {
+      left = margin;
+    } else if (left + POPUP_WIDTH > viewportWidth - margin) {
+      left = viewportWidth - margin - POPUP_WIDTH;
+    }
+
+    setCommentEditorPosition({ x: left, y: top });
+    setEditingCommentId(entry.id);
+  };
+
+  const addNewEntry = (projectId: number, day: Date) => {
     if (typeof addEntry !== 'function') {
       console.error('addEntry function is not available');
       return;
@@ -178,31 +223,48 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                       style={{ cursor: e.active ? 'default' : 'pointer' }}
                     >
                       <span className="time-text">{formatTimeHHMM(e.duration)}</span>
-                      {e.active ? (
+                      <div className="time-display-right">
+                        {e.note && (
+                          <span className="comment-text" title={e.note}>
+                            {e.note}
+                          </span>
+                        )}
                         <button 
-                          className="btn btn-sm btn-danger" 
-                          title="Pause this entry"
+                          className="time-display-button comment-edit-button" 
+                          title="Edit comment"
                           onClick={(evt) => {
                             evt.stopPropagation();
-                            toggleTimer();
+                            openCommentEditor(e, evt);
                           }}
                         >
-                          <i className="fas fa-pause"></i>
+                          <i className="fas fa-pencil-alt"></i>
                         </button>
-                      ) : shouldShowResume ? (
-                        <button 
-                          className="btn btn-sm btn-success resume-button" 
-                          title="Resume this entry"
-                          onClick={(evt) => {
-                            evt.stopPropagation();
-                            resumeEntry(e);
-                          }}
-                        >
-                          <i className="fas fa-play"></i>
-                        </button>
-                      ) : (
-                        <span className="pause-placeholder"></span>
-                      )}
+                        {e.active ? (
+                          <button 
+                            className="time-display-button btn btn-sm btn-danger" 
+                            title="Pause this entry"
+                            onClick={(evt) => {
+                              evt.stopPropagation();
+                              toggleTimer();
+                            }}
+                          >
+                            <i className="fas fa-pause"></i>
+                          </button>
+                        ) : shouldShowResume ? (
+                          <button 
+                            className="time-display-button btn btn-sm btn-success resume-button" 
+                            title="Resume this entry"
+                            onClick={(evt) => {
+                              evt.stopPropagation();
+                              resumeEntry(e);
+                            }}
+                          >
+                            <i className="fas fa-play"></i>
+                          </button>
+                        ) : (
+                          <span className="pause-placeholder"></span>
+                        )}
+                      </div>
                     </span>
                   )}
                   
@@ -235,7 +297,7 @@ const EntryGrid: React.FC<EntryGridProps> = ({
                         value={e.projectId}
                         onChange={(ev) => {
                           setEntryMenu(null);
-                          changeEntryProject(e.id, ev.target.value);
+                          changeEntryProject(e.id, Number(ev.target.value));
                         }}
                       >
                         {projects.map((pr) => (
@@ -273,6 +335,21 @@ const EntryGrid: React.FC<EntryGridProps> = ({
             onCancel={() => setEditingBillableRate(null)}
           />
         </Popup>
+      )}
+
+      {/* Comment Editor Popup */}
+      {editingCommentId && (
+        <CommentEditor
+          initialComment={entries.find(e => e.id === editingCommentId)?.note || ''}
+          onSave={(newComment) => {
+            const entry = entries.find(e => e.id === editingCommentId);
+            if (entry) {
+              handleCommentUpdate(entry, newComment);
+            }
+          }}
+          onCancel={() => setEditingCommentId(null)}
+          position={commentEditorPosition}
+        />
       )}
     </>
   );

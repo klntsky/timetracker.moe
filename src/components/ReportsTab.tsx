@@ -36,7 +36,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, ti
   });
 
   const totals = useMemo(() => {
-    const m = new Map<string, number>();
+    const m = new Map<number, number>();
     filtered.forEach((e) => {
       // For active entries, add current elapsed time
       const entryDuration = e.active 
@@ -49,9 +49,9 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, ti
     return Array.from(m.entries());
   }, [filtered, timerElapsedMs]);
 
-  const pidToName = (pid: string) => projects.find((p) => p.id === pid)?.name || '???';
+  const pidToName = (pid: number) => projects.find((p) => p.id === pid)?.name || '???';
   
-  const getBillableAmount = (pid: string, totalMs: number) => {
+  const getBillableAmount = (pid: number, totalMs: number) => {
     const project = projects.find(p => p.id === pid);
     if (!project || !project.billableRate) return null;
     
