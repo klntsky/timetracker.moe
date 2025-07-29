@@ -34,28 +34,30 @@ export default function TopBar({
   const shouldShowTimerButton = isRunning || showResumeButton;
 
   return (
-    <header className="d-flex align-items-center border-bottom p-2 bg-white gap-3">
-      {shouldShowTimerButton && (
-      <button
-        className={clsx(
-          'btn timer-btn',
-          isRunning ? 'btn-danger' : 'btn-success',
-          'd-flex align-items-center gap-2'
+    <header className="d-flex bg-white position-relative" style={{ minHeight: '60px' }}>
+      <div className="d-flex align-items-center p-2 gap-3 flex-grow-1">
+        {shouldShowTimerButton && (
+        <button
+          className={clsx(
+            'btn timer-btn',
+            isRunning ? 'btn-danger' : 'btn-success',
+            'd-flex align-items-center gap-2'
+          )}
+          onClick={toggleTimer}
+        >
+          <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
+          {isRunning ? 'Pause' : 'Start'}
+        </button>
         )}
-        onClick={toggleTimer}
-      >
-        <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
-        {isRunning ? 'Pause' : 'Start'}
-      </button>
-      )}
 
-      {isRunning && (
-        <span className="fw-semibold text-nowrap" title={fullTime}>
-          {displayTime}
-        </span>
-      )}
+        {isRunning && (
+          <span className="fw-semibold text-nowrap" title={fullTime}>
+            {displayTime}
+          </span>
+        )}
+      </div>
 
-      <div className="ms-auto tab-container">
+      <div className="tab-container">
         {tabs.map((t) => (
           <div
             key={t.id}

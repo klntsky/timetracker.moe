@@ -1,6 +1,9 @@
 .tab-container {
   display: flex;
-  gap: 4px;
+  gap: 2px;
+  position: absolute;
+  bottom: 0;
+  right: 16px;
 }
 
 .tab-item {
@@ -10,19 +13,45 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  border: none; /* Remove all borders */
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  transition: all 0.15s ease;
   user-select: none;
-  color: #0d6efd;
+  color: #6c757d;
   font-size: 14px;
+  font-weight: 500;
+  /* Raised/normal appearance for inactive tabs */
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  /* Remove box shadows for inactive tabs */
+  position: relative;
+  z-index: 1;
 }
 
-.tab-item:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+.tab-item:hover:not(.tab-active) {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f3f4 100%);
+  color: #495057;
 }
 
 .tab-active {
-  background-color: rgba(0, 0, 0, 0.05);
+  /* Pressed-in/inset appearance */
+  background: #f8f9fa; /* Same as main content background */
+  border: none; /* No borders at all */
+  color: #212529;
+  /* Inset shadow effect - dark at top/left, light at bottom/right */
+  box-shadow: 
+    inset 0 2px 3px rgba(0, 0, 0, 0.15), /* Darken top edge */
+    inset 0 -2px 3px rgba(255, 255, 255, 0.9), /* Lighten bottom edge */
+    inset 2px 0 3px rgba(0, 0, 0, 0.1), /* Dark left edge */
+    inset -2px 0 3px rgba(255, 255, 255, 0.6); /* Light right edge */
+  z-index: 2;
+  margin-bottom: -1px; /* Pull down to precisely align with content */
+}
+
+.tab-active::after {
+  display: none; /* Hide the pseudo element to avoid extra line */
 }
 
 /* Start/Pause button with fixed width */
