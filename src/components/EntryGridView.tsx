@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Project, TimeEntry } from '../types';
 import TimeGridHeader from './TimeGridHeader';
 import ProjectRow from './ProjectRow';
+import { useDragReorder } from '../hooks/useDragReorder';
 
 import '../styles/EntryGrid.css';
+import '../styles/dragAndDrop.css';
 
 interface EntryGridViewProps {
   days: Date[];
@@ -24,6 +26,7 @@ interface EntryGridViewProps {
   goToCurrentWeek: () => void;
   goToNextWeek: () => void;
   entriesForDay: (projectId: number, day: Date) => TimeEntry[];
+  reorderProjects?: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }
 
 const EntryGridView: React.FC<EntryGridViewProps> = ({
@@ -45,8 +48,15 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
   goToCurrentWeek,
   goToNextWeek,
   entriesForDay,
+  reorderProjects,
 }) => {
   const [autoEditEntryId, setAutoEditEntryId] = useState<number | null>(null);
+  
+  // Setup drag and drop functionality
+  const { handleDragStart, getDropZoneState } = useDragReorder(
+    projects,
+    reorderProjects || (() => {})
+  );
 
   // Helper to add new entry delegated down to DayCell
   const addNewEntry = (projectId: number, day: Date) => {
@@ -90,6 +100,8 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
           resumeEntry={resumeEntry}
           updateEntry={updateEntry}
           autoEditEntryId={autoEditEntryId}
+          onDragStart={handleDragStart(project.id)}
+          dropZoneState={getDropZoneState(project.id)}
         />
       ))}
     </>

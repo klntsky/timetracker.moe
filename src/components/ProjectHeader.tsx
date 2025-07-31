@@ -2,6 +2,7 @@ import React from 'react';
 import { Project } from '../types';
 import EditableProjectName from './EditableProjectName';
 import Dropdown from './Dropdown';
+import DragHandle from './DragHandle';
 
 interface ProjectHeaderProps {
   project: Project;
@@ -12,6 +13,11 @@ interface ProjectHeaderProps {
   setProjectMenu: (id: number | null) => void;
   entryMenu: number | null;
   setEntryMenu: (id: number | null) => void;
+  onDragStart?: (e: React.MouseEvent | React.TouchEvent) => void;
+  dropZoneState?: {
+    isDropTarget: boolean;
+    insertPosition?: 'before' | 'after';
+  };
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -22,15 +28,27 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   projectMenu,
   setProjectMenu,
   entryMenu,
-  setEntryMenu
+  setEntryMenu,
+  onDragStart,
+  dropZoneState
 }) => {
   return (
-    <div className="cell header d-flex flex-column">
+    <div 
+      className={`cell header d-flex flex-column project-header ${
+        dropZoneState?.isDropTarget ? `drag-over-${dropZoneState.insertPosition}` : ''
+      }`}
+      data-project-id={project.id}
+    >
       <div className="d-flex justify-content-between align-items-center">
-        <EditableProjectName 
-          name={project.name} 
-          onRename={(newName) => renameProject(project.id, newName)} 
-        />
+        <div className="d-flex align-items-center flex-grow-1">
+          {onDragStart && (
+            <DragHandle onDragStart={onDragStart} />
+          )}
+          <EditableProjectName 
+            name={project.name} 
+            onRename={(newName) => renameProject(project.id, newName)} 
+          />
+        </div>
         
         <Dropdown 
           isOpen={projectMenu === project.id}

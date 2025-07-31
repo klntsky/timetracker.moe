@@ -23,6 +23,7 @@ export interface EntryGridProps {
   goToPreviousWeek: () => void;
   goToCurrentWeek: () => void;
   goToNextWeek: () => void;
+  reorderProjects?: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }
 
 const EntryGrid: React.FC<EntryGridProps> = (props) => {

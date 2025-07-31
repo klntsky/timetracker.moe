@@ -23,6 +23,7 @@ interface Props {
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
   updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
+  reorderProjects: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }
 
 function TrackTabComponent({
@@ -40,7 +41,8 @@ function TrackTabComponent({
   shouldShowResume,
   addEntry,
   lastUsedEntry,
-  updateEntry
+  updateEntry,
+  reorderProjects
 }: Props) {
   const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, -1 = last week, 1 = next week
 
@@ -87,6 +89,7 @@ function TrackTabComponent({
           goToPreviousWeek={goToPreviousWeek}
           goToCurrentWeek={goToCurrentWeek}
           goToNextWeek={goToNextWeek}
+          reorderProjects={reorderProjects}
         />
       </div>
       <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>

@@ -1,0 +1,98 @@
+/* -------------------- Drag and Drop Styles -------------------- */
+
+/* Drag Handle Component */
+.drag-handle {
+  cursor: grab;
+  padding: 4px 8px;
+  margin-right: 8px;
+  color: #6c757d;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+  font-size: 14px;
+  min-width: 24px;
+  justify-content: center;
+}
+
+.drag-handle:hover {
+  color: #495057;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Project Header Drag States */
+.project-header {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* Drop Zone Indicators for Precise Positioning */
+.project-header.drag-over-before {
+  position: relative;
+}
+
+.project-header.drag-over-before::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: #2196f3;
+  border-radius: 2px;
+  animation: pulse 1s ease-in-out infinite alternate;
+  z-index: 10;
+}
+
+.project-header.drag-over-after {
+  position: relative;
+}
+
+.project-header.drag-over-after::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: #2196f3;
+  border-radius: 2px;
+  animation: pulse 1s ease-in-out infinite alternate;
+  z-index: 10;
+}
+
+/* Pulse Animation for Drop Indicators */
+@keyframes pulse {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile Touch Improvements */
+@media (max-width: 768px) {
+  .drag-handle {
+    padding: 8px 12px;
+    margin-right: 12px;
+    font-size: 16px;
+    min-width: 32px;
+  }
+  
+  .project-header {
+    /* Prevent text selection during touch drag */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent touch callouts */
+    -webkit-touch-callout: none;
+  }
+} 

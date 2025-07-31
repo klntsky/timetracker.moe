@@ -23,6 +23,12 @@ interface ProjectRowProps {
   resumeEntry: (entry: TimeEntry) => void;
   updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
   autoEditEntryId: number | null;
+  // Drag and drop props
+  onDragStart?: (e: React.MouseEvent | React.TouchEvent) => void;
+  dropZoneState?: {
+    isDropTarget: boolean;
+    insertPosition?: 'before' | 'after';
+  };
 }
 
 const ProjectRow: React.FC<ProjectRowProps> = ({
@@ -42,6 +48,8 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
   resumeEntry,
   updateEntry,
   autoEditEntryId,
+  onDragStart,
+  dropZoneState,
 }) => {
   const [projectMenuOpenId, setProjectMenuOpenId] = useState<number | null>(null);
   const [editingBillableRate, setEditingBillableRate] = useState<Project | null>(null);
@@ -64,6 +72,8 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
         // Entry menu handled inside EntryChip now
         entryMenu={null}
         setEntryMenu={() => {}}
+        onDragStart={onDragStart}
+        dropZoneState={dropZoneState}
       />
 
       {days.map((day) => (

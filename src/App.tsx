@@ -39,7 +39,8 @@ export default function App() {
     addProject,
     renameProject,
     updateProject,
-    deleteProject
+    deleteProject,
+    reorderProjects
   } = useProjects(entries, setEntries);
 
   // Define tabs that appear in the UI
@@ -99,6 +100,7 @@ export default function App() {
             addEntry={addEntry}
             lastUsedEntry={lastUsedEntry}
             updateEntry={updateEntry}
+            reorderProjects={reorderProjects}
           />
         )}
         {tab === 'REPORTS' && 

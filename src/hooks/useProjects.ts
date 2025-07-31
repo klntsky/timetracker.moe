@@ -84,11 +84,54 @@ export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntr
     [projects, setProjects, entries, setEntries]
   );
 
+  // Reorder projects by moving one project to a new position
+  const reorderProjects = useCallback(
+    (draggedId: number, targetId: number, insertAfter = false) => {
+      const draggedIndex = projects.findIndex(p => p.id === draggedId);
+      
+      if (draggedIndex === -1) {
+        return;
+      }
+      
+      let targetIndex: number;
+      
+      // Special case: if targetId is -1, insert at the end
+      if (targetId === -1) {
+        targetIndex = projects.length;
+      } else {
+        targetIndex = projects.findIndex(p => p.id === targetId);
+        if (targetIndex === -1) {
+          return;
+        }
+        
+        if (insertAfter) {
+          targetIndex = targetIndex + 1;
+        }
+      }
+      
+      // Don't do anything if dropping in the same position
+      if (draggedIndex === targetIndex || (draggedIndex + 1 === targetIndex && insertAfter)) {
+        return;
+      }
+      
+      const newProjects = [...projects];
+      const [draggedProject] = newProjects.splice(draggedIndex, 1);
+      
+      // Adjust target index if we removed an item before it
+      const adjustedTargetIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+      newProjects.splice(adjustedTargetIndex, 0, draggedProject);
+      
+      setProjects(newProjects);
+    },
+    [projects, setProjects]
+  );
+
   return {
     projects,
     addProject,
     renameProject,
     updateProject,
     deleteProject,
+    reorderProjects,
   };
 } 
