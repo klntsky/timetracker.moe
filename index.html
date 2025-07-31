@@ -3,11 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Harness Time</title>
+    <title>timetracker.moe</title>
     <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css" />
   </head>
   <body>
+    <script>
+      // Apply theme immediately before React loads to prevent flash
+      (function() {
+        try {
+          const storedTheme = localStorage.getItem('timetracker.moe.theme');
+          const theme = storedTheme ? JSON.parse(storedTheme) : undefined;
+          
+          if (theme === 'light' || theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', theme);
+          }
+          // If theme is undefined/null, leave data-theme unset for system preference
+        } catch (e) {
+          // If localStorage fails, do nothing (use system preference)
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

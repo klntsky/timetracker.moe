@@ -7,7 +7,7 @@
 import { readFromLocalStorage, writeToLocalStorage } from './localStorageUtils';
 import { Project, TimeEntry } from '../types';
 
-const ID_COUNTER_KEY = 'harnesstime.idCounter';
+const ID_COUNTER_KEY = 'timetracker.moe.idCounter';
 
 class IdGenerator {
   private counter: number;

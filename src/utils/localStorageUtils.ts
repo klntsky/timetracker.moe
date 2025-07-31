@@ -35,15 +35,15 @@ export function readFromLocalStorage<T>(key: string, defaultValue: T): T {
     
     // Use Zod schemas for validation and conversion based on key
     switch (key) {
-      case 'harnesstime.entries': {
+      case 'timetracker.moe.entries': {
         const validated = StorageTimeEntriesSchema.parse(parsed);
         return validated.map(timeEntryFromStorage) as T;
       }
-      case 'harnesstime.projects': {
+      case 'timetracker.moe.projects': {
         const validated = StorageProjectsSchema.parse(parsed);
         return validated.map(projectFromStorage) as T;
       }
-      case 'harnesstime.settings': {
+      case 'timetracker.moe.settings': {
         const validated = StorageSettingsSchema.parse(parsed);
         return settingsFromStorage(validated) as T;
       }
@@ -68,17 +68,17 @@ export function writeToLocalStorage<T>(key: string, value: T): boolean {
     
     // Convert to storage format based on key
     switch (key) {
-      case 'harnesstime.entries': {
+      case 'timetracker.moe.entries': {
         const entries = value as TimeEntry[];
         storageValue = entries.map(timeEntryToStorage);
         break;
       }
-      case 'harnesstime.projects': {
+      case 'timetracker.moe.projects': {
         const projects = value as Project[];
         storageValue = projects.map(projectToStorage);
         break;
       }
-      case 'harnesstime.settings': {
+      case 'timetracker.moe.settings': {
         const settings = value as Settings;
         storageValue = settingsToStorage(settings);
         break;

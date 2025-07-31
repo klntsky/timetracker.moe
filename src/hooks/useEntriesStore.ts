@@ -11,7 +11,7 @@ import { entriesReducer, EntriesState, entriesActions } from '../reducers/entrie
 export function useEntriesStore() {
   // Get initial entries from localStorage
   const [storedEntries, setStoredEntries] = useLocalStorage<TimeEntry[]>(
-    'harnesstime.entries', 
+    'timetracker.moe.entries', 
     []
   );
   

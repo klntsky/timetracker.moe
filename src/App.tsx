@@ -9,10 +9,14 @@ import BackupTab from './components/BackupTab';
 import { useTimeEntries } from './hooks/useTimeEntries';
 import { useProjects } from './hooks/useProjects';
 import { generateUniqueProjectName } from './utils/projectUtils';
+import { useTheme } from './hooks/useTheme';
 
 export default function App() {
+  // Initialize theme immediately on app startup
+  useTheme();
+  
   // settings state
-  const [settings, setSettings] = useLocalStorage<Settings>('harnesstime.settings', { weekEndsOn: 'sunday' });
+  const [settings, setSettings] = useLocalStorage<Settings>('timetracker.moe.settings', { weekEndsOn: 'sunday' });
   
   // ui state
   const [tab, setTab] = useState<'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'>('TRACK');

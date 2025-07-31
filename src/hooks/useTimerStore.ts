@@ -10,7 +10,7 @@ import { timerReducer, TimerState, timerActions } from '../reducers/timerReducer
 export function useTimerStore() {
   // Get initial timer state from localStorage
   const [storedTimer, setStoredTimer] = useLocalStorage<TimerState>(
-    'harnesstime.timer', 
+    'timetracker.moe.timer', 
     { running: false, start: null, lastEntryId: null, lastProjectId: null }
   );
   

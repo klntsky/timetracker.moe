@@ -6,7 +6,7 @@ import { generateUniqueProjectName } from '../utils/projectUtils';
 
 export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntry[]) => void) {
   // Store projects in localStorage
-  const [projects, setProjects] = useLocalStorage<Project[]>('harnesstime.projects', []);
+  const [projects, setProjects] = useLocalStorage<Project[]>('timetracker.moe.projects', []);
 
   // Add a new project with a unique name
   const addProject = useCallback(() => {

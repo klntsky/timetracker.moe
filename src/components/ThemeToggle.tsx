@@ -5,7 +5,12 @@ export default function ThemeToggle() {
   const { theme, setTheme, effectiveTheme, isSystemTheme } = useTheme();
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTheme(e.target.value as Theme);
+    const value = e.target.value;
+    if (value === 'system') {
+      setTheme(undefined);
+    } else {
+      setTheme(value as Theme);
+    }
   };
 
   return (
@@ -14,7 +19,7 @@ export default function ThemeToggle() {
         Theme
         <select 
           className="form-select w-auto d-inline-block ms-2"
-          value={theme}
+          value={theme === undefined ? 'system' : theme}
           onChange={handleThemeChange}
         >
           <option value="system">

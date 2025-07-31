@@ -8,7 +8,7 @@ const BackupTab: React.FC = () => {
     const data: Record<string, any> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith('harnesstime.')) {
+      if (key?.startsWith('timetracker.moe.')) {
         data[key] = JSON.parse(localStorage.getItem(key) || '');
       }
     }
@@ -35,8 +35,8 @@ const BackupTab: React.FC = () => {
         
         // Resync the ID counter to prevent conflicts with imported data
         // Read the newly imported data using our safe parsing utilities
-        const projects = readFromLocalStorage<Project[]>('harnesstime.projects', []);
-        const entries = readFromLocalStorage<TimeEntry[]>('harnesstime.entries', []);
+          const projects = readFromLocalStorage<Project[]>('timetracker.moe.projects', []);
+  const entries = readFromLocalStorage<TimeEntry[]>('timetracker.moe.entries', []);
         resyncCounter(projects, entries);
         
         alert('Data imported successfully. Please refresh the page.');
