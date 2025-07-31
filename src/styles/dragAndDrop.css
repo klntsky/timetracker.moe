@@ -33,11 +33,11 @@
 }
 
 /* Drop Zone Indicators for Precise Positioning */
-.project-header.drag-over-before {
+.week-grid .cell.project-header.drag-over-before {
   position: relative;
 }
 
-.project-header.drag-over-before::before {
+.week-grid .cell.project-header.drag-over-before::before {
   content: '';
   position: absolute;
   top: -3px;
@@ -50,11 +50,11 @@
   z-index: 10;
 }
 
-.project-header.drag-over-after {
+.week-grid .cell.project-header.drag-over-after {
   position: relative;
 }
 
-.project-header.drag-over-after::after {
+.week-grid .cell.project-header.drag-over-after::after {
   content: '';
   position: absolute;
   bottom: -3px;

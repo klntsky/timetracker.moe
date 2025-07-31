@@ -37,7 +37,8 @@ export function useDragReorder(
     offset: { x: 0, y: 0 },
   });
 
-  const currentDropZone = useRef<DropZone | null>(null);
+  const [currentDropZone, setCurrentDropZone] = useState<DropZone | null>(null);
+  const currentDropZoneRef = useRef<DropZone | null>(null);
 
   // Get coordinates from mouse or touch event
   const getEventCoordinates = (e: MouseEvent | TouchEvent) => {
@@ -89,19 +90,23 @@ export function useDragReorder(
         
         // Skip if it's the dragged project itself
         if (projectId === dragState.draggedProjectId) {
-          currentDropZone.current = null;
+          setCurrentDropZone(null);
+          currentDropZoneRef.current = null;
           return;
         }
         
         // Determine if cursor is in top half or bottom half
         const rect = projectHeader.getBoundingClientRect();
         const midPoint = rect.top + rect.height / 2;
-        const insertPosition = y < midPoint ? 'before' : 'after';
+        const insertPosition: 'before' | 'after' = y < midPoint ? 'before' : 'after';
         
-        currentDropZone.current = { projectId, insertPosition };
+        const dropZone = { projectId, insertPosition };
+        setCurrentDropZone(dropZone);
+        currentDropZoneRef.current = dropZone;
       }
     } else {
-      currentDropZone.current = null;
+      setCurrentDropZone(null);
+      currentDropZoneRef.current = null;
     }
   }, [dragState.isDragging, dragState.preview, dragState.offset, dragState.draggedProjectId, updatePreviewPosition]);
 
@@ -119,8 +124,8 @@ export function useDragReorder(
     }
 
     // Perform reorder if dropped on a valid target
-    if (currentDropZone.current && dragState.draggedProjectId) {
-      const { projectId, insertPosition } = currentDropZone.current;
+    if (currentDropZoneRef.current && dragState.draggedProjectId) {
+      const { projectId, insertPosition } = currentDropZoneRef.current;
       
       if (insertPosition === 'before') {
         onReorder(dragState.draggedProjectId, projectId, false);
@@ -146,7 +151,8 @@ export function useDragReorder(
       offset: { x: 0, y: 0 },
     });
 
-    currentDropZone.current = null;
+    setCurrentDropZone(null);
+    currentDropZoneRef.current = null;
   }, [dragState, onReorder]);
 
   // Attach global event listeners
@@ -203,16 +209,16 @@ export function useDragReorder(
   const getDropZoneState = useCallback((projectId: number) => {
     if (!dragState.isDragging || 
         dragState.draggedProjectId === projectId || 
-        !currentDropZone.current ||
-        currentDropZone.current.projectId !== projectId) {
+        !currentDropZone ||
+        currentDropZone.projectId !== projectId) {
       return { isDropTarget: false };
     }
     
     return {
       isDropTarget: true,
-      insertPosition: currentDropZone.current.insertPosition
+      insertPosition: currentDropZone.insertPosition
     };
-  }, [dragState.isDragging, dragState.draggedProjectId]);
+  }, [dragState.isDragging, dragState.draggedProjectId, currentDropZone]);
 
   return {
     dragState,
