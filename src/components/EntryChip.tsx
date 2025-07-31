@@ -95,56 +95,59 @@ const EntryChip: React.FC<EntryChipProps> = ({
           <TimeEditor duration={entry.duration} onSave={handleTimeSave} onCancel={() => setEditingTime(false)} />
         </div>
       ) : (
-        <span
-          title={formatTimeHHMMSS(entry.duration)}
-          className="time-display"
-          onClick={() => !entry.active && setEditingTime(true)}
-          style={{ cursor: entry.active ? 'default' : 'pointer' }}
-        >
-          <span className="time-text">{formatTimeHHMM(entry.duration)}</span>
-          <div className="time-display-right">
-            {entry.note && (
-              <span className="comment-text" title={entry.note}>
-                {entry.note}
-              </span>
-            )}
-            <button
-              className="time-display-button comment-edit-button"
-              title="Edit comment"
-              onClick={(evt) => {
-                evt.stopPropagation();
-                openCommentEditor(evt);
-              }}
-            >
-              <i className="fas fa-pencil-alt"></i>
-            </button>
-            {entry.active ? (
-              <button
-                className="time-display-button btn btn-sm btn-danger"
-                title="Pause this entry"
-                onClick={(evt) => {
-                  evt.stopPropagation();
-                  toggleTimer();
-                }}
-              >
-                <i className="fas fa-pause"></i>
-              </button>
-            ) : shouldShowResume ? (
-              <button
-                className="time-display-button btn btn-sm btn-success resume-button"
-                title="Resume this entry"
-                onClick={(evt) => {
-                  evt.stopPropagation();
-                  resumeEntry(entry);
-                }}
-              >
-                <i className="fas fa-play"></i>
-              </button>
-            ) : (
-              <span className="pause-placeholder"></span>
-            )}
-          </div>
-        </span>
+        <div className="flex-grow-1 d-flex align-items-center gap-1">
+          {/* Time display */}
+          <span
+            title={formatTimeHHMMSS(entry.duration)}
+            className="time-display"
+            onClick={() => !entry.active && setEditingTime(true)}
+            style={{ cursor: entry.active ? 'default' : 'pointer' }}
+          >
+            <span className="time-text">{formatTimeHHMM(entry.duration)}</span>
+            <div className="time-display-right">
+              {entry.active ? (
+                <button
+                  className="time-display-button btn btn-sm btn-danger"
+                  title="Pause this entry"
+                  onClick={(evt) => {
+                    evt.stopPropagation();
+                    toggleTimer();
+                  }}
+                >
+                  <i className="fas fa-pause"></i>
+                </button>
+              ) : shouldShowResume ? (
+                <button
+                  className="time-display-button btn btn-sm btn-success resume-button"
+                  title="Resume this entry"
+                  onClick={(evt) => {
+                    evt.stopPropagation();
+                    resumeEntry(entry);
+                  }}
+                >
+                  <i className="fas fa-play"></i>
+                </button>
+              ) : (
+                <span className="pause-placeholder"></span>
+              )}
+            </div>
+          </span>
+
+          {/* Comment display */}
+          <span
+            className="comment-display"
+            title={entry.note || 'Add comment'}
+            onClick={(evt) => {
+              evt.stopPropagation();
+              openCommentEditor(evt);
+            }}
+            style={{ cursor: 'pointer', flex: 1 }}
+          >
+            <span className="comment-text">
+              {entry.note || ''}
+            </span>
+          </span>
+        </div>
       )}
 
       {/* Dropdown */}

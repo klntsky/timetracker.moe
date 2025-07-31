@@ -1,8 +1,7 @@
 /* -------------------- Time Display Styles -------------------- */
 .time-display {
-  min-width: 110px; /* Minimum width, can expand */
-  width: 100%; /* Allow expansion to full cell width */
-  max-width: 100%; /* Don't exceed container width */
+  min-width: 80px; /* Adjusted for wider time text */
+  flex-shrink: 0; /* Don't shrink to ensure comment gets space */
   display: flex;
   align-items: center;
   justify-content: space-between; /* This spreads items evenly */
@@ -12,15 +11,14 @@
   transition: background-color 0.2s;
   margin: 0; /* Ensure consistent margin */
   position: relative; /* Ensure positioned elements inside have proper context */
-  overflow: hidden; /* Prevent content from overflowing */
+  overflow: visible; /* Allow time text to display fully */
 }
 
 .time-text {
   flex-shrink: 0; /* Prevent shrinking */
-  width: 70px; /* Fixed width for time text */
+  width: 52px; /* 1.5 times wider than 35px */
   text-align: left;
-  overflow: hidden; /* Prevent overflow */
-  text-overflow: ellipsis; /* Add ellipsis for overflow */
+  overflow: visible; /* Allow full display */
   white-space: nowrap; /* Prevent wrapping */
 }
 
@@ -74,7 +72,7 @@
 
 /* -------------------- Time Editor Styles -------------------- */
 .time-editor-container {
-  min-width: 110px; /* Match time-display minimum width */
+  min-width: 55px; /* Match time-display minimum width */
   width: 100%; /* Allow expansion to full cell width */
   height: 26px;
   display: flex;
@@ -264,4 +262,25 @@
 
 .comment-editor-shortcuts b {
   color: #495057;
+}
+
+/* -------------------- Comment Display Styles -------------------- */
+.comment-display {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  flex: 1; /* Take remaining space */
+  overflow: hidden;
+}
+
+.comment-display:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.comment-placeholder {
+  color: #aaa;
+  font-style: italic;
 } 
