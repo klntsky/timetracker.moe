@@ -1,5 +1,6 @@
 import React from 'react';
 import { Settings } from '../types';
+import ThemeToggle from './ThemeToggle';
 
 interface SettingsTabProps {
   settings: Settings;
@@ -21,6 +22,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, setSettings }) => {
           <option value="saturday">Saturday</option>
         </select>
       </label>
+      
+      <div className="mt-3">
+        <ThemeToggle />
+      </div>
     </div>
   );
 };

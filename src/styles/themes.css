@@ -1,0 +1,212 @@
+/* Theme Color Tokens */
+:root {
+  /* Custom theme variables - Light theme (default) */
+  --color-bg-body: #ffffff;
+  --color-bg-surface: #f8f9fa;
+  --color-bg-elevated: #ffffff;
+  --color-bg-inset: #e9ecef;
+  
+  --color-text-primary: #212529;
+  --color-text-secondary: #6c757d;
+  --color-text-muted: #adb5bd;
+  --color-text-inverse: #ffffff;
+  
+  --color-border-light: #dee2e6;
+  --color-border-medium: #ced4da;
+  --color-border-dark: #6c757d;
+  
+  --color-shadow-light: rgba(0, 0, 0, 0.05);
+  --color-shadow-medium: rgba(0, 0, 0, 0.15);
+  --color-shadow-dark: rgba(0, 0, 0, 0.3);
+  
+  /* Interactive states */
+  --color-hover-bg: rgba(0, 0, 0, 0.05);
+  --color-active-bg: rgba(0, 0, 0, 0.1);
+  --color-focus-ring: rgba(0, 123, 255, 0.25);
+  
+  /* Additional semantic colors */
+  --color-text-dim: #666;
+  --color-text-emphasis: #343a40;
+  --color-bg-subtle: #f8f8f8;
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  --color-highlight: #2196f3;
+  --color-input-border: #ccc;
+  --color-input-bg: #fff;
+  --color-input-focus: #007bff;
+  --color-error-bg: #ffebee;
+  --color-error-border: #f44336;
+  --color-success-bg: #e3f2fd;
+  
+  /* Status colors (theme-independent) */
+  --color-primary: #007bff;
+  --color-success: #28a745;
+  --color-danger: #dc3545;
+  --color-warning: #ffc107;
+  --color-info: #17a2b8;
+  
+  /* Drag indicator color (same as primary in light mode) */
+  --color-drag-indicator: var(--color-primary);
+}
+
+/* Dark theme via system preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg-body: #0d1117;
+    --color-bg-surface: #21262d;
+    --color-bg-elevated: #30363d;
+    --color-bg-inset: #161b22;
+    
+    --color-text-primary: #f0f6fc;
+    --color-text-secondary: #8b949e;
+    --color-text-muted: #656d76;
+    --color-text-inverse: #0d1117;
+    
+    --color-border-light: #30363d;
+    --color-border-medium: #21262d;
+    --color-border-dark: #8b949e;
+    
+    --color-shadow-light: rgba(0, 0, 0, 0.2);
+    --color-shadow-medium: rgba(0, 0, 0, 0.4);
+    --color-shadow-dark: rgba(0, 0, 0, 0.6);
+    
+    --color-hover-bg: rgba(255, 255, 255, 0.05);
+    --color-active-bg: rgba(255, 255, 255, 0.1);
+    --color-focus-ring: rgba(58, 144, 255, 0.4);
+    
+    /* Additional semantic colors for dark theme */
+    --color-text-dim: #8b949e;
+    --color-text-emphasis: #f0f6fc;
+    --color-bg-subtle: #21262d;
+    --color-overlay: rgba(0, 0, 0, 0.7);
+    --color-highlight: #58a6ff;
+    --color-input-border: #30363d;
+    --color-input-bg: #21262d;
+    --color-input-focus: #58a6ff;
+    --color-error-bg: #3c1618;
+    --color-error-border: #f85149;
+    --color-success-bg: #1c2e4a;
+    
+    /* Drag indicator color (lighter blue in dark mode) */
+    --color-drag-indicator: #4dabf7;
+  }
+}
+
+/* Manual dark theme override */
+[data-theme="dark"] {
+  --color-bg-body: #0d1117;
+  --color-bg-surface: #21262d;
+  --color-bg-elevated: #30363d;
+  --color-bg-inset: #161b22;
+  
+  --color-text-primary: #f0f6fc;
+  --color-text-secondary: #8b949e;
+  --color-text-muted: #656d76;
+  --color-text-inverse: #0d1117;
+  
+  --color-border-light: #30363d;
+  --color-border-medium: #21262d;
+  --color-border-dark: #8b949e;
+  
+  --color-shadow-light: rgba(0, 0, 0, 0.2);
+  --color-shadow-medium: rgba(0, 0, 0, 0.4);
+  --color-shadow-dark: rgba(0, 0, 0, 0.6);
+  
+  --color-hover-bg: rgba(255, 255, 255, 0.05);
+  --color-active-bg: rgba(255, 255, 255, 0.1);
+  --color-focus-ring: rgba(58, 144, 255, 0.4);
+  
+  /* Additional semantic colors for dark theme */
+  --color-text-dim: #8b949e;
+  --color-text-emphasis: #f0f6fc;
+  --color-bg-subtle: #21262d;
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  --color-highlight: #58a6ff;
+  --color-input-border: #30363d;
+  --color-input-bg: #21262d;
+  --color-input-focus: #58a6ff;
+  --color-error-bg: #3c1618;
+  --color-error-border: #f85149;
+  --color-success-bg: #1c2e4a;
+  
+  /* Drag indicator color (lighter blue in dark mode) */
+  --color-drag-indicator: #4dabf7;
+}
+
+/* Manual light theme override */
+[data-theme="light"] {
+  --color-bg-body: #ffffff;
+  --color-bg-surface: #f8f9fa;
+  --color-bg-elevated: #ffffff;
+  --color-bg-inset: #e9ecef;
+  
+  --color-text-primary: #212529;
+  --color-text-secondary: #6c757d;
+  --color-text-muted: #adb5bd;
+  --color-text-inverse: #ffffff;
+  
+  --color-border-light: #dee2e6;
+  --color-border-medium: #ced4da;
+  --color-border-dark: #6c757d;
+  
+  --color-shadow-light: rgba(0, 0, 0, 0.05);
+  --color-shadow-medium: rgba(0, 0, 0, 0.15);
+  --color-shadow-dark: rgba(0, 0, 0, 0.3);
+  
+      --color-hover-bg: rgba(0, 0, 0, 0.05);
+    --color-active-bg: rgba(0, 0, 0, 0.1);
+    --color-focus-ring: rgba(0, 123, 255, 0.25);
+    
+    /* Additional semantic colors for light theme */
+    --color-text-dim: #666;
+    --color-text-emphasis: #343a40;
+    --color-bg-subtle: #f8f8f8;
+    --color-overlay: rgba(0, 0, 0, 0.5);
+    --color-highlight: #2196f3;
+    --color-input-border: #ccc;
+    --color-input-bg: #fff;
+    --color-input-focus: #007bff;
+    --color-error-bg: #ffebee;
+    --color-error-border: #f44336;
+    --color-success-bg: #e3f2fd;
+    
+    /* Drag indicator color (same as primary in light mode) */
+    --color-drag-indicator: var(--color-primary);
+  }
+
+/* Bootstrap CSS Variables Integration */
+:root {
+  /* Map Bootstrap variables to our custom theme variables */
+  --bs-body-bg: var(--color-bg-body);
+  --bs-body-color: var(--color-text-primary);
+  
+  /* Bootstrap grays mapped to our theme colors */
+  --bs-gray-100: var(--color-bg-surface);
+  --bs-gray-200: var(--color-bg-inset);
+  --bs-gray-300: var(--color-border-light);
+  --bs-gray-400: var(--color-border-medium);
+  --bs-gray-500: var(--color-text-secondary);
+  --bs-gray-600: var(--color-text-secondary);
+  --bs-gray-700: var(--color-text-primary);
+  --bs-gray-800: var(--color-text-primary);
+  --bs-gray-900: var(--color-text-primary);
+  
+  /* Bootstrap component backgrounds */
+  --bs-secondary-bg: var(--color-bg-surface);
+  --bs-tertiary-bg: var(--color-bg-inset);
+  
+  /* Bootstrap borders */
+  --bs-border-color: var(--color-border-light);
+  --bs-border-color-translucent: var(--color-border-light);
+  
+  /* Bootstrap text colors */
+  --bs-secondary-color: var(--color-text-secondary);
+  --bs-emphasis-color: var(--color-text-primary);
+  
+  /* Bootstrap shadows */
+  --bs-box-shadow: 0 0.5rem 1rem var(--color-shadow-medium);
+  --bs-box-shadow-sm: 0 0.125rem 0.25rem var(--color-shadow-light);
+  --bs-box-shadow-lg: 0 1rem 3rem var(--color-shadow-dark);
+  
+  /* Bootstrap focus ring */
+  --bs-focus-ring-color: var(--color-focus-ring);
+} 

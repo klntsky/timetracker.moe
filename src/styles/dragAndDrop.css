@@ -5,7 +5,7 @@
   cursor: grab;
   padding: 4px 8px;
   margin-right: 8px;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   border: none;
   background: transparent;
   display: flex;
@@ -17,8 +17,8 @@
 }
 
 .drag-handle:hover {
-  color: #495057;
-  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-emphasis);
+  background-color: var(--color-hover-bg);
   border-radius: 4px;
 }
 
@@ -44,7 +44,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background-color: #2196f3;
+  background-color: var(--color-drag-indicator);
   border-radius: 2px;
   animation: pulse 1s ease-in-out infinite alternate;
   z-index: 10;
@@ -61,7 +61,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background-color: #2196f3;
+  background-color: var(--color-drag-indicator);
   border-radius: 2px;
   animation: pulse 1s ease-in-out infinite alternate;
   z-index: 10;

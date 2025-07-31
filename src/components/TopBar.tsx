@@ -34,7 +34,7 @@ export default function TopBar({
   const shouldShowTimerButton = isRunning || showResumeButton;
 
   return (
-    <header className="d-flex bg-white position-relative" style={{ minHeight: '60px' }}>
+    <header className="d-flex position-relative" style={{ minHeight: '60px' }}>
       <div className="d-flex align-items-center p-2 gap-3 flex-grow-1">
         {shouldShowTimerButton && (
         <button

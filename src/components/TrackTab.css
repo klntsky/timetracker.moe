@@ -36,7 +36,7 @@
 }
 
 .btn-danger .fas.fa-circle {
-  color: white;
+  color: white !important;
   animation: pulse-opacity 3s infinite ease-in-out;
 }
 
@@ -55,7 +55,7 @@
   justify-content: center;
   font-weight: bold;
   padding: 8px 10px;
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-surface);
   border-radius: 4px;
   white-space: nowrap; /* Prevent text wrapping */
   overflow: hidden; /* Hide overflow */
@@ -73,19 +73,19 @@
 
 .header.today {
   /* Pressed-in/inset appearance like active tab */
-  background: #f8f9fa; /* Same background as regular header */
-  color: #212529; /* Darker text like active tab */
+  background: var(--color-bg-surface); /* Same background as regular header */
+  color: var(--color-text-primary); /* Darker text like active tab */
   /* Inset shadow effect - dark at top/left, light at bottom/right */
   box-shadow: 
-    inset 0 2px 3px rgba(0, 0, 0, 0.15), /* Darken top edge */
-    inset 0 -2px 3px rgba(255, 255, 255, 0.9), /* Lighten bottom edge */
-    inset 2px 0 3px rgba(0, 0, 0, 0.1), /* Dark left edge */
-    inset -2px 0 3px rgba(255, 255, 255, 0.6); /* Light right edge */
+    inset 0 2px 3px var(--color-shadow-light), /* Darken top edge */
+    inset 0 -2px 3px var(--color-bg-elevated), /* Lighten bottom edge */
+    inset 2px 0 3px var(--color-shadow-light), /* Dark left edge */
+    inset -2px 0 3px var(--color-bg-elevated); /* Light right edge */
 }
 
 .cell {
   padding: 8px 10px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--color-border-light);
   border-radius: 4px;
   min-height: 40px;
   overflow: visible; /* Allow dropdown to overflow */
@@ -104,10 +104,10 @@
 .dropdown-menu {
   position: fixed; /* Use fixed instead of absolute */
   z-index: 1000;
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-light);
   border-radius: 4px;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0.5rem 1rem var(--color-shadow-medium);
   padding: 0.5rem 0;
   min-width: 180px;
 }
@@ -124,7 +124,7 @@
 }
 
 .dropdown-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-surface);
 }
 
 .form-select-sm {
@@ -132,7 +132,7 @@
 }
 
 .active-entry {
-  background-color: #f8f8f8;
+  background-color: var(--color-bg-subtle);
   border-radius: 3px;
   padding: 2px 4px;
 }
@@ -140,13 +140,13 @@
 .ellipsis-btn {
   background: none;
   border: none;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 0 4px;
 }
 
 .ellipsis-btn:hover {
-  color: #343a40;
+  color: var(--color-text-emphasis);
 }
 
 .time-display {
@@ -166,7 +166,7 @@
 }
 
 .project-name:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-hover-bg);
 }
 
 .project-name-edit {
@@ -179,7 +179,7 @@
 /* Billable rate component styles */
 .billable-rate {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-dim);
 }
 
 .billable-rate button {
@@ -202,7 +202,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -210,9 +210,9 @@
 }
 
 .popup-content {
-  background-color: white;
+  background-color: var(--color-bg-elevated);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--color-shadow-medium);
   max-width: 90%;
   width: 400px;
   max-height: 90vh;
@@ -236,7 +236,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .popup-title {
@@ -253,6 +253,6 @@
   display: flex;
   justify-content: flex-end;
   padding: 1rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--color-border-light);
   gap: 0.5rem;
 } 
