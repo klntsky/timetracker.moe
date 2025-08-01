@@ -6,10 +6,10 @@ import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import './TopBar.css'; // We'll create this file next
 
 interface Props {
-  tabs: { id: string; label: string }[];
+  tabs: Array<{ id: string; label: string }>;
   current: string;
   changeTab: (id: string) => void;
-  lastUsedEntry: TimeEntry | null;
+  lastUsedEntry?: TimeEntry | null;
   isRunning: boolean;
   toggleTimer: () => void;
   elapsedMs: number;

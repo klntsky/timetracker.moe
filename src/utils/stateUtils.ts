@@ -54,7 +54,9 @@ export function shouldShowResumeButton(
   projects: Project[]
 ): boolean {
   // Don't show resume if timer is running
-  if (isRunning) return false;
+  if (isRunning) {
+    return false;
+  }
   
   // Check if last entry exists and its project is valid
   const lastEntry = findEntryById(entries, lastEntryId);

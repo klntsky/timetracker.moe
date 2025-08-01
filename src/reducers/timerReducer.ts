@@ -13,7 +13,8 @@ export type TimerAction =
   | { type: 'START_TIMER'; entryId: number; projectId: number; startTime: string }
   | { type: 'STOP_TIMER' }
   | { type: 'UPDATE_TIMER_STATE'; running: boolean; start: string | null }
-  | { type: 'UPDATE_PROJECT_ID'; projectId: number };
+  | { type: 'UPDATE_PROJECT_ID'; projectId: number }
+  | { type: 'SET_TIMER'; timer: TimerState };
 
 // Timer action creator functions
 export const timerActions = {
@@ -37,6 +38,11 @@ export const timerActions = {
   updateProjectId: (projectId: number): TimerAction => ({
     type: 'UPDATE_PROJECT_ID',
     projectId
+  }),
+
+  setTimer: (timer: TimerState): TimerAction => ({
+    type: 'SET_TIMER',
+    timer
   })
 };
 
@@ -64,5 +70,6 @@ export function timerReducer(state: TimerState, action: TimerAction): TimerState
       ...state,
       lastProjectId: projectId
     }))
+    .with({ type: 'SET_TIMER' }, ({ timer }: { timer: TimerState }) => timer)
     .exhaustive();
 } 

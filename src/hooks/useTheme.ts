@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useSimpleStorage } from './useSimpleStorage';
 
-export type Theme = 'light' | 'dark' | undefined;
+type Theme = 'light' | 'dark' | undefined;
 
 export function useTheme() {
-  const [theme, setTheme] = useLocalStorage<Theme>('timetracker.moe.theme', undefined);
+  const [theme, setTheme] = useSimpleStorage('timetracker.moe.theme', undefined as Theme);
 
   useEffect(() => {
     const root = document.documentElement;

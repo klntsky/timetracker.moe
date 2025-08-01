@@ -6,6 +6,7 @@ import EditableProjectName from './EditableProjectName';
 import './TrackTab.css';
 import { isToday, getWeekDays } from '../utils/timeUtils';
 import EntryGrid from './EntryGrid';
+import { usePersistedState } from '../hooks/usePersistedState';
 
 interface Props {
   projects: Project[];
@@ -44,7 +45,7 @@ function TrackTabComponent({
   updateEntry,
   reorderProjects
 }: Props) {
-  const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, -1 = last week, 1 = next week
+  const [weekOffset, setWeekOffset] = usePersistedState('timetracker.moe.weekOffset', 0); // 0 = current week, -1 = last week, 1 = next week
 
   const weekStartsOn = settings.weekEndsOn === 'sunday' ? 'sunday' : 'saturday';
 

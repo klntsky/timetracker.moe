@@ -11,11 +11,13 @@
     "@fortawesome/fontawesome-free": "^6.5.2",
     "bootstrap": "^5.3.3",
     "clsx": "^2.1.0",
+    "immer": "^10.1.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "ts-pattern": "^5.7.0",
     "tsx": "^4.20.3",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",

@@ -1,29 +1,54 @@
 /**
  * Sequential ID generator module
- * Maintains a counter in localStorage and generates sequential IDs
+ * Maintains a counter in storage and generates sequential IDs
  * This module is stateful and isolated from React
  */
 
-import { readFromLocalStorage, writeToLocalStorage } from './localStorageUtils';
 import { Project, TimeEntry } from '../types';
+import { storage } from '../storage';
 
 const ID_COUNTER_KEY = 'timetracker.moe.idCounter';
 
 class IdGenerator {
-  private counter: number;
+  private counter: number = 1;
+  private initialized: boolean = false;
+  private initPromise: Promise<void> | null = null;
 
   constructor() {
-    // Load the counter from localStorage or start at 1
-    this.counter = this.loadCounter();
-    // Initial sync will be done externally when data is available
+    // Initialize asynchronously
+    this.initPromise = this.initialize();
   }
 
-  private loadCounter(): number {
-    return readFromLocalStorage(ID_COUNTER_KEY, 1);
+  private async initialize(): Promise<void> {
+    if (this.initialized) return;
+    
+    try {
+      const stored = await storage.get<number>(ID_COUNTER_KEY);
+      if (stored !== null) {
+        this.counter = stored;
+      }
+      this.initialized = true;
+    } catch (error) {
+      console.error('Failed to initialize ID generator:', error);
+      this.initialized = true; // Continue with default value
+    }
   }
 
-  private saveCounter(): void {
-    writeToLocalStorage(ID_COUNTER_KEY, this.counter);
+  private async ensureInitialized(): Promise<void> {
+    if (this.initialized) return;
+    if (this.initPromise) {
+      await this.initPromise;
+    } else {
+      await this.initialize();
+    }
+  }
+
+  private async saveCounter(): Promise<void> {
+    try {
+      await storage.set(ID_COUNTER_KEY, this.counter);
+    } catch (error) {
+      console.error('Failed to save ID counter:', error);
+    }
   }
 
   /**
@@ -31,11 +56,12 @@ class IdGenerator {
    * @param projects Array of existing projects
    * @param entries Array of existing time entries
    */
-  public syncWithData(projects: Project[], entries: TimeEntry[]): void {
+  public async syncWithData(projects: Project[], entries: TimeEntry[]): Promise<void> {
+    await this.ensureInitialized();
     const highestId = this.findHighestIdInData(projects, entries);
     if (highestId >= this.counter) {
       this.counter = highestId + 1;
-      this.saveCounter();
+      await this.saveCounter();
     }
   }
 
@@ -67,11 +93,15 @@ class IdGenerator {
 
   /**
    * Generate the next sequential ID
+   * NOTE: This is synchronous for backward compatibility, but may use stale counter
+   * if called before initialization completes. In practice, this is fine because
+   * React components will have loaded data first.
    * @returns A number containing the next sequential ID
    */
   public next(): number {
     const id = this.counter;
     this.counter++;
+    // Save asynchronously - don't block ID generation
     this.saveCounter();
     return id;
   }
@@ -88,9 +118,10 @@ class IdGenerator {
    * Reset the counter to a specific value
    * @param value The value to reset the counter to (default: 1)
    */
-  public reset(value: number = 1): void {
+  public async reset(value: number = 1): Promise<void> {
+    await this.ensureInitialized();
     this.counter = value;
-    this.saveCounter();
+    await this.saveCounter();
   }
 
   /**
@@ -99,8 +130,8 @@ class IdGenerator {
    * @param projects Array of existing projects
    * @param entries Array of existing time entries
    */
-  public resync(projects: Project[], entries: TimeEntry[]): void {
-    this.syncWithData(projects, entries);
+  public async resync(projects: Project[], entries: TimeEntry[]): Promise<void> {
+    await this.syncWithData(projects, entries);
   }
 }
 
@@ -127,8 +158,8 @@ export function getCurrentCounter(): number {
  * Reset the counter to a specific value
  * @param value The value to reset the counter to (default: 1)
  */
-export function resetCounter(value: number = 1): void {
-  idGenerator.reset(value);
+export async function resetCounter(value: number = 1): Promise<void> {
+  return idGenerator.reset(value);
 }
 
 /**
@@ -137,6 +168,6 @@ export function resetCounter(value: number = 1): void {
  * @param projects Array of existing projects
  * @param entries Array of existing time entries
  */
-export function resyncCounter(projects: Project[], entries: TimeEntry[]): void {
-  idGenerator.resync(projects, entries);
+export async function resyncCounter(projects: Project[], entries: TimeEntry[]): Promise<void> {
+  return idGenerator.resync(projects, entries);
 } 

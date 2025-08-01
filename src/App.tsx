@@ -1,51 +1,50 @@
-import React, { useState } from 'react';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { Settings, Project, TimeEntry } from './types';
+import React, { useEffect, useRef, useCallback } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
+import './index.css';
+import { useTheme } from './hooks/useTheme';
+import { useProjects } from './hooks/useProjects';
+import { useTimeEntries } from './hooks/useTimeEntries';
+import { useSimpleStorage } from './hooks/useSimpleStorage';
+import { useIdGeneratorSync } from './hooks/useIdGeneratorSync';
+import { Settings, TimeEntry } from './types';
+
 import TopBar from './components/TopBar';
 import TrackTab from './components/TrackTab';
 import ReportsTab from './components/ReportsTab';
 import SettingsTab from './components/SettingsTab';
 import BackupTab from './components/BackupTab';
-import { useTimeEntries } from './hooks/useTimeEntries';
-import { useProjects } from './hooks/useProjects';
-import { generateUniqueProjectName } from './utils/projectUtils';
-import { useTheme } from './hooks/useTheme';
+
 
 export default function App() {
   // Initialize theme immediately on app startup
   useTheme();
-  
-  // settings state
-  const [settings, setSettings] = useLocalStorage<Settings>('timetracker.moe.settings', { weekEndsOn: 'sunday' });
-  
-  // ui state
-  const [tab, setTab] = useState<'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'>('TRACK');
 
   // time entries management
-  const {
-    entries,
-    setEntries,
-    lastUsedEntry,
-    timer,
-    toggleTimer,
-    deleteEntry,
-    changeEntryProject,
-    resumeEntry,
-    elapsedMs,
-    canResume,
-    addEntry,
-    updateEntry
-  } = useTimeEntries();
+  const { entries, setEntries, addEntry: addEntryBase, updateEntry, deleteEntry, changeEntryProject, updateEntryDuration, newEntry, toggleTimer, canResume, resumeEntry, timer, lastUsedEntry, elapsedMs } = useTimeEntries();
+  const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } = useProjects(entries, setEntries);
+  useIdGeneratorSync(projects, entries); // Sync ID generator with loaded data
 
-  // projects management
-  const {
-    projects,
-    addProject,
-    renameProject,
-    updateProject,
-    deleteProject,
-    reorderProjects
-  } = useProjects(entries, setEntries);
+  // Compatibility wrapper for addEntry to match the old interface
+  const addEntry = useCallback((projectId: number, duration: number, note?: string, start?: string) => {
+    const id = Math.max(0, ...entries.map(e => e.id)) + 1;
+    const entry: TimeEntry = {
+      id,
+      projectId,
+      start: start || new Date().toISOString(),
+      duration,
+      note,
+    };
+    addEntryBase(entry);
+    return entry;
+  }, [entries, addEntryBase]);
+
+  // ─── Settings and Tab Management ──────────────────────────────────────────
+  const [settings, setSettings] = useSimpleStorage('timetracker.moe.settings', { weekEndsOn: 'sunday' } as Settings);
+
+  // ─── Current tab state ──────────────────────────────────────────────────
+  const [tab, setTab] = useSimpleStorage('timetracker.moe.currentTab', 'TRACK' as 'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP');
 
   // Define tabs that appear in the UI
   const tabs = [

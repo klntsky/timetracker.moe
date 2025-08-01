@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Project, Settings, TimeEntry } from '../types';
 import { PresetRange, getRange } from '../utils/dateRanges';
 import { formatDecimalHours } from '../utils/timeFormatters';
+import { usePersistedState } from '../hooks/usePersistedState';
 
 interface ReportsTabProps {
   projects: Project[];
@@ -11,11 +12,11 @@ interface ReportsTabProps {
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ projects, entries, settings, timerElapsedMs }) => {
-  const [preset, setPreset] = useState<PresetRange>('THIS_WEEK');
+  const [preset, setPreset] = usePersistedState<PresetRange>('timetracker.moe.reportPreset', 'THIS_WEEK');
   const defaultFrom = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().substring(0, 10);
   const defaultTo = new Date().toISOString().substring(0, 10);
-  const [from, setFrom] = useState(defaultFrom);
-  const [to, setTo] = useState(defaultTo);
+  const [from, setFrom] = usePersistedState('timetracker.moe.reportFromDate', defaultFrom);
+  const [to, setTo] = usePersistedState('timetracker.moe.reportToDate', defaultTo);
   
   // Get date range based on preset
   const [startDate, endDate] = getRange(preset, settings, { from, to });

@@ -1,12 +1,11 @@
 import { useCallback } from 'react';
+import { useSimpleStorage } from './useSimpleStorage';
 import { Project, TimeEntry } from '../types';
-import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '../utils/idGenerator';
 import { generateUniqueProjectName } from '../utils/projectUtils';
 
 export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntry[]) => void) {
-  // Store projects in localStorage
-  const [projects, setProjects] = useLocalStorage<Project[]>('timetracker.moe.projects', []);
+  const [projects, setProjects] = useSimpleStorage('timetracker.moe.projects', [] as Project[]);
 
   // Add a new project with a unique name
   const addProject = useCallback(() => {
