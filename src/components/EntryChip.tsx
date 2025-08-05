@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Project, TimeEntry } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { TimeEntry, Project } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
+import { useTimerContext } from '../contexts/TimerContext';
+import { projectExists } from '../utils/stateUtils';
 import Dropdown from './Dropdown';
 import TimeEditor from './TimeEditor';
 import CommentEditor from './CommentEditor';
@@ -10,7 +12,6 @@ interface EntryChipProps {
   entry: TimeEntry;
   projects: Project[];
   lastUsedEntry?: TimeEntry | null;
-  shouldShowResume: boolean;
   toggleTimer: () => void;
   resumeEntry: (entry: TimeEntry) => void;
   updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
@@ -23,7 +24,6 @@ const EntryChip: React.FC<EntryChipProps> = ({
   entry,
   projects,
   lastUsedEntry,
-  shouldShowResume,
   toggleTimer,
   resumeEntry,
   updateEntry,
@@ -36,16 +36,26 @@ const EntryChip: React.FC<EntryChipProps> = ({
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  // Use timer context to get state
+  const { isRunning } = useTimerContext();
+  
+  // Compute resume visibility directly here
+  const canResume = !isRunning && projectExists(projects, entry.projectId);
+
   // If autoEdit becomes true later, open editor
   useEffect(() => {
     if (autoEdit) {
       setEditingTime(true);
+      // Clear the autoEdit flag since we've acted on it
+      if (typeof updateEntry === 'function') {
+        updateEntry(entry.id, { autoEdit: false });
+      }
     }
-  }, [autoEdit]);
+  }, [autoEdit, entry.id, updateEntry]);
 
   const handleTimeSave = (newDuration: number) => {
     if (typeof updateEntry === 'function') {
-      updateEntry(entry.id, { duration: newDuration });
+      updateEntry(entry.id, { duration: newDuration, autoEdit: false });
     }
     setEditingTime(false);
   };
@@ -100,7 +110,15 @@ const EntryChip: React.FC<EntryChipProps> = ({
           <span
             title={formatTimeHHMMSS(entry.duration)}
             className="time-display"
-            onClick={() => !entry.active && setEditingTime(true)}
+            onClick={() => {
+              if (!entry.active) {
+                setEditingTime(true);
+                // Clear autoEdit flag when manually clicking to edit
+                if (entry.autoEdit && typeof updateEntry === 'function') {
+                  updateEntry(entry.id, { autoEdit: false });
+                }
+              }
+            }}
             style={{ cursor: entry.active ? 'default' : 'pointer' }}
           >
             <span className="time-text">{formatTimeHHMM(entry.duration)}</span>
@@ -116,7 +134,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
                 >
                   <i className="fas fa-pause"></i>
                 </button>
-              ) : shouldShowResume ? (
+              ) : canResume ? (
                 <button
                   className="time-display-button btn btn-sm btn-success resume-button"
                   title="Resume this entry"

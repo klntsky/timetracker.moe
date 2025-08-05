@@ -9,6 +9,7 @@ import { useTimeEntries } from './hooks/useTimeEntries';
 import { useSimpleStorage } from './hooks/useSimpleStorage';
 import { useIdGeneratorSync } from './hooks/useIdGeneratorSync';
 import { Settings, TimeEntry } from './types';
+import { TimerProvider } from './contexts/TimerContext';
 
 import TopBar from './components/TopBar';
 import TrackTab from './components/TrackTab';
@@ -16,13 +17,12 @@ import ReportsTab from './components/ReportsTab';
 import SettingsTab from './components/SettingsTab';
 import BackupTab from './components/BackupTab';
 
-
 export default function App() {
   // Initialize theme immediately on app startup
   useTheme();
 
   // time entries management
-  const { entries, setEntries, addEntry: addEntryBase, updateEntry, deleteEntry, changeEntryProject, updateEntryDuration, newEntry, toggleTimer, canResume, resumeEntry, timer, lastUsedEntry, elapsedMs } = useTimeEntries();
+  const { entries, setEntries, addEntry: addEntryBase, updateEntry, deleteEntry, changeEntryProject, updateEntryDuration, newEntry, toggleTimer, canResumeTimerButton, resumeEntry, timer, lastUsedEntry, elapsedMs } = useTimeEntries();
   const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } = useProjects(entries, setEntries);
   useIdGeneratorSync(projects, entries); // Sync ID generator with loaded data
 
@@ -69,59 +69,66 @@ export default function App() {
     }
   };
 
-  // Check if resume button should be shown
-  const shouldShowResume = canResume(projects);
+  // Check if timer button should be shown for the standalone timer
+  const showTimerButton = canResumeTimerButton(projects);
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <>
-      <TopBar
-        tabs={tabs}
-        current={tab}
-        changeTab={(id) => setTab(id as any)}
-        lastUsedEntry={lastUsedEntry}
-        isRunning={timer.running}
-        toggleTimer={handleToggleTimer}
-        elapsedMs={elapsedMs}
-        showResumeButton={shouldShowResume}
-      />
-      <main className="container-fluid p-3">
-        {tab === 'TRACK' && (
-          <TrackTab
-            projects={projects}
-            entries={entries}
-            settings={settings}
-            addProject={addProject}
-            renameProject={renameProject}
-            updateProject={updateProject}
-            deleteProject={deleteProject}
-            deleteEntry={deleteEntry}
-            changeEntryProject={changeEntryProject}
-            resumeEntry={resumeEntry}
-            toggleTimer={handleToggleTimer}
-            shouldShowResume={shouldShowResume}
-            addEntry={addEntry}
-            lastUsedEntry={lastUsedEntry}
-            updateEntry={updateEntry}
-            reorderProjects={reorderProjects}
-          />
-        )}
-        {tab === 'REPORTS' && 
-          <ReportsTab 
-            projects={projects} 
-            entries={entries} 
-            settings={settings} 
-            timerElapsedMs={elapsedMs} 
-          />
-        }
-        {tab === 'SETTINGS' && 
-          <SettingsTab 
-            settings={settings} 
-            setSettings={setSettings} 
-          />
-        }
-        {tab === 'BACKUP' && <BackupTab />}
-      </main>
-    </>
+    <TimerProvider isRunning={timer.running} projects={projects}>
+      <div className="app">
+        <TopBar 
+          tabs={tabs}
+          current={tab}
+          changeTab={(id: string) => setTab(id as any)}
+          lastUsedEntry={lastUsedEntry}
+          isRunning={timer.running}
+          toggleTimer={handleToggleTimer}
+          elapsedMs={elapsedMs}
+          showResumeButton={showTimerButton}
+        />
+
+        <main className="container-fluid mt-3">
+          {tab === 'TRACK' && (
+            <TrackTab
+              projects={projects}
+              entries={entries}
+              settings={settings}
+              addProject={addProject}
+              renameProject={renameProject}
+              updateProject={updateProject}
+              deleteProject={deleteProject}
+              deleteEntry={deleteEntry}
+              changeEntryProject={changeEntryProject}
+              resumeEntry={resumeEntry}
+              toggleTimer={handleToggleTimer}
+              addEntry={addEntry}
+              lastUsedEntry={lastUsedEntry}
+              updateEntry={updateEntry}
+              reorderProjects={reorderProjects}
+            />
+          )}
+
+          {tab === 'REPORTS' && (
+            <ReportsTab
+              projects={projects}
+              entries={entries}
+              settings={settings}
+              timerElapsedMs={elapsedMs}
+            />
+          )}
+
+          {tab === 'SETTINGS' && (
+            <SettingsTab
+              settings={settings}
+              setSettings={setSettings}
+            />
+          )}
+
+          {tab === 'BACKUP' && (
+            <BackupTab />
+          )}
+        </main>
+      </div>
+    </TimerProvider>
   );
 }

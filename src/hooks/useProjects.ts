@@ -3,9 +3,13 @@ import { useSimpleStorage } from './useSimpleStorage';
 import { Project, TimeEntry } from '../types';
 import { generateId } from '../utils/idGenerator';
 import { generateUniqueProjectName } from '../utils/projectUtils';
+import { useTimerStore } from '../stores/timerStore';
 
 export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntry[]) => void) {
   const [projects, setProjects] = useSimpleStorage('timetracker.moe.projects', [] as Project[]);
+  
+  // Access timer store to check if we need to stop the timer
+  const { running: isTimerRunning, lastProjectId, lastEntryId, stopTimer, setTimer } = useTimerStore();
 
   // Add a new project with a unique name
   const addProject = useCallback(() => {
@@ -74,13 +78,27 @@ export function useProjects(entries: TimeEntry[], setEntries: (entries: TimeEntr
   // Delete a project and all its entries
   const deleteProject = useCallback(
     (id: number) => {
+      // If the last used project is the one being deleted, clear the timer state completely
+      if (lastProjectId === id) {
+        // Clear all timer references since the project no longer exists
+        setTimer({
+          running: false,
+          start: null,
+          lastEntryId: null,
+          lastProjectId: null,
+        });
+      } else if (isTimerRunning && lastProjectId === id) {
+        // Fallback: if somehow the timer is running but lastProjectId doesn't match, just stop it
+        stopTimer();
+      }
+      
       // Remove the project
       setProjects(projects.filter(p => p.id !== id));
       
       // Also remove all time entries associated with this project
       setEntries(entries.filter(e => e.projectId !== id));
     },
-    [projects, setProjects, entries, setEntries]
+    [projects, setProjects, entries, setEntries, isTimerRunning, lastProjectId, lastEntryId, stopTimer, setTimer]
   );
 
   // Reorder projects by moving one project to a new position

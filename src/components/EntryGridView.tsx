@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Project, TimeEntry } from '../types';
 import TimeGridHeader from './TimeGridHeader';
 import ProjectRow from './ProjectRow';
@@ -16,7 +16,6 @@ interface EntryGridViewProps {
   deleteEntry: (id: number) => void;
   changeEntryProject: (id: number, pid: number) => void;
   toggleTimer: () => void;
-  shouldShowResume?: boolean;
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
   resumeEntry: (entry: TimeEntry) => void;
@@ -38,7 +37,6 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
   deleteEntry,
   changeEntryProject,
   toggleTimer,
-  shouldShowResume = true,
   addEntry,
   lastUsedEntry,
   resumeEntry,
@@ -49,9 +47,7 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
   goToNextWeek,
   entriesForDay,
   reorderProjects,
-}) => {
-  const [autoEditEntryId, setAutoEditEntryId] = useState<number | null>(null);
-  
+}: EntryGridViewProps) => {
   // Setup drag and drop functionality
   const { handleDragStart, getDropZoneState } = useDragReorder(
     projects,
@@ -65,9 +61,9 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
     const now = new Date();
     entryDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
     const newEntry = addEntry(projectId, 0, '', entryDate.toISOString());
-    // trigger auto edit
-    if (newEntry) {
-      setAutoEditEntryId(newEntry.id);
+    // Set autoEdit flag on the newly created entry
+    if (newEntry && updateEntry) {
+      updateEntry(newEntry.id, { autoEdit: true });
     }
   };
 
@@ -95,11 +91,9 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
           changeEntryProject={changeEntryProject}
           addNewEntry={addNewEntry}
           lastUsedEntry={lastUsedEntry}
-          shouldShowResume={shouldShowResume}
           toggleTimer={toggleTimer}
           resumeEntry={resumeEntry}
           updateEntry={updateEntry}
-          autoEditEntryId={autoEditEntryId}
           onDragStart={handleDragStart(project.id)}
           dropZoneState={getDropZoneState(project.id)}
         />

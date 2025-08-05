@@ -3,7 +3,7 @@ import { TimeEntry, Project } from '../types';
 import { match, P } from 'ts-pattern';
 import { useEntriesStore } from '../stores/entriesStore';
 import { useTimerStore } from '../stores/timerStore';
-import { shouldShowResumeButton, findEntryById } from '../utils/stateUtils';
+import { shouldShowResumeButton, findEntryById, entryProjectExists } from '../utils/stateUtils';
 import { ensureArray } from '../utils/timeUtils';
 import { generateId } from '../utils/idGenerator';
 
@@ -95,10 +95,16 @@ export function useTimeEntries() {
       // Try to resume the previously active entry
       const timer = { running: isRunning, start, lastEntryId, lastProjectId };
       const existingEntry = findEntryById(entries, timer.lastEntryId);
+      
+      // Check if the existing entry's project still exists
+      const validExistingEntry = existingEntry && entryProjectExists(existingEntry, projects) ? existingEntry : null;
+      
+      // Check if the last used project still exists
+      const validLastProjectId = timer.lastProjectId && projects.some(p => p.id === timer.lastProjectId) ? timer.lastProjectId : null;
 
       match({
-        existingEntry,
-        lastProjectId: timer.lastProjectId,
+        existingEntry: validExistingEntry,
+        lastProjectId: validLastProjectId,
         projectsLength: projects.length,
         projects,
       })
@@ -107,7 +113,7 @@ export function useTimeEntries() {
             existingEntry: P.not(P.nullish),
           },
           ({ existingEntry }) => {
-            // Case 1: Resume the previous entry
+            // Case 1: Resume the previous entry (only if its project still exists)
             startTimer(existingEntry.projectId, existingEntry.id);
           },
         )
@@ -117,7 +123,7 @@ export function useTimeEntries() {
             lastProjectId: P.not(P.nullish),
           },
           ({ lastProjectId }) => {
-            // Case 2: Start a new entry on the last used project
+            // Case 2: Start a new entry on the last used project (only if it still exists)
             startTimer(lastProjectId);
           },
         )
@@ -139,8 +145,8 @@ export function useTimeEntries() {
     [isRunning, start, lastEntryId, lastProjectId, entries, stopTimer, startTimer],
   );
 
-  // Check if Resume button should be shown
-  const canResume = useCallback(
+  // Check if Resume button should be shown (renamed for clarity)
+  const canResumeTimerButton = useCallback(
     (projects: Project[] = []) => {
       return shouldShowResumeButton(
         isRunning,
@@ -205,7 +211,7 @@ export function useTimeEntries() {
     updateEntryDuration,
     newEntry,
     toggleTimer,
-    canResume,
+    canResumeTimerButton,
     resumeEntry,
     timer: { running: isRunning, start, lastEntryId, lastProjectId },
     lastUsedEntry,

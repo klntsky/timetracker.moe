@@ -14,7 +14,6 @@ export interface EntryGridProps {
   deleteEntry: (id: number) => void;
   changeEntryProject: (id: number, pid: number) => void;
   toggleTimer: () => void;
-  shouldShowResume?: boolean;
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
   lastUsedEntry?: TimeEntry | null;
   resumeEntry: (entry: TimeEntry) => void;

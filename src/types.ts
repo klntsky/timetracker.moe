@@ -5,6 +5,7 @@ export interface TimeEntry {
   duration: number; // duration in milliseconds
   note?: string;
   active?: boolean; // whether the entry is currently active/running
+  autoEdit?: boolean; // whether the entry should auto-edit (set once for new entries)
 }
 
 export interface Project {

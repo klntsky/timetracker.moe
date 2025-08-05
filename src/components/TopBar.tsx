@@ -30,24 +30,46 @@ export default function TopBar({
   const displayTime = formatTimeHHMM(elapsedMs);
   const fullTime = formatTimeHHMMSS(elapsedMs);
 
-  // Only show the timer button if it's running or if we can resume
-  const shouldShowTimerButton = isRunning || showResumeButton;
+  // Determine button state
+  const canStart = showResumeButton || isRunning;
+  const buttonTitle = isRunning 
+    ? "Pause timer"
+    : canStart 
+      ? "Start/resume timer" 
+      : "No recently active time entry - don't know what to resume";
 
   return (
     <header className="d-flex position-relative" style={{ minHeight: '60px' }}>
       <div className="d-flex align-items-center p-2 gap-3 flex-grow-1">
-        {shouldShowTimerButton && (
-        <button
-          className={clsx(
-            'btn timer-btn',
-            isRunning ? 'btn-danger' : 'btn-success',
-            'd-flex align-items-center gap-2'
-          )}
-          onClick={toggleTimer}
-        >
-          <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
-          {isRunning ? 'Pause' : 'Start'}
-        </button>
+        {!canStart ? (
+          // Wrap disabled button in span to enable tooltip
+          <span title={buttonTitle}>
+            <button
+              className={clsx(
+                'btn timer-btn',
+                'btn-secondary',
+                'd-flex align-items-center gap-2'
+              )}
+              disabled
+              style={{ pointerEvents: 'none' }}
+            >
+              <i className="fas fa-play"></i>
+              Start
+            </button>
+          </span>
+        ) : (
+          <button
+            className={clsx(
+              'btn timer-btn',
+              isRunning ? 'btn-danger' : 'btn-success',
+              'd-flex align-items-center gap-2'
+            )}
+            onClick={toggleTimer}
+            title={buttonTitle}
+          >
+            <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
+            {isRunning ? 'Pause' : 'Start'}
+          </button>
         )}
 
         {isRunning && (
