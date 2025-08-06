@@ -10,16 +10,21 @@ interface TimerStoreState {
   start: string | null;
   lastEntryId: number | null;
   lastProjectId: number | null;
+  tick: number; // Force re-renders
 
   // Actions
   startTimer: (entryId: number, projectId: number, startTime?: string) => void;
   stopTimer: () => void;
   updateProjectId: (projectId: number) => void;
   setTimer: (timer: TimerState) => void;
+  forceTick: () => void;
 
   // Computed
   getElapsedMs: () => number;
 }
+
+// Global interval reference
+let timerInterval: ReturnType<typeof setInterval> | null = null;
 
 // Custom storage adapter for our async KV store
 const customStorage = {
@@ -42,6 +47,7 @@ export const useTimerStore = create<TimerStoreState>()(
       start: null,
       lastEntryId: null,
       lastProjectId: null,
+      tick: 0,
 
       startTimer: (entryId, projectId, startTime) =>
         set((state) => {
@@ -49,12 +55,26 @@ export const useTimerStore = create<TimerStoreState>()(
           state.start = startTime || new Date().toISOString();
           state.lastEntryId = entryId;
           state.lastProjectId = projectId;
+
+          // Start the force update interval
+          if (timerInterval) {
+            clearInterval(timerInterval);
+          }
+          timerInterval = setInterval(() => {
+            get().forceTick();
+          }, 1000);
         }),
 
       stopTimer: () =>
         set((state) => {
           state.running = false;
           state.start = null;
+
+          // Clear the force update interval
+          if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+          }
         }),
 
       updateProjectId: (projectId) =>
@@ -68,6 +88,26 @@ export const useTimerStore = create<TimerStoreState>()(
           state.start = timer.start;
           state.lastEntryId = timer.lastEntryId;
           state.lastProjectId = timer.lastProjectId;
+
+          // Handle interval based on running state
+          if (timer.running && timer.start) {
+            if (timerInterval) {
+              clearInterval(timerInterval);
+            }
+            timerInterval = setInterval(() => {
+              get().forceTick();
+            }, 1000);
+          } else {
+            if (timerInterval) {
+              clearInterval(timerInterval);
+              timerInterval = null;
+            }
+          }
+        }),
+
+      forceTick: () =>
+        set((state) => {
+          state.tick += 1;
         }),
 
       getElapsedMs: () => {
@@ -82,6 +122,13 @@ export const useTimerStore = create<TimerStoreState>()(
     {
       name: 'timetracker.moe.timer',
       storage: createJSONStorage(() => customStorage),
+      // Don't persist the tick value
+      partialize: (state) => ({
+        running: state.running,
+        start: state.start,
+        lastEntryId: state.lastEntryId,
+        lastProjectId: state.lastProjectId,
+      }),
     }
   )
 );
