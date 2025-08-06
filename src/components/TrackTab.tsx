@@ -7,43 +7,37 @@ import './TrackTab.css';
 import { isToday, getWeekDays } from '../utils/timeUtils';
 import EntryGrid from './EntryGrid';
 import { usePersistedState } from '../hooks/usePersistedState';
+import { useEntryContext } from '../contexts/EntryContext';
 
 interface Props {
   projects: Project[];
-  entries: TimeEntry[];
   settings: Settings;
   addProject: () => void;
   renameProject: (id: number, newName: string) => void;
   updateProject: (updatedProject: Project) => void;
   deleteProject: (id: number) => void;
-  deleteEntry: (id: number) => void;
-  changeEntryProject: (id: number, pid: number) => void;
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
-  lastUsedEntry?: TimeEntry | null;
-  updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
   reorderProjects: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }
 
 function TrackTabComponent({
   projects,
-  entries,
   settings,
   addProject,
   renameProject,
   updateProject,
   deleteProject,
-  deleteEntry,
-  changeEntryProject,
   resumeEntry,
   toggleTimer,
   addEntry,
-  lastUsedEntry,
-  updateEntry,
   reorderProjects,
 }: Props) {
   const [weekOffset, setWeekOffset] = usePersistedState('timetracker.moe.weekOffset', 0); // 0 = current week, -1 = last week, 1 = next week
+
+  // Get entries from context instead of props
+  const { entries } = useEntryContext();
 
   const weekStartsOn = settings.weekEndsOn === 'sunday' ? 'sunday' : 'saturday';
 
@@ -76,13 +70,9 @@ function TrackTabComponent({
           renameProject={renameProject}
           updateProject={updateProject}
           deleteProject={deleteProject}
-          deleteEntry={deleteEntry}
-          changeEntryProject={changeEntryProject}
           resumeEntry={resumeEntry}
           toggleTimer={toggleTimer}
           addEntry={typeof addEntry === 'function' ? addEntry : undefined}
-          lastUsedEntry={lastUsedEntry}
-          updateEntry={updateEntry}
           weekOffset={weekOffset}
           goToPreviousWeek={goToPreviousWeek}
           goToCurrentWeek={goToCurrentWeek}

@@ -9,12 +9,8 @@ interface DayCellProps {
   entries: TimeEntry[];
   allProjects: Project[];
   addNewEntry: (projectId: number, day: Date) => void;
-  lastUsedEntry?: TimeEntry | null;
   toggleTimer: () => void;
   resumeEntry: (entry: TimeEntry) => void;
-  updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
-  deleteEntry: (id: number) => void;
-  changeEntryProject: (id: number, pid: number) => void;
 }
 
 const DayCell: React.FC<DayCellProps> = ({
@@ -23,12 +19,8 @@ const DayCell: React.FC<DayCellProps> = ({
   entries,
   allProjects,
   addNewEntry,
-  lastUsedEntry,
   toggleTimer,
   resumeEntry,
-  updateEntry,
-  deleteEntry,
-  changeEntryProject,
 }) => {
   return (
     <div
@@ -42,12 +34,8 @@ const DayCell: React.FC<DayCellProps> = ({
           key={e.id}
           entry={e}
           projects={allProjects}
-          lastUsedEntry={lastUsedEntry}
           toggleTimer={toggleTimer}
           resumeEntry={resumeEntry}
-          updateEntry={updateEntry}
-          deleteEntry={deleteEntry}
-          changeEntryProject={changeEntryProject}
           autoEdit={!!e.autoEdit}
         />
       ))}

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { TimeEntry, Project } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import { useTimerContext } from '../contexts/TimerContext';
+import { useEntryContext } from '../contexts/EntryContext';
 import { projectExists } from '../utils/stateUtils';
 import Dropdown from './Dropdown';
 import TimeEditor from './TimeEditor';
@@ -11,24 +12,16 @@ import '../styles/EntryGrid.css';
 interface EntryChipProps {
   entry: TimeEntry;
   projects: Project[];
-  lastUsedEntry?: TimeEntry | null;
   toggleTimer: () => void;
   resumeEntry: (entry: TimeEntry) => void;
-  updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
-  deleteEntry: (id: number) => void;
-  changeEntryProject: (id: number, pid: number) => void;
   autoEdit?: boolean;
 }
 
 const EntryChip: React.FC<EntryChipProps> = ({
   entry,
   projects,
-  lastUsedEntry,
   toggleTimer,
   resumeEntry,
-  updateEntry,
-  deleteEntry,
-  changeEntryProject,
   autoEdit = false,
 }) => {
   const [editingTime, setEditingTime] = useState(autoEdit);
@@ -36,8 +29,9 @@ const EntryChip: React.FC<EntryChipProps> = ({
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Use timer context to get state
+  // Use contexts to get state and functions
   const { isRunning } = useTimerContext();
+  const { updateEntry, deleteEntry, changeEntryProject, lastUsedEntry } = useEntryContext();
   
   // Compute resume visibility directly here
   const canResume = !isRunning && projectExists(projects, entry.projectId);

@@ -14,13 +14,9 @@ interface ProjectRowProps {
   renameProject: (id: number, newName: string) => void;
   updateProject: (updatedProject: Project) => void;
   deleteProject: (id: number) => void;
-  deleteEntry: (id: number) => void;
-  changeEntryProject: (id: number, pid: number) => void;
   addNewEntry: (projectId: number, day: Date) => void;
-  lastUsedEntry?: TimeEntry | null;
   toggleTimer: () => void;
   resumeEntry: (entry: TimeEntry) => void;
-  updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
   // Drag and drop props
   onDragStart?: (e: React.MouseEvent | React.TouchEvent) => void;
   dropZoneState?: {
@@ -37,13 +33,9 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
   renameProject,
   updateProject,
   deleteProject,
-  deleteEntry,
-  changeEntryProject,
   addNewEntry,
-  lastUsedEntry,
   toggleTimer,
   resumeEntry,
-  updateEntry,
   onDragStart,
   dropZoneState,
 }) => {
@@ -80,12 +72,8 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
           entries={entriesForDay(project.id, day)}
           allProjects={allProjects}
           addNewEntry={addNewEntry}
-          lastUsedEntry={lastUsedEntry}
           toggleTimer={toggleTimer}
           resumeEntry={resumeEntry}
-          updateEntry={updateEntry}
-          deleteEntry={deleteEntry}
-          changeEntryProject={changeEntryProject}
         />
       ))}
 

@@ -9,7 +9,6 @@ interface Props {
   tabs: Array<{ id: string; label: string }>;
   current: string;
   changeTab: (id: string) => void;
-  lastUsedEntry?: TimeEntry | null;
   isRunning: boolean;
   toggleTimer: () => void;
   elapsedMs: number;
@@ -20,7 +19,6 @@ export default function TopBar({
   tabs,
   current,
   changeTab,
-  lastUsedEntry,
   isRunning,
   toggleTimer,
   elapsedMs,

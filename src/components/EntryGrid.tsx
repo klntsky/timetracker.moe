@@ -11,13 +11,9 @@ export interface EntryGridProps {
   renameProject: (id: number, newName: string) => void;
   updateProject: (updatedProject: Project) => void;
   deleteProject: (id: number) => void;
-  deleteEntry: (id: number) => void;
-  changeEntryProject: (id: number, pid: number) => void;
   toggleTimer: () => void;
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
-  lastUsedEntry?: TimeEntry | null;
   resumeEntry: (entry: TimeEntry) => void;
-  updateEntry?: (entryId: number, updates: Partial<TimeEntry>) => void;
   weekOffset: number;
   goToPreviousWeek: () => void;
   goToCurrentWeek: () => void;

@@ -10,6 +10,7 @@ import { useSimpleStorage } from './hooks/useSimpleStorage';
 import { useIdGeneratorSync } from './hooks/useIdGeneratorSync';
 import { Settings, TimeEntry } from './types';
 import { TimerProvider } from './contexts/TimerContext';
+import { EntryProvider } from './contexts/EntryContext';
 
 import TopBar from './components/TopBar';
 import TrackTab from './components/TrackTab';
@@ -22,7 +23,8 @@ export default function App() {
   useTheme();
 
   // time entries management
-  const { entries, setEntries, addEntry: addEntryBase, updateEntry, deleteEntry, changeEntryProject, updateEntryDuration, newEntry, toggleTimer, canResumeTimerButton, resumeEntry, timer, lastUsedEntry, elapsedMs } = useTimeEntries();
+  const { entries, setEntries, addEntry: addEntryBase, toggleTimer, canResumeTimerButton, resumeEntry, timer, elapsedMs } = useTimeEntries();
+  
   const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } = useProjects(entries, setEntries);
   useIdGeneratorSync(projects, entries); // Sync ID generator with loaded data
 
@@ -75,60 +77,55 @@ export default function App() {
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
     <TimerProvider isRunning={timer.running} projects={projects}>
-      <div className="app">
-        <TopBar 
-          tabs={tabs}
-          current={tab}
-          changeTab={(id: string) => setTab(id as any)}
-          lastUsedEntry={lastUsedEntry}
-          isRunning={timer.running}
-          toggleTimer={handleToggleTimer}
-          elapsedMs={elapsedMs}
-          showResumeButton={showTimerButton}
-        />
+      <EntryProvider addLegacyEntry={addEntry}>
+        <div className="app">
+          <TopBar 
+            tabs={tabs}
+            current={tab}
+            changeTab={(id: string) => setTab(id as any)}
+            isRunning={timer.running}
+            toggleTimer={handleToggleTimer}
+            elapsedMs={elapsedMs}
+            showResumeButton={showTimerButton}
+          />
 
-        <main className="container-fluid mt-3">
-          {tab === 'TRACK' && (
-            <TrackTab
-              projects={projects}
-              entries={entries}
-              settings={settings}
-              addProject={addProject}
-              renameProject={renameProject}
-              updateProject={updateProject}
-              deleteProject={deleteProject}
-              deleteEntry={deleteEntry}
-              changeEntryProject={changeEntryProject}
-              resumeEntry={resumeEntry}
-              toggleTimer={handleToggleTimer}
-              addEntry={addEntry}
-              lastUsedEntry={lastUsedEntry}
-              updateEntry={updateEntry}
-              reorderProjects={reorderProjects}
-            />
-          )}
+          <main className="container-fluid mt-3">
+            {tab === 'TRACK' && (
+              <TrackTab
+                projects={projects}
+                settings={settings}
+                addProject={addProject}
+                renameProject={renameProject}
+                updateProject={updateProject}
+                deleteProject={deleteProject}
+                resumeEntry={resumeEntry}
+                toggleTimer={handleToggleTimer}
+                addEntry={addEntry}
+                reorderProjects={reorderProjects}
+              />
+            )}
 
-          {tab === 'REPORTS' && (
-            <ReportsTab
-              projects={projects}
-              entries={entries}
-              settings={settings}
-              timerElapsedMs={elapsedMs}
-            />
-          )}
+            {tab === 'REPORTS' && (
+              <ReportsTab
+                projects={projects}
+                settings={settings}
+                timerElapsedMs={elapsedMs}
+              />
+            )}
 
-          {tab === 'SETTINGS' && (
-            <SettingsTab
-              settings={settings}
-              setSettings={setSettings}
-            />
-          )}
+            {tab === 'SETTINGS' && (
+              <SettingsTab
+                settings={settings}
+                setSettings={setSettings}
+              />
+            )}
 
-          {tab === 'BACKUP' && (
-            <BackupTab />
-          )}
-        </main>
-      </div>
+            {tab === 'BACKUP' && (
+              <BackupTab />
+            )}
+          </main>
+        </div>
+      </EntryProvider>
     </TimerProvider>
   );
 }
