@@ -1,1 +1,2 @@
-Always use pnpm
+- Always use pnpm
+- never start the dev server. the user is assumed to run it continuously in background

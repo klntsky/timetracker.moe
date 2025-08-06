@@ -4,16 +4,13 @@ import ProjectRow from './ProjectRow';
 import { Project, TimeEntry } from '../types';
 import { useDragReorder } from '../hooks/useDragReorder';
 import { useEntryContext } from '../contexts/EntryContext';
+import { useProjectContext } from '../contexts/ProjectContext';
 
 import '../styles/EntryGrid.css';
 import '../styles/dragAndDrop.css';
 
 interface EntryGridViewProps {
   days: Date[];
-  projects: Project[];
-  renameProject: (id: number, newName: string) => void;
-  updateProject: (updatedProject: Project) => void;
-  deleteProject: (id: number) => void;
   toggleTimer: () => void;
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
   resumeEntry: (entry: TimeEntry) => void;
@@ -22,15 +19,10 @@ interface EntryGridViewProps {
   goToCurrentWeek: () => void;
   goToNextWeek: () => void;
   entriesForDay: (projectId: number, day: Date) => TimeEntry[];
-  reorderProjects?: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }
 
 const EntryGridView: React.FC<EntryGridViewProps> = ({
   days,
-  projects,
-  renameProject,
-  updateProject,
-  deleteProject,
   toggleTimer,
   addEntry,
   resumeEntry,
@@ -39,10 +31,11 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
   goToCurrentWeek,
   goToNextWeek,
   entriesForDay,
-  reorderProjects,
 }: EntryGridViewProps) => {
   // Use entry context for updateEntry
   const { updateEntry } = useEntryContext();
+  
+  const { projects, renameProject, updateProject, deleteProject, reorderProjects } = useProjectContext();
 
   // Setup drag and drop functionality
   const { handleDragStart, getDropZoneState } = useDragReorder(
@@ -78,10 +71,6 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
           project={project}
           days={days}
           entriesForDay={entriesForDay}
-          allProjects={projects}
-          renameProject={renameProject}
-          updateProject={updateProject}
-          deleteProject={deleteProject}
           addNewEntry={addNewEntry}
           toggleTimer={toggleTimer}
           resumeEntry={resumeEntry}

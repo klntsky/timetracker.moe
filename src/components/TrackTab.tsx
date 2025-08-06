@@ -8,36 +8,28 @@ import { isToday, getWeekDays } from '../utils/timeUtils';
 import EntryGrid from './EntryGrid';
 import { usePersistedState } from '../hooks/usePersistedState';
 import { useEntryContext } from '../contexts/EntryContext';
+import { useProjectContext } from '../contexts/ProjectContext';
 
 interface Props {
-  projects: Project[];
   settings: Settings;
-  addProject: () => void;
-  renameProject: (id: number, newName: string) => void;
-  updateProject: (updatedProject: Project) => void;
-  deleteProject: (id: number) => void;
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
-  reorderProjects: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }
 
 function TrackTabComponent({
-  projects,
   settings,
-  addProject,
-  renameProject,
-  updateProject,
-  deleteProject,
   resumeEntry,
   toggleTimer,
   addEntry,
-  reorderProjects,
 }: Props) {
   const [weekOffset, setWeekOffset] = usePersistedState('timetracker.moe.weekOffset', 0); // 0 = current week, -1 = last week, 1 = next week
 
   // Get entries from context instead of props
   const { entries } = useEntryContext();
+  
+  // Get project operations from context instead of props
+  const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } = useProjectContext();
 
   const weekStartsOn = settings.weekEndsOn === 'sunday' ? 'sunday' : 'saturday';
 
@@ -65,11 +57,7 @@ function TrackTabComponent({
       <div className="week-grid">
         <EntryGrid 
           days={days}
-          projects={projects}
           entries={entries}
-          renameProject={renameProject}
-          updateProject={updateProject}
-          deleteProject={deleteProject}
           resumeEntry={resumeEntry}
           toggleTimer={toggleTimer}
           addEntry={typeof addEntry === 'function' ? addEntry : undefined}
@@ -77,7 +65,6 @@ function TrackTabComponent({
           goToPreviousWeek={goToPreviousWeek}
           goToCurrentWeek={goToCurrentWeek}
           goToNextWeek={goToNextWeek}
-          reorderProjects={reorderProjects}
         />
       </div>
       <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>

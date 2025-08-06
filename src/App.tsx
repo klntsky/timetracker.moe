@@ -11,6 +11,7 @@ import { useIdGeneratorSync } from './hooks/useIdGeneratorSync';
 import { Settings, TimeEntry } from './types';
 import { TimerProvider } from './contexts/TimerContext';
 import { EntryProvider } from './contexts/EntryContext';
+import { ProjectProvider } from './contexts/ProjectContext';
 
 import TopBar from './components/TopBar';
 import TrackTab from './components/TrackTab';
@@ -76,56 +77,58 @@ export default function App() {
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <TimerProvider isRunning={timer.running} projects={projects}>
-      <EntryProvider addLegacyEntry={addEntry}>
-        <div className="app">
-          <TopBar 
-            tabs={tabs}
-            current={tab}
-            changeTab={(id: string) => setTab(id as any)}
-            isRunning={timer.running}
-            toggleTimer={handleToggleTimer}
-            elapsedMs={elapsedMs}
-            showResumeButton={showTimerButton}
-          />
+    <ProjectProvider
+      projects={projects}
+      addProject={addProject}
+      renameProject={renameProject}
+      updateProject={updateProject}
+      deleteProject={deleteProject}
+      reorderProjects={reorderProjects}
+    >
+      <TimerProvider isRunning={timer.running} projects={projects}>
+        <EntryProvider addLegacyEntry={addEntry}>
+          <div className="app">
+            <TopBar 
+              tabs={tabs}
+              current={tab}
+              changeTab={(id: string) => setTab(id as any)}
+              isRunning={timer.running}
+              toggleTimer={handleToggleTimer}
+              elapsedMs={elapsedMs}
+              showResumeButton={showTimerButton}
+            />
 
-          <main className="container-fluid mt-3">
-            {tab === 'TRACK' && (
-              <TrackTab
-                projects={projects}
-                settings={settings}
-                addProject={addProject}
-                renameProject={renameProject}
-                updateProject={updateProject}
-                deleteProject={deleteProject}
-                resumeEntry={resumeEntry}
-                toggleTimer={handleToggleTimer}
-                addEntry={addEntry}
-                reorderProjects={reorderProjects}
-              />
-            )}
+            <main className="container-fluid mt-3">
+              {tab === 'TRACK' && (
+                <TrackTab
+                  settings={settings}
+                  resumeEntry={resumeEntry}
+                  toggleTimer={handleToggleTimer}
+                  addEntry={addEntry}
+                />
+              )}
 
-            {tab === 'REPORTS' && (
-              <ReportsTab
-                projects={projects}
-                settings={settings}
-                timerElapsedMs={elapsedMs}
-              />
-            )}
+              {tab === 'REPORTS' && (
+                <ReportsTab
+                  settings={settings}
+                  timerElapsedMs={elapsedMs}
+                />
+              )}
 
-            {tab === 'SETTINGS' && (
-              <SettingsTab
-                settings={settings}
-                setSettings={setSettings}
-              />
-            )}
+              {tab === 'SETTINGS' && (
+                <SettingsTab
+                  settings={settings}
+                  setSettings={setSettings}
+                />
+              )}
 
-            {tab === 'BACKUP' && (
-              <BackupTab />
-            )}
-          </main>
-        </div>
-      </EntryProvider>
-    </TimerProvider>
+              {tab === 'BACKUP' && (
+                <BackupTab />
+              )}
+            </main>
+          </div>
+        </EntryProvider>
+      </TimerProvider>
+    </ProjectProvider>
   );
 }

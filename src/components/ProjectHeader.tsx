@@ -3,11 +3,10 @@ import { Project } from '../types';
 import EditableProjectName from './EditableProjectName';
 import Dropdown from './Dropdown';
 import DragHandle from './DragHandle';
+import { useProjectContext } from '../contexts/ProjectContext';
 
 interface ProjectHeaderProps {
   project: Project;
-  renameProject: (id: number, newName: string) => void;
-  deleteProject: (id: number) => void;
   openBillableRateEditor: (project: Project) => void;
   projectMenu: number | null;
   setProjectMenu: (id: number | null) => void;
@@ -22,8 +21,6 @@ interface ProjectHeaderProps {
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   project,
-  renameProject,
-  deleteProject,
   openBillableRateEditor,
   projectMenu,
   setProjectMenu,
@@ -32,6 +29,8 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   onDragStart,
   dropZoneState
 }) => {
+  const { renameProject, deleteProject } = useProjectContext();
+
   return (
     <div 
       className={`cell header d-flex flex-column project-header ${

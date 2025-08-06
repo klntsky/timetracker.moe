@@ -4,16 +4,13 @@ import ProjectHeader from './ProjectHeader';
 import DayCell from './DayCell';
 import BillableRateEditor from './BillableRateEditor';
 import Popup from './Popup';
+import { useProjectContext } from '../contexts/ProjectContext';
 
 interface ProjectRowProps {
   project: Project;
   days: Date[];
   entriesForDay: (projectId: number, day: Date) => TimeEntry[];
   // Callbacks & data forwarded down
-  allProjects: Project[];
-  renameProject: (id: number, newName: string) => void;
-  updateProject: (updatedProject: Project) => void;
-  deleteProject: (id: number) => void;
   addNewEntry: (projectId: number, day: Date) => void;
   toggleTimer: () => void;
   resumeEntry: (entry: TimeEntry) => void;
@@ -29,10 +26,6 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
   project,
   days,
   entriesForDay,
-  allProjects,
-  renameProject,
-  updateProject,
-  deleteProject,
   addNewEntry,
   toggleTimer,
   resumeEntry,
@@ -41,6 +34,8 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
 }) => {
   const [projectMenuOpenId, setProjectMenuOpenId] = useState<number | null>(null);
   const [editingBillableRate, setEditingBillableRate] = useState<Project | null>(null);
+  
+  const { renameProject, updateProject, deleteProject } = useProjectContext();
 
   const openBillableRateEditor = (p: Project) => setEditingBillableRate(p);
   const handleBillableRateSave = (updated: Project) => {
@@ -52,8 +47,6 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
     <>
       <ProjectHeader
         project={project}
-        renameProject={renameProject}
-        deleteProject={deleteProject}
         openBillableRateEditor={openBillableRateEditor}
         projectMenu={projectMenuOpenId}
         setProjectMenu={setProjectMenuOpenId}
@@ -70,7 +63,6 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
           project={project}
           date={day}
           entries={entriesForDay(project.id, day)}
-          allProjects={allProjects}
           addNewEntry={addNewEntry}
           toggleTimer={toggleTimer}
           resumeEntry={resumeEntry}

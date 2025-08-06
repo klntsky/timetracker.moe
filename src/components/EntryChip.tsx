@@ -3,6 +3,7 @@ import { TimeEntry, Project } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import { useTimerContext } from '../contexts/TimerContext';
 import { useEntryContext } from '../contexts/EntryContext';
+import { useProjectContext } from '../contexts/ProjectContext';
 import { projectExists } from '../utils/stateUtils';
 import Dropdown from './Dropdown';
 import TimeEditor from './TimeEditor';
@@ -11,7 +12,6 @@ import '../styles/EntryGrid.css';
 
 interface EntryChipProps {
   entry: TimeEntry;
-  projects: Project[];
   toggleTimer: () => void;
   resumeEntry: (entry: TimeEntry) => void;
   autoEdit?: boolean;
@@ -19,7 +19,6 @@ interface EntryChipProps {
 
 const EntryChip: React.FC<EntryChipProps> = ({
   entry,
-  projects,
   toggleTimer,
   resumeEntry,
   autoEdit = false,
@@ -32,6 +31,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
   // Use contexts to get state and functions
   const { isRunning } = useTimerContext();
   const { updateEntry, deleteEntry, changeEntryProject, lastUsedEntry } = useEntryContext();
+  const { projects } = useProjectContext();
   
   // Compute resume visibility directly here
   const canResume = !isRunning && projectExists(projects, entry.projectId);

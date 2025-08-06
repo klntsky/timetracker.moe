@@ -1,16 +1,12 @@
 import React, { useMemo, useCallback } from 'react';
 import EntryGridView from './EntryGridView';
 import { Project, TimeEntry } from '../types';
+import { useProjectContext } from '../contexts/ProjectContext';
 
-// Keep the prop surface identical to the previous EntryGrid except that
-// the view layer now receives a computed `entriesForDay` helper.
+// Keep the prop surface simplified now that project operations come from context
 export interface EntryGridProps {
   days: Date[];
-  projects: Project[];
   entries: TimeEntry[];
-  renameProject: (id: number, newName: string) => void;
-  updateProject: (updatedProject: Project) => void;
-  deleteProject: (id: number) => void;
   toggleTimer: () => void;
   addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
   resumeEntry: (entry: TimeEntry) => void;
@@ -18,37 +14,24 @@ export interface EntryGridProps {
   goToPreviousWeek: () => void;
   goToCurrentWeek: () => void;
   goToNextWeek: () => void;
-  reorderProjects?: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }
 
 const EntryGrid: React.FC<EntryGridProps> = (props) => {
-  const { entries } = props;
+  const entriesForDay = useCallback((projectId: number, day: Date) => {
+    return props.entries.filter(
+      (e: TimeEntry) =>
+        e.projectId === projectId &&
+        new Date(e.start) >= day &&
+        new Date(e.start) < new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)
+    );
+  }, [props.entries]);
 
-  // ─── Memoize a map of project-day → entries ──────────────────────────────
-  const entriesByProjectDay = useMemo(() => {
-    const map = new Map<string, TimeEntry[]>();
-    for (const entry of entries) {
-      const date = new Date(entry.start);
-      date.setHours(0, 0, 0, 0); // normalise to start of day
-      const key = `${entry.projectId}-${date.toDateString()}`;
-      if (!map.has(key)) {
-        map.set(key, []);
-      }
-      map.get(key)!.push(entry);
-    }
-    return map;
-  }, [entries]);
-
-  // Stable callback to retrieve entries for a given project + day
-  const getEntriesForDay = useCallback(
-    (projectId: number, day: Date) => {
-      const key = `${projectId}-${day.toDateString()}`;
-      return entriesByProjectDay.get(key) ?? [];
-    },
-    [entriesByProjectDay],
+  return (
+    <EntryGridView
+      {...props}
+      entriesForDay={entriesForDay}
+    />
   );
-
-  return <EntryGridView {...props} entriesForDay={getEntriesForDay} />;
 };
 
 export default EntryGrid; 

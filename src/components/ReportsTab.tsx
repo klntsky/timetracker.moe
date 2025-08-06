@@ -4,14 +4,14 @@ import { PresetRange, getRange } from '../utils/dateRanges';
 import { formatDecimalHours } from '../utils/timeFormatters';
 import { usePersistedState } from '../hooks/usePersistedState';
 import { useEntryContext } from '../contexts/EntryContext';
+import { useProjectContext } from '../contexts/ProjectContext';
 
 interface ReportsTabProps {
-  projects: Project[];
   settings: Settings;
   timerElapsedMs: number;
 }
 
-const ReportsTab: React.FC<ReportsTabProps> = ({ projects, settings, timerElapsedMs }) => {
+const ReportsTab: React.FC<ReportsTabProps> = ({ settings, timerElapsedMs }) => {
   const [preset, setPreset] = usePersistedState<PresetRange>('timetracker.moe.reportPreset', 'THIS_WEEK');
   const defaultFrom = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().substring(0, 10);
   const defaultTo = new Date().toISOString().substring(0, 10);
@@ -20,6 +20,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ projects, settings, timerElapse
   
   // Get entries from context instead of props
   const { entries } = useEntryContext();
+  
+  const { projects } = useProjectContext();
 
   // Get date range based on preset
   const [startDate, endDate] = getRange(preset, settings, { from, to });

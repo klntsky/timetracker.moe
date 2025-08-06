@@ -7,7 +7,6 @@ interface DayCellProps {
   project: Project;
   date: Date;
   entries: TimeEntry[];
-  allProjects: Project[];
   addNewEntry: (projectId: number, day: Date) => void;
   toggleTimer: () => void;
   resumeEntry: (entry: TimeEntry) => void;
@@ -17,7 +16,6 @@ const DayCell: React.FC<DayCellProps> = ({
   project,
   date,
   entries,
-  allProjects,
   addNewEntry,
   toggleTimer,
   resumeEntry,
@@ -33,7 +31,6 @@ const DayCell: React.FC<DayCellProps> = ({
         <EntryChip
           key={e.id}
           entry={e}
-          projects={allProjects}
           toggleTimer={toggleTimer}
           resumeEntry={resumeEntry}
           autoEdit={!!e.autoEdit}
