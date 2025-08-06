@@ -67,14 +67,15 @@ const EditableProjectName: React.FC<EditableProjectNameProps> = ({ name, onRenam
   }
 
   return (
-    <span 
-      className="project-name" 
+    <span
+      className="project-name"
       onClick={handleStartEditing}
       style={{ cursor: 'pointer' }}
-      title="Click to edit">
+      title="Click to edit"
+    >
       {name}
     </span>
   );
 };
 
-export default EditableProjectName; 
+export default EditableProjectName;

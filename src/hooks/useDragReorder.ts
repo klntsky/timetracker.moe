@@ -65,95 +65,110 @@ export function useDragReorder(
   };
 
   // Update preview position
-  const updatePreviewPosition = useCallback((x: number, y: number, offset: { x: number; y: number }) => {
-    if (dragState.preview) {
-      dragState.preview.style.left = (x - offset.x) + 'px';
-      dragState.preview.style.top = (y - offset.y) + 'px';
-    }
-  }, [dragState.preview]);
+  const updatePreviewPosition = useCallback(
+    (x: number, y: number, offset: { x: number; y: number }) => {
+      if (dragState.preview) {
+        dragState.preview.style.left = x - offset.x + 'px';
+        dragState.preview.style.top = y - offset.y + 'px';
+      }
+    },
+    [dragState.preview]
+  );
 
   // Handle mouse/touch move
-  const handleMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!dragState.isDragging || !dragState.preview) return;
+  const handleMove = useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      if (!dragState.isDragging || !dragState.preview) return;
 
-    const { x, y } = getEventCoordinates(e);
-    updatePreviewPosition(x, y, dragState.offset);
+      const { x, y } = getEventCoordinates(e);
+      updatePreviewPosition(x, y, dragState.offset);
 
-    // Find element under cursor/touch and determine precise drop zone
-    const elementBelow = document.elementFromPoint(x, y);
-    const projectHeader = elementBelow?.closest('.project-header');
-    
-    if (projectHeader) {
-      const projectIdAttr = projectHeader.getAttribute('data-project-id');
-      if (projectIdAttr) {
-        const projectId = parseInt(projectIdAttr);
-        
-        // Skip if it's the dragged project itself
-        if (projectId === dragState.draggedProjectId) {
-          setCurrentDropZone(null);
-          currentDropZoneRef.current = null;
-          return;
+      // Find element under cursor/touch and determine precise drop zone
+      const elementBelow = document.elementFromPoint(x, y);
+      const projectHeader = elementBelow?.closest('.project-header');
+
+      if (projectHeader) {
+        const projectIdAttr = projectHeader.getAttribute('data-project-id');
+        if (projectIdAttr) {
+          const projectId = parseInt(projectIdAttr);
+
+          // Skip if it's the dragged project itself
+          if (projectId === dragState.draggedProjectId) {
+            setCurrentDropZone(null);
+            currentDropZoneRef.current = null;
+            return;
+          }
+
+          // Determine if cursor is in top half or bottom half
+          const rect = projectHeader.getBoundingClientRect();
+          const midPoint = rect.top + rect.height / 2;
+          const insertPosition: 'before' | 'after' = y < midPoint ? 'before' : 'after';
+
+          const dropZone = { projectId, insertPosition };
+          setCurrentDropZone(dropZone);
+          currentDropZoneRef.current = dropZone;
         }
-        
-        // Determine if cursor is in top half or bottom half
-        const rect = projectHeader.getBoundingClientRect();
-        const midPoint = rect.top + rect.height / 2;
-        const insertPosition: 'before' | 'after' = y < midPoint ? 'before' : 'after';
-        
-        const dropZone = { projectId, insertPosition };
-        setCurrentDropZone(dropZone);
-        currentDropZoneRef.current = dropZone;
+      } else {
+        setCurrentDropZone(null);
+        currentDropZoneRef.current = null;
       }
-    } else {
-      setCurrentDropZone(null);
-      currentDropZoneRef.current = null;
-    }
-  }, [dragState.isDragging, dragState.preview, dragState.offset, dragState.draggedProjectId, updatePreviewPosition]);
+    },
+    [
+      dragState.isDragging,
+      dragState.preview,
+      dragState.offset,
+      dragState.draggedProjectId,
+      updatePreviewPosition,
+    ]
+  );
 
   // Handle mouse/touch end
-  const handleEnd = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!dragState.isDragging || !dragState.draggedProjectId) return;
+  const handleEnd = useCallback(
+    (_e: MouseEvent | TouchEvent) => {
+      if (!dragState.isDragging || !dragState.draggedProjectId) return;
 
-    // Clean up
-    if (dragState.preview) {
-      document.body.removeChild(dragState.preview);
-    }
+      // Clean up
+      if (dragState.preview) {
+        document.body.removeChild(dragState.preview);
+      }
 
-    if (dragState.draggedElement) {
-      dragState.draggedElement.style.opacity = '1';
-    }
+      if (dragState.draggedElement) {
+        dragState.draggedElement.style.opacity = '1';
+      }
 
-    // Perform reorder if dropped on a valid target
-    if (currentDropZoneRef.current && dragState.draggedProjectId) {
-      const { projectId, insertPosition } = currentDropZoneRef.current;
-      
-      if (insertPosition === 'before') {
-        onReorder(dragState.draggedProjectId, projectId, false);
-      } else {
-        // For 'after' insertion
-        const projectIndex = projects.findIndex(p => p.id === projectId);
-        if (projectIndex === projects.length - 1) {
-          // Insert at the end
-          onReorder(dragState.draggedProjectId, -1, false);
+      // Perform reorder if dropped on a valid target
+      if (currentDropZoneRef.current && dragState.draggedProjectId) {
+        const { projectId, insertPosition } = currentDropZoneRef.current;
+
+        if (insertPosition === 'before') {
+          onReorder(dragState.draggedProjectId, projectId, false);
         } else {
-          onReorder(dragState.draggedProjectId, projectId, true);
+          // For 'after' insertion
+          const projectIndex = projects.findIndex((p) => p.id === projectId);
+          if (projectIndex === projects.length - 1) {
+            // Insert at the end
+            onReorder(dragState.draggedProjectId, -1, false);
+          } else {
+            onReorder(dragState.draggedProjectId, projectId, true);
+          }
         }
       }
-    }
 
-    // Reset state
-    setDragState({
-      isDragging: false,
-      draggedProjectId: null,
-      draggedElement: null,
-      preview: null,
-      initialMousePos: { x: 0, y: 0 },
-      offset: { x: 0, y: 0 },
-    });
+      // Reset state
+      setDragState({
+        isDragging: false,
+        draggedProjectId: null,
+        draggedElement: null,
+        preview: null,
+        initialMousePos: { x: 0, y: 0 },
+        offset: { x: 0, y: 0 },
+      });
 
-    setCurrentDropZone(null);
-    currentDropZoneRef.current = null;
-  }, [dragState, onReorder]);
+      setCurrentDropZone(null);
+      currentDropZoneRef.current = null;
+    },
+    [dragState, onReorder, projects]
+  );
 
   // Attach global event listeners
   useEffect(() => {
@@ -173,13 +188,13 @@ export function useDragReorder(
   }, [dragState.isDragging, handleMove, handleEnd]);
 
   // Handle drag start
-  const handleDragStart = useCallback((projectId: number) => 
-    (e: React.MouseEvent | React.TouchEvent) => {
+  const handleDragStart = useCallback(
+    (projectId: number) => (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
 
       const target = e.currentTarget as HTMLElement;
       const projectHeader = target.closest('.project-header') as HTMLElement;
-      
+
       if (!projectHeader) return;
 
       const { x, y } = getEventCoordinates(e.nativeEvent);
@@ -204,25 +219,32 @@ export function useDragReorder(
         initialMousePos: { x, y },
         offset,
       });
-    }, [updatePreviewPosition]);
+    },
+    [updatePreviewPosition]
+  );
 
-  const getDropZoneState = useCallback((projectId: number) => {
-    if (!dragState.isDragging || 
-        dragState.draggedProjectId === projectId || 
+  const getDropZoneState = useCallback(
+    (projectId: number) => {
+      if (
+        !dragState.isDragging ||
+        dragState.draggedProjectId === projectId ||
         !currentDropZone ||
-        currentDropZone.projectId !== projectId) {
-      return { isDropTarget: false };
-    }
-    
-    return {
-      isDropTarget: true,
-      insertPosition: currentDropZone.insertPosition
-    };
-  }, [dragState.isDragging, dragState.draggedProjectId, currentDropZone]);
+        currentDropZone.projectId !== projectId
+      ) {
+        return { isDropTarget: false };
+      }
+
+      return {
+        isDropTarget: true,
+        insertPosition: currentDropZone.insertPosition,
+      };
+    },
+    [dragState.isDragging, dragState.draggedProjectId, currentDropZone]
+  );
 
   return {
     dragState,
     handleDragStart,
     getDropZoneState,
   };
-} 
+}

@@ -1,6 +1,6 @@
 // src/components/TopBar.tsx
 import React from 'react';
-import { TimeEntry } from '../types';
+
 import clsx from 'clsx';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import './TopBar.css'; // We'll create this file next
@@ -22,7 +22,7 @@ export default function TopBar({
   isRunning,
   toggleTimer,
   elapsedMs,
-  showResumeButton
+  showResumeButton,
 }: Props) {
   // Format time using our utility functions
   const displayTime = formatTimeHHMM(elapsedMs);
@@ -30,10 +30,10 @@ export default function TopBar({
 
   // Determine button state
   const canStart = showResumeButton || isRunning;
-  const buttonTitle = isRunning 
-    ? "Pause timer"
-    : canStart 
-      ? "Start/resume timer" 
+  const buttonTitle = isRunning
+    ? 'Pause timer'
+    : canStart
+      ? 'Start/resume timer'
       : "No recently active time entry - don't know what to resume";
 
   return (
@@ -43,11 +43,7 @@ export default function TopBar({
           // Wrap disabled button in span to enable tooltip
           <span title={buttonTitle}>
             <button
-              className={clsx(
-                'btn timer-btn',
-                'btn-secondary',
-                'd-flex align-items-center gap-2'
-              )}
+              className={clsx('btn timer-btn', 'btn-secondary', 'd-flex align-items-center gap-2')}
               disabled
               style={{ pointerEvents: 'none' }}
             >
@@ -81,10 +77,7 @@ export default function TopBar({
         {tabs.map((t) => (
           <div
             key={t.id}
-            className={clsx(
-              'tab-item',
-              current === t.id && 'tab-active'
-            )}
+            className={clsx('tab-item', current === t.id && 'tab-active')}
             onClick={() => changeTab(t.id)}
           >
             {t.label}

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { TimeEntry, Project } from '../types';
+import React, { useState, useEffect } from 'react';
+import { TimeEntry } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import { useTimerContext } from '../contexts/TimerContext';
 import { useEntryContext } from '../contexts/EntryContext';
@@ -32,7 +32,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
   const { isRunning } = useTimerContext();
   const { updateEntry, deleteEntry, changeEntryProject, lastUsedEntry } = useEntryContext();
   const { projects } = useProjectContext();
-  
+
   // Compute resume visibility directly here
   const canResume = !isRunning && projectExists(projects, entry.projectId);
 
@@ -96,7 +96,11 @@ const EntryChip: React.FC<EntryChipProps> = ({
       {/* Duration + note */}
       {editingTime ? (
         <div className="time-editor-container">
-          <TimeEditor duration={entry.duration} onSave={handleTimeSave} onCancel={() => setEditingTime(false)} />
+          <TimeEditor
+            duration={entry.duration}
+            onSave={handleTimeSave}
+            onCancel={() => setEditingTime(false)}
+          />
         </div>
       ) : (
         <div className="flex-grow-1 d-flex align-items-center gap-1">
@@ -155,15 +159,21 @@ const EntryChip: React.FC<EntryChipProps> = ({
             }}
             style={{ cursor: 'pointer', flex: 1 }}
           >
-            <span className="comment-text">
-              {entry.note || ''}
-            </span>
+            <span className="comment-text">{entry.note || ''}</span>
           </span>
         </div>
       )}
 
       {/* Dropdown */}
-      <Dropdown isOpen={dropdownOpen} onOpenChange={setDropdownOpen} trigger={<button className="ellipsis-btn"><i className="fas fa-ellipsis-v"></i></button>}>
+      <Dropdown
+        isOpen={dropdownOpen}
+        onOpenChange={setDropdownOpen}
+        trigger={
+          <button className="ellipsis-btn">
+            <i className="fas fa-ellipsis-v"></i>
+          </button>
+        }
+      >
         <button
           className="dropdown-item"
           onClick={() => {
@@ -205,4 +215,4 @@ const EntryChip: React.FC<EntryChipProps> = ({
   );
 };
 
-export default React.memo(EntryChip); 
+export default React.memo(EntryChip);

@@ -27,12 +27,12 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   entryMenu,
   setEntryMenu,
   onDragStart,
-  dropZoneState
+  dropZoneState,
 }) => {
   const { renameProject, deleteProject } = useProjectContext();
 
   return (
-    <div 
+    <div
       className={`cell header d-flex flex-column project-header ${
         dropZoneState?.isDropTarget ? `drag-over-${dropZoneState.insertPosition}` : ''
       }`}
@@ -40,16 +40,14 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
     >
       <div className="d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center flex-grow-1">
-          {onDragStart && (
-            <DragHandle onDragStart={onDragStart} />
-          )}
-          <EditableProjectName 
-            name={project.name} 
-            onRename={(newName) => renameProject(project.id, newName)} 
+          {onDragStart && <DragHandle onDragStart={onDragStart} />}
+          <EditableProjectName
+            name={project.name}
+            onRename={(newName) => renameProject(project.id, newName)}
           />
         </div>
-        
-        <Dropdown 
+
+        <Dropdown
           isOpen={projectMenu === project.id}
           onOpenChange={(isOpen) => {
             setProjectMenu(isOpen ? project.id : null);
@@ -62,8 +60,8 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
             </button>
           }
         >
-          <button 
-            className="dropdown-item" 
+          <button
+            className="dropdown-item"
             onClick={() => {
               setProjectMenu(null);
               deleteProject(project.id);
@@ -71,8 +69,8 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           >
             Delete
           </button>
-          <button 
-            className="dropdown-item" 
+          <button
+            className="dropdown-item"
             onClick={() => {
               setProjectMenu(null);
               openBillableRateEditor(project);
@@ -86,4 +84,4 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   );
 };
 
-export default ProjectHeader; 
+export default ProjectHeader;

@@ -15,37 +15,37 @@ export function generateUniqueProjectName(
   existingProjects: Project[]
 ): string {
   // If no projects exist or the name is already unique, return it
-  if (existingProjects.length === 0 || !existingProjects.some(p => p.name === baseName)) {
+  if (existingProjects.length === 0 || !existingProjects.some((p) => p.name === baseName)) {
     return baseName;
   }
 
   // Check if the name already ends with a number (e.g. "Project 1")
   const match = baseName.match(/^(.+) (\d+)$/);
-  
+
   if (match) {
     // If it already has a number suffix, try incrementing it
     const prefix = match[1];
     let num = parseInt(match[2], 10);
     let newName: string;
-    
+
     // Keep incrementing the number until we find a unique name
     do {
       num++;
       newName = `${prefix} ${num}`;
-    } while (existingProjects.some(p => p.name === newName));
-    
+    } while (existingProjects.some((p) => p.name === newName));
+
     return newName;
   } else {
     // If it doesn't have a number suffix, add " 1"
     let num = 1;
     let newName = `${baseName} ${num}`;
-    
+
     // Keep incrementing the number until we find a unique name
-    while (existingProjects.some(p => p.name === newName)) {
+    while (existingProjects.some((p) => p.name === newName)) {
       num++;
       newName = `${baseName} ${num}`;
     }
-    
+
     return newName;
   }
-} 
+}

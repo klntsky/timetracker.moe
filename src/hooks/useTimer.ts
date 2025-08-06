@@ -19,4 +19,4 @@ export function useTimer(initialRunning: boolean, initialStart: string | null) {
 
   const elapsedMs = running && startIso ? Date.now() - new Date(startIso).getTime() : 0;
   return { running, startIso, start, stop, elapsedMs } as const;
-} 
+}

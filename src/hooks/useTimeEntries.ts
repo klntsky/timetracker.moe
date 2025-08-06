@@ -45,7 +45,7 @@ export function useTimeEntries() {
       addEntry(newEntry);
       startTimerBase(id, projectId);
     },
-    [addEntry, startTimerBase],
+    [addEntry, startTimerBase]
   );
 
   // Start timer on an existing entry
@@ -60,7 +60,7 @@ export function useTimeEntries() {
         newEntry(projectId);
       }
     },
-    [updateEntry, startTimerBase, newEntry],
+    [updateEntry, startTimerBase, newEntry]
   );
 
   // Stop the active timer and update the entry
@@ -95,12 +95,16 @@ export function useTimeEntries() {
       // Try to resume the previously active entry
       const timer = { running: isRunning, start, lastEntryId, lastProjectId };
       const existingEntry = findEntryById(entries, timer.lastEntryId);
-      
+
       // Check if the existing entry's project still exists
-      const validExistingEntry = existingEntry && entryProjectExists(existingEntry, projects) ? existingEntry : null;
-      
+      const validExistingEntry =
+        existingEntry && entryProjectExists(existingEntry, projects) ? existingEntry : null;
+
       // Check if the last used project still exists
-      const validLastProjectId = timer.lastProjectId && projects.some(p => p.id === timer.lastProjectId) ? timer.lastProjectId : null;
+      const validLastProjectId =
+        timer.lastProjectId && projects.some((p) => p.id === timer.lastProjectId)
+          ? timer.lastProjectId
+          : null;
 
       match({
         existingEntry: validExistingEntry,
@@ -115,7 +119,7 @@ export function useTimeEntries() {
           ({ existingEntry }) => {
             // Case 1: Resume the previous entry (only if its project still exists)
             startTimer(existingEntry.projectId, existingEntry.id);
-          },
+          }
         )
         .with(
           {
@@ -125,7 +129,7 @@ export function useTimeEntries() {
           ({ lastProjectId }) => {
             // Case 2: Start a new entry on the last used project (only if it still exists)
             startTimer(lastProjectId);
-          },
+          }
         )
         .with(
           {
@@ -136,13 +140,13 @@ export function useTimeEntries() {
             // Case 3: No previous entry or project, but there's exactly one project
             // Always start timer on the only project available
             startTimer(projects[0].id);
-          },
+          }
         )
         .otherwise(() => {
           // If none of these conditions are met, the button should be hidden by canResume
         });
     },
-    [isRunning, start, lastEntryId, lastProjectId, entries, stopTimer, startTimer],
+    [isRunning, start, lastEntryId, lastProjectId, entries, stopTimer, startTimer]
   );
 
   // Check if Resume button should be shown (renamed for clarity)
@@ -153,10 +157,10 @@ export function useTimeEntries() {
         lastEntryId,
         entries,
         lastProjectId,
-        ensureArray(projects),
+        ensureArray(projects)
       );
     },
-    [isRunning, lastEntryId, lastProjectId, entries],
+    [isRunning, lastEntryId, lastProjectId, entries]
   );
 
   // Delete an entry with timer handling
@@ -169,7 +173,7 @@ export function useTimeEntries() {
 
       deleteEntryBase(id);
     },
-    [isRunning, lastEntryId, stopTimer, deleteEntryBase],
+    [isRunning, lastEntryId, stopTimer, deleteEntryBase]
   );
 
   // Change the project of an entry
@@ -182,7 +186,7 @@ export function useTimeEntries() {
 
       changeEntryProjectBase(id, projectId);
     },
-    [lastEntryId, updateProjectId, changeEntryProjectBase],
+    [lastEntryId, updateProjectId, changeEntryProjectBase]
   );
 
   // Resume an existing entry
@@ -195,7 +199,7 @@ export function useTimeEntries() {
       // Always resume the exact entry clicked
       startTimer(entry.projectId, entry.id);
     },
-    [isRunning, stopTimer, startTimer],
+    [isRunning, stopTimer, startTimer]
   );
 
   // Get the last used entry if it still exists
@@ -217,4 +221,4 @@ export function useTimeEntries() {
     lastUsedEntry,
     elapsedMs: getElapsedMs(),
   };
-} 
+}

@@ -1,7 +1,6 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import EntryGridView from './EntryGridView';
-import { Project, TimeEntry } from '../types';
-import { useProjectContext } from '../contexts/ProjectContext';
+import { TimeEntry } from '../types';
 
 // Keep the prop surface simplified now that project operations come from context
 export interface EntryGridProps {
@@ -17,21 +16,19 @@ export interface EntryGridProps {
 }
 
 const EntryGrid: React.FC<EntryGridProps> = (props) => {
-  const entriesForDay = useCallback((projectId: number, day: Date) => {
-    return props.entries.filter(
-      (e: TimeEntry) =>
-        e.projectId === projectId &&
-        new Date(e.start) >= day &&
-        new Date(e.start) < new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)
-    );
-  }, [props.entries]);
-
-  return (
-    <EntryGridView
-      {...props}
-      entriesForDay={entriesForDay}
-    />
+  const entriesForDay = useCallback(
+    (projectId: number, day: Date) => {
+      return props.entries.filter(
+        (e: TimeEntry) =>
+          e.projectId === projectId &&
+          new Date(e.start) >= day &&
+          new Date(e.start) < new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)
+      );
+    },
+    [props.entries]
   );
+
+  return <EntryGridView {...props} entriesForDay={entriesForDay} />;
 };
 
-export default EntryGrid; 
+export default EntryGrid;

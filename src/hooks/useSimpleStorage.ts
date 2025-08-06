@@ -11,15 +11,18 @@ export function useSimpleStorage<T>(key: string, initialValue: T) {
 
   // Load from storage on mount
   useEffect(() => {
-    storage.get<T>(key).then((storedValue) => {
-      if (storedValue !== null && storedValue !== undefined) {
-        setValue(storedValue);
-      }
-      setIsLoaded(true);
-    }).catch((error) => {
-      console.error(`Error loading ${key} from storage:`, error);
-      setIsLoaded(true);
-    });
+    storage
+      .get<T>(key)
+      .then((storedValue) => {
+        if (storedValue !== null && storedValue !== undefined) {
+          setValue(storedValue);
+        }
+        setIsLoaded(true);
+      })
+      .catch((error) => {
+        console.error(`Error loading ${key} from storage:`, error);
+        setIsLoaded(true);
+      });
   }, [key]);
 
   // Save to storage when value changes (after initial load)
@@ -39,4 +42,4 @@ export function useSimpleStorage<T>(key: string, initialValue: T) {
   }, [key, initialValue]);
 
   return [value, setValue, clear, isLoaded] as const;
-} 
+}

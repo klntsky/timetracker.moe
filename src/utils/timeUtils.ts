@@ -10,9 +10,11 @@
 export function isToday(dateString: string): boolean {
   const date = new Date(dateString);
   const today = new Date();
-  return date.getDate() === today.getDate() &&
-         date.getMonth() === today.getMonth() &&
-         date.getFullYear() === today.getFullYear();
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  );
 }
 
 /**
@@ -41,19 +43,19 @@ export function ensureArray<T>(possibleArray: T[] | undefined | null): T[] {
  */
 export function getWeekDays(weekOffset: number, weekStartsOn: 'sunday' | 'saturday'): Date[] {
   const now = new Date();
-  
+
   // Calculate the start of the week with offset
   const weekStart = new Date(now);
   const offset = weekStartsOn === 'sunday' ? 1 : 0;
   const diff = (weekStart.getDay() + 7 - offset) % 7;
-  
-  weekStart.setDate(weekStart.getDate() - diff + (weekOffset * 7));
+
+  weekStart.setDate(weekStart.getDate() - diff + weekOffset * 7);
   weekStart.setHours(0, 0, 0, 0);
-  
+
   // Generate the days of the week
   return Array.from({ length: 7 }, (_, i) => {
     const day = new Date(weekStart);
     day.setDate(weekStart.getDate() + i);
     return day;
   });
-} 
+}

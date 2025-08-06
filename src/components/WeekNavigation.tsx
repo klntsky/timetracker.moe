@@ -11,14 +11,14 @@ const WeekNavigation: React.FC<WeekNavigationProps> = ({
   weekOffset,
   goToPreviousWeek,
   goToCurrentWeek,
-  goToNextWeek
+  goToNextWeek,
 }) => {
   // Check if we're on the current week
   const isCurrentWeek = weekOffset === 0;
 
   return (
     <div className="week-nav-controls">
-      <button 
+      <button
         className="btn btn-sm btn-outline-secondary"
         onClick={goToPreviousWeek}
         title="Previous Week"
@@ -26,7 +26,7 @@ const WeekNavigation: React.FC<WeekNavigationProps> = ({
         <i className="fas fa-chevron-left"></i>
       </button>
 
-      <button 
+      <button
         className="btn btn-sm btn-outline-secondary mx-2"
         onClick={goToNextWeek}
         title="Next Week"
@@ -35,7 +35,7 @@ const WeekNavigation: React.FC<WeekNavigationProps> = ({
       </button>
 
       {!isCurrentWeek && (
-        <button 
+        <button
           className="btn btn-sm btn-outline-primary ml-auto"
           onClick={goToCurrentWeek}
           title="Go to today's date"
@@ -47,4 +47,4 @@ const WeekNavigation: React.FC<WeekNavigationProps> = ({
   );
 };
 
-export default WeekNavigation; 
+export default WeekNavigation;

@@ -12,15 +12,15 @@ interface ProjectContextValue {
 
 const ProjectContext = createContext<ProjectContextValue | undefined>(undefined);
 
-export function ProjectProvider({ 
-  children, 
+export function ProjectProvider({
+  children,
   projects,
   addProject,
   renameProject,
   updateProject,
   deleteProject,
   reorderProjects,
-}: { 
+}: {
   children: ReactNode;
   projects: Project[];
   addProject: () => Project;
@@ -30,14 +30,16 @@ export function ProjectProvider({
   reorderProjects: (draggedId: number, targetId: number, insertAfter?: boolean) => void;
 }) {
   return (
-    <ProjectContext.Provider value={{ 
-      projects, 
-      addProject, 
-      renameProject, 
-      updateProject, 
-      deleteProject, 
-      reorderProjects 
-    }}>
+    <ProjectContext.Provider
+      value={{
+        projects,
+        addProject,
+        renameProject,
+        updateProject,
+        deleteProject,
+        reorderProjects,
+      }}
+    >
       {children}
     </ProjectContext.Provider>
   );
@@ -49,4 +51,4 @@ export function useProjectContext() {
     throw new Error('useProjectContext must be used within a ProjectProvider');
   }
   return context;
-} 
+}

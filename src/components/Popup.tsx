@@ -42,20 +42,13 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onClose, title, children }) => {
       <div className="popup-content" ref={modalRef}>
         <div className="popup-header">
           <h5 className="popup-title">{title}</h5>
-          <button 
-            type="button" 
-            className="btn-close" 
-            onClick={onClose}
-            aria-label="Close"
-          />
+          <button type="button" className="btn-close" onClick={onClose} aria-label="Close" />
         </div>
-        <div className="popup-body">
-          {children}
-        </div>
+        <div className="popup-body">{children}</div>
       </div>
     </div>,
     document.body
   );
 };
 
-export default Popup; 
+export default Popup;

@@ -21,7 +21,7 @@ class IdGenerator {
 
   private async initialize(): Promise<void> {
     if (this.initialized) return;
-    
+
     try {
       const stored = await storage.get<number>(ID_COUNTER_KEY);
       if (stored !== null) {
@@ -170,4 +170,4 @@ export async function resetCounter(value: number = 1): Promise<void> {
  */
 export async function resyncCounter(projects: Project[], entries: TimeEntry[]): Promise<void> {
   return idGenerator.resync(projects, entries);
-} 
+}

@@ -6,7 +6,7 @@ import { storage } from '../storage';
 
 interface EntriesState {
   entries: TimeEntry[];
-  
+
   // Actions
   addEntry: (entry: TimeEntry) => void;
   updateEntry: (id: number, updates: Partial<TimeEntry>) => void;
@@ -81,4 +81,4 @@ export const useEntriesStore = create<EntriesState>()(
       storage: createJSONStorage(() => customStorage),
     }
   )
-); 
+);

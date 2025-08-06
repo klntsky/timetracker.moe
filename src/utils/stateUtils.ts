@@ -12,7 +12,7 @@ import { TimeEntry, Project } from '../types';
  */
 export function findEntryById(entries: TimeEntry[], entryId: number | null): TimeEntry | null {
   if (!entryId) return null;
-  return entries.find(e => e.id === entryId) || null;
+  return entries.find((e) => e.id === entryId) || null;
 }
 
 /**
@@ -23,7 +23,7 @@ export function findEntryById(entries: TimeEntry[], entryId: number | null): Tim
  */
 export function projectExists(projects: Project[], projectId: number | null): boolean {
   if (!projectId) return false;
-  return projects.some(p => p.id === projectId);
+  return projects.some((p) => p.id === projectId);
 }
 
 /**
@@ -57,23 +57,23 @@ export function shouldShowResumeButton(
   if (isRunning) {
     return false;
   }
-  
+
   // Check if last entry exists and its project is valid
   const lastEntry = findEntryById(entries, lastEntryId);
   if (lastEntry && entryProjectExists(lastEntry, projects)) {
     return true;
   }
-  
+
   // Check if last project exists
   if (projectExists(projects, lastProjectId)) {
     return true;
   }
-  
+
   // Show if only one project exists
   if (projects.length === 1) {
     return true;
   }
-  
+
   // Hide in all other cases
   return false;
-} 
+}

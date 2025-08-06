@@ -49,4 +49,4 @@ const DayCell: React.FC<DayCellProps> = ({
   );
 };
 
-export default React.memo(DayCell); 
+export default React.memo(DayCell);

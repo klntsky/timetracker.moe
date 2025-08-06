@@ -9,7 +9,11 @@ export type PresetRange =
   | 'LAST_MONTH'
   | 'CUSTOM';
 
-export function getRange(range: PresetRange, settings: Settings, custom?: {from?:string;to?:string;}): [Date, Date] {
+export function getRange(
+  range: PresetRange,
+  settings: Settings,
+  custom?: { from?: string; to?: string }
+): [Date, Date] {
   const now = new Date();
   let start = new Date();
   let end = new Date();

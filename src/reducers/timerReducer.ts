@@ -22,54 +22,68 @@ export const timerActions = {
     type: 'START_TIMER',
     entryId,
     projectId,
-    startTime
+    startTime,
   }),
-  
+
   stopTimer: (): TimerAction => ({
-    type: 'STOP_TIMER'
+    type: 'STOP_TIMER',
   }),
-  
+
   updateTimerState: (running: boolean, start: string | null): TimerAction => ({
     type: 'UPDATE_TIMER_STATE',
     running,
-    start
+    start,
   }),
-  
+
   updateProjectId: (projectId: number): TimerAction => ({
     type: 'UPDATE_PROJECT_ID',
-    projectId
+    projectId,
   }),
 
   setTimer: (timer: TimerState): TimerAction => ({
     type: 'SET_TIMER',
-    timer
-  })
+    timer,
+  }),
 };
 
 // Timer reducer function with ts-pattern
 export function timerReducer(state: TimerState, action: TimerAction): TimerState {
   return match(action)
-    .with({ type: 'START_TIMER' }, ({ entryId, projectId, startTime }: { entryId: number; projectId: number; startTime: string }) => ({
-      ...state,
-      running: true,
-      start: startTime,
-      lastEntryId: entryId,
-      lastProjectId: projectId
-    }))
+    .with(
+      { type: 'START_TIMER' },
+      ({
+        entryId,
+        projectId,
+        startTime,
+      }: {
+        entryId: number;
+        projectId: number;
+        startTime: string;
+      }) => ({
+        ...state,
+        running: true,
+        start: startTime,
+        lastEntryId: entryId,
+        lastProjectId: projectId,
+      })
+    )
     .with({ type: 'STOP_TIMER' }, () => ({
       ...state,
       running: false,
-      start: null
+      start: null,
     }))
-    .with({ type: 'UPDATE_TIMER_STATE' }, ({ running, start }: { running: boolean; start: string | null }) => ({
-      ...state,
-      running,
-      start
-    }))
+    .with(
+      { type: 'UPDATE_TIMER_STATE' },
+      ({ running, start }: { running: boolean; start: string | null }) => ({
+        ...state,
+        running,
+        start,
+      })
+    )
     .with({ type: 'UPDATE_PROJECT_ID' }, ({ projectId }: { projectId: number }) => ({
       ...state,
-      lastProjectId: projectId
+      lastProjectId: projectId,
     }))
     .with({ type: 'SET_TIMER' }, ({ timer }: { timer: TimerState }) => timer)
     .exhaustive();
-} 
+}

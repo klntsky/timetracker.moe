@@ -8,20 +8,16 @@ interface TimerContextValue {
 
 const TimerContext = createContext<TimerContextValue | undefined>(undefined);
 
-export function TimerProvider({ 
-  children, 
-  isRunning, 
-  projects 
-}: { 
-  children: ReactNode; 
-  isRunning: boolean; 
+export function TimerProvider({
+  children,
+  isRunning,
+  projects,
+}: {
+  children: ReactNode;
+  isRunning: boolean;
   projects: Project[];
 }) {
-  return (
-    <TimerContext.Provider value={{ isRunning, projects }}>
-      {children}
-    </TimerContext.Provider>
-  );
+  return <TimerContext.Provider value={{ isRunning, projects }}>{children}</TimerContext.Provider>;
 }
 
 export function useTimerContext() {
@@ -30,4 +26,4 @@ export function useTimerContext() {
     throw new Error('useTimerContext must be used within a TimerProvider');
   }
   return context;
-} 
+}

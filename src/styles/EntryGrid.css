@@ -110,8 +110,12 @@
 }
 
 @keyframes fade-out-bg {
-  0% { background-color: var(--color-success-bg); }
-  100% { background-color: var(--color-input-bg); }
+  0% {
+    background-color: var(--color-success-bg);
+  }
+  100% {
+    background-color: var(--color-input-bg);
+  }
 }
 
 /* Styles for the add entry button */
@@ -135,7 +139,9 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
   cursor: pointer;
   color: var(--color-text-emphasis);
 }
@@ -285,4 +291,4 @@
 .comment-placeholder {
   color: var(--color-text-muted);
   font-style: italic;
-} 
+}

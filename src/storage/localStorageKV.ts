@@ -28,4 +28,4 @@ export class LocalStorageKV implements KVStore {
       // ignore storage errors
     }
   }
-} 
+}

@@ -8,25 +8,20 @@ interface EntryContextValue {
   // State
   entries: TimeEntry[];
   lastUsedEntry?: TimeEntry | null;
-  
+
   // Core operations
   setEntries: (entries: TimeEntry[]) => void;
   addEntry: (entry: TimeEntry) => void;
   updateEntry: (entryId: number, updates: Partial<TimeEntry>) => void;
-  
+
   // Enhanced operations (with timer integration)
   deleteEntry: (id: number) => void;
   changeEntryProject: (id: number, projectId: number) => void;
-  
 }
 
 const EntryContext = createContext<EntryContextValue | undefined>(undefined);
 
-export function EntryProvider({ 
-  children,
-}: { 
-  children: ReactNode;
-}) {
+export function EntryProvider({ children }: { children: ReactNode }) {
   // Get state from stores
   const {
     entries,
@@ -37,12 +32,7 @@ export function EntryProvider({
     setEntries,
   } = useEntriesStore();
 
-  const {
-    running: isRunning,
-    lastEntryId,
-    stopTimer,
-    updateProjectId,
-  } = useTimerStore();
+  const { running: isRunning, lastEntryId, stopTimer, updateProjectId } = useTimerStore();
 
   // Enhanced delete with timer handling
   const deleteEntry = useCallback(
@@ -54,7 +44,7 @@ export function EntryProvider({
 
       deleteEntryBase(id);
     },
-    [isRunning, lastEntryId, stopTimer, deleteEntryBase],
+    [isRunning, lastEntryId, stopTimer, deleteEntryBase]
   );
 
   // Enhanced changeEntryProject with timer state update
@@ -67,14 +57,14 @@ export function EntryProvider({
 
       changeEntryProjectBase(id, projectId);
     },
-    [lastEntryId, updateProjectId, changeEntryProjectBase],
+    [lastEntryId, updateProjectId, changeEntryProjectBase]
   );
 
   // Compute lastUsedEntry
   const lastUsedEntry = findEntryById(entries, lastEntryId);
 
   return (
-    <EntryContext.Provider 
+    <EntryContext.Provider
       value={{
         entries,
         setEntries,
@@ -96,4 +86,4 @@ export function useEntryContext() {
     throw new Error('useEntryContext must be used within an EntryProvider');
   }
   return context;
-} 
+}

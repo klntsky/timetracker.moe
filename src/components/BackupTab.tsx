@@ -6,8 +6,8 @@ import { Project, TimeEntry } from '../types';
 const BackupTab: React.FC = () => {
   const exportData = async () => {
     try {
-      const data: Record<string, any> = {};
-      
+      const data: Record<string, unknown> = {};
+
       // List of keys to export
       const keysToExport = [
         'timetracker.moe.entries',
@@ -20,9 +20,9 @@ const BackupTab: React.FC = () => {
         'timetracker.moe.reportPreset',
         'timetracker.moe.reportFromDate',
         'timetracker.moe.reportToDate',
-        'timetracker.moe.weekOffset'
+        'timetracker.moe.weekOffset',
       ];
-      
+
       // Export all relevant data using storage abstraction
       for (const key of keysToExport) {
         const value = await storage.get(key);
@@ -30,7 +30,7 @@ const BackupTab: React.FC = () => {
           data[key] = value;
         }
       }
-      
+
       // Also check localStorage directly for any legacy data
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -42,7 +42,7 @@ const BackupTab: React.FC = () => {
           }
         }
       }
-      
+
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -64,19 +64,19 @@ const BackupTab: React.FC = () => {
     reader.onload = async (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
-        
+
         // Import data using storage abstraction
         for (const key in data) {
           if (key.startsWith('timetracker.moe.')) {
             await storage.set(key, data[key]);
           }
         }
-        
+
         // Resync the ID counter to prevent conflicts with imported data
-        const projects = await storage.get<Project[]>('timetracker.moe.projects') || [];
-        const entries = await storage.get<TimeEntry[]>('timetracker.moe.entries') || [];
+        const projects = (await storage.get<Project[]>('timetracker.moe.projects')) || [];
+        const entries = (await storage.get<TimeEntry[]>('timetracker.moe.entries')) || [];
         await resyncCounter(projects, entries);
-        
+
         alert('Data imported successfully. Please refresh the page.');
       } catch (err) {
         console.error('Import failed:', err);
@@ -98,19 +98,20 @@ const BackupTab: React.FC = () => {
       </div>
       <div>
         <p>Import data from a previously exported JSON file.</p>
-        <input 
-          type="file" 
-          accept=".json" 
-          onChange={importData} 
+        <input
+          type="file"
+          accept=".json"
+          onChange={importData}
           className="form-control"
           style={{ maxWidth: '400px' }}
         />
         <small className="form-text text-muted">
-          Note: Importing will merge with existing data. Duplicate IDs will be handled automatically.
+          Note: Importing will merge with existing data. Duplicate IDs will be handled
+          automatically.
         </small>
       </div>
     </>
   );
 };
 
-export default BackupTab; 
+export default BackupTab;

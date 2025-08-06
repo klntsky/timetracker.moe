@@ -2,8 +2,29 @@
 @import './styles/themes.css';
 
 /* override / tweaks on top of bootstrap */
-.week-grid { display: grid; grid-template-columns: 200px repeat(7, 1fr); gap: .5rem; }
-.week-grid .header { font-weight: 600; text-align: center; }
-.week-grid .cell { min-height: 48px; border: 1px solid var(--color-border-light); padding: .25rem; background: var(--color-bg-elevated); font-size: .875rem; position: relative; }
-.ellipsis-btn { border: none; background: transparent; color: var(--color-text-secondary); cursor: pointer; }
-.ellipsis-btn:hover { color: var(--color-text-primary); }
+.week-grid {
+  display: grid;
+  grid-template-columns: 200px repeat(7, 1fr);
+  gap: 0.5rem;
+}
+.week-grid .header {
+  font-weight: 600;
+  text-align: center;
+}
+.week-grid .cell {
+  min-height: 48px;
+  border: 1px solid var(--color-border-light);
+  padding: 0.25rem;
+  background: var(--color-bg-elevated);
+  font-size: 0.875rem;
+  position: relative;
+}
+.ellipsis-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.ellipsis-btn:hover {
+  color: var(--color-text-primary);
+}

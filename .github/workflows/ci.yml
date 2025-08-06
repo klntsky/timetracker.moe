@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: CI
 
 on:
   push:
@@ -6,17 +6,8 @@ on:
   pull_request:
     branches: [ master ]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  build:
+  quality-checks:
     runs-on: ubuntu-latest
     
     steps:
@@ -47,31 +38,19 @@ jobs:
             ${{ runner.os }}-pnpm-store-
           
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
         
-      - name: Run all quality checks
-        run: pnpm run check-all
+      - name: TypeScript type checking
+        run: pnpm run type-check
+        
+      - name: ESLint
+        run: pnpm run lint
+        
+      - name: Prettier format check
+        run: pnpm run format:check
         
       - name: Build
-        run: pnpm build
+        run: pnpm run build
         
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/master'
-    
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4 
+      - name: Check for outdated dependencies
+        run: pnpm run deps || true  # Don't fail on outdated deps, just warn 

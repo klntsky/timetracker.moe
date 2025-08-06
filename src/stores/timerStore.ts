@@ -10,13 +10,13 @@ interface TimerStoreState {
   start: string | null;
   lastEntryId: number | null;
   lastProjectId: number | null;
-  
+
   // Actions
   startTimer: (entryId: number, projectId: number, startTime?: string) => void;
   stopTimer: () => void;
   updateProjectId: (projectId: number) => void;
   setTimer: (timer: TimerState) => void;
-  
+
   // Computed
   getElapsedMs: () => number;
 }
@@ -73,7 +73,7 @@ export const useTimerStore = create<TimerStoreState>()(
       getElapsedMs: () => {
         const state = get();
         if (!state.running || !state.start) return 0;
-        
+
         const now = new Date();
         const startTime = new Date(state.start);
         return Math.max(0, now.getTime() - startTime.getTime());
@@ -84,4 +84,4 @@ export const useTimerStore = create<TimerStoreState>()(
       storage: createJSONStorage(() => customStorage),
     }
   )
-); 
+);

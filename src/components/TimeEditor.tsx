@@ -28,9 +28,9 @@ const TimeEditor = ({ duration, onSave, onCancel }: TimeEditorProps) => {
     if (validateTime(value)) {
       const [hours, minutes] = value.split(':').map(Number);
       // Convert hours and minutes to milliseconds as expected by the application
-      const newDuration = (hours * 3600000) + (minutes * 60000);
+      const newDuration = hours * 3600000 + minutes * 60000;
       setIsFadingOut(true);
-      
+
       // Delay the save slightly to allow the animation to be seen
       setTimeout(() => {
         onSave(newDuration);
@@ -78,4 +78,4 @@ const TimeEditor = ({ duration, onSave, onCancel }: TimeEditorProps) => {
   );
 };
 
-export default TimeEditor; 
+export default TimeEditor;

@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
-import { Project, TimeEntry, Settings } from '../types';
-import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
-import Dropdown from './Dropdown';
-import EditableProjectName from './EditableProjectName';
+import React from 'react';
+import { TimeEntry, Settings } from '../types';
+
 import './TrackTab.css';
-import { isToday, getWeekDays } from '../utils/timeUtils';
+import { getWeekDays } from '../utils/timeUtils';
 import EntryGrid from './EntryGrid';
 import { usePersistedState } from '../hooks/usePersistedState';
 import { useEntryContext } from '../contexts/EntryContext';
@@ -16,16 +14,12 @@ interface Props {
   toggleTimer: () => void;
 }
 
-function TrackTabComponent({
-  settings,
-  resumeEntry,
-  toggleTimer,
-}: Props) {
+function TrackTabComponent({ settings, resumeEntry, toggleTimer }: Props) {
   const [weekOffset, setWeekOffset] = usePersistedState('timetracker.moe.weekOffset', 0); // 0 = current week, -1 = last week, 1 = next week
 
   const { entries, addEntry } = useEntryContext();
-  
-  const { addProject, renameProject } = useProjectContext();
+
+  const { addProject } = useProjectContext();
 
   const weekStartsOn = settings.weekEndsOn === 'sunday' ? 'sunday' : 'saturday';
 
@@ -36,22 +30,10 @@ function TrackTabComponent({
   const goToCurrentWeek = () => setWeekOffset(0);
   const goToNextWeek = () => setWeekOffset(weekOffset + 1);
 
-  const entriesForDay = (projId: number, d: Date) =>
-    entries.filter(
-      (e: TimeEntry) =>
-        e.projectId === projId &&
-        new Date(e.start) >= d &&
-        new Date(e.start) < new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
-    );
-
-  const handleRenameProject = (projectId: number, newName: string) => {
-    renameProject(projectId, newName);
-  };
-
   return (
     <>
       <div className="week-grid">
-        <EntryGrid 
+        <EntryGrid
           days={days}
           entries={entries}
           resumeEntry={resumeEntry}
@@ -63,7 +45,9 @@ function TrackTabComponent({
           goToNextWeek={goToNextWeek}
         />
       </div>
-      <button className="btn btn-outline-primary mt-3" onClick={addProject}>+ Add project</button>
+      <button className="btn btn-outline-primary mt-3" onClick={addProject}>
+        + Add project
+      </button>
     </>
   );
 }

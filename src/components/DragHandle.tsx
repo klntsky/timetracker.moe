@@ -30,4 +30,4 @@ const DragHandle: React.FC<DragHandleProps> = ({ onDragStart, className = '' }) 
   );
 };
 
-export default DragHandle; 
+export default DragHandle;

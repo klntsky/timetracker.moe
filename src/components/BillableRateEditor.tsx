@@ -7,11 +7,7 @@ interface BillableRateEditorProps {
   onCancel: () => void;
 }
 
-const BillableRateEditor: React.FC<BillableRateEditorProps> = ({
-  project,
-  onSave,
-  onCancel
-}) => {
+const BillableRateEditor: React.FC<BillableRateEditorProps> = ({ project, onSave, onCancel }) => {
   // Initial state based on project's current billable rate
   const [amount, setAmount] = useState(project.billableRate?.amount || 0);
   const [currency, setCurrency] = useState(project.billableRate?.currency || 'USD');
@@ -24,18 +20,19 @@ const BillableRateEditor: React.FC<BillableRateEditorProps> = ({
 
   const handleSave = () => {
     let updatedProject: Project;
-    
+
     if (!hasBillableRate || amount === 0) {
       // Create a new object without the billableRate property
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { billableRate, ...rest } = project;
       updatedProject = { ...rest };
     } else {
-      updatedProject = { 
+      updatedProject = {
         ...project,
-        billableRate: { amount, currency }
+        billableRate: { amount, currency },
       };
     }
-    
+
     onSave(updatedProject);
   };
 
@@ -55,12 +52,14 @@ const BillableRateEditor: React.FC<BillableRateEditorProps> = ({
           </label>
         </div>
       </div>
-      
+
       {hasBillableRate && (
         <div className="row">
           <div className="col-4">
             <div className="mb-3">
-              <label htmlFor="currency" className="form-label">Currency</label>
+              <label htmlFor="currency" className="form-label">
+                Currency
+              </label>
               <input
                 id="currency"
                 type="text"
@@ -73,7 +72,9 @@ const BillableRateEditor: React.FC<BillableRateEditorProps> = ({
           </div>
           <div className="col-8">
             <div className="mb-3">
-              <label htmlFor="amount" className="form-label">Rate per hour</label>
+              <label htmlFor="amount" className="form-label">
+                Rate per hour
+              </label>
               <input
                 id="amount"
                 type="number"
@@ -87,18 +88,12 @@ const BillableRateEditor: React.FC<BillableRateEditorProps> = ({
           </div>
         </div>
       )}
-      
+
       <div className="d-flex justify-content-end mt-4 gap-2">
-        <button 
-          className="btn btn-secondary" 
-          onClick={onCancel}
-        >
+        <button className="btn btn-secondary" onClick={onCancel}>
           Cancel
         </button>
-        <button 
-          className="btn btn-primary" 
-          onClick={handleSave}
-        >
+        <button className="btn btn-primary" onClick={handleSave}>
           Save
         </button>
       </div>
@@ -106,4 +101,4 @@ const BillableRateEditor: React.FC<BillableRateEditorProps> = ({
   );
 };
 
-export default BillableRateEditor; 
+export default BillableRateEditor;

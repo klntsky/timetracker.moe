@@ -34,8 +34,8 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
 }) => {
   const [projectMenuOpenId, setProjectMenuOpenId] = useState<number | null>(null);
   const [editingBillableRate, setEditingBillableRate] = useState<Project | null>(null);
-  
-  const { renameProject, updateProject, deleteProject } = useProjectContext();
+
+  const { updateProject } = useProjectContext();
 
   const openBillableRateEditor = (p: Project) => setEditingBillableRate(p);
   const handleBillableRateSave = (updated: Project) => {
@@ -87,4 +87,4 @@ const ProjectRow: React.FC<ProjectRowProps> = ({
   );
 };
 
-export default React.memo(ProjectRow); 
+export default React.memo(ProjectRow);

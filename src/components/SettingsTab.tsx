@@ -13,16 +13,16 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, setSettings }) => {
       <h3>Settings</h3>
       <label className="form-label">
         Week ends on:
-        <select 
-          className="form-select w-auto d-inline-block ms-2" 
-          value={settings.weekEndsOn} 
+        <select
+          className="form-select w-auto d-inline-block ms-2"
+          value={settings.weekEndsOn}
           onChange={(e) => setSettings({ weekEndsOn: e.target.value as Settings['weekEndsOn'] })}
         >
           <option value="sunday">Sunday</option>
           <option value="saturday">Saturday</option>
         </select>
       </label>
-      
+
       <div className="mt-3">
         <ThemeToggle />
       </div>
@@ -30,4 +30,4 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, setSettings }) => {
   );
 };
 
-export default SettingsTab; 
+export default SettingsTab;

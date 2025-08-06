@@ -12,10 +12,10 @@ export function useIdGeneratorSync(projects: Project[], entries: TimeEntry[]) {
   useEffect(() => {
     // Only sync once when we have data
     if (!hasSyncedRef.current && (projects.length > 0 || entries.length > 0)) {
-      resyncCounter(projects, entries).catch(error => {
+      resyncCounter(projects, entries).catch((error) => {
         console.error('Failed to sync ID generator:', error);
       });
       hasSyncedRef.current = true;
     }
   }, [projects, entries]);
-} 
+}

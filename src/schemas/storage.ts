@@ -16,13 +16,13 @@ export const StorageTimeEntrySchema = z.object({
   s: z.string(), // start (ISO string)
   d: z.number(), // duration in milliseconds
   n: z.string().optional(), // note
-  a: z.literal(true).optional() // active (only stored if true)
+  a: z.literal(true).optional(), // active (only stored if true)
 });
 
 // Storage schema for billable rate
 const StorageBillableRateSchema = z.object({
   a: z.number(), // amount
-  c: z.string()  // currency
+  c: z.string(), // currency
 });
 
 // Storage schema for projects (minimal field names)
@@ -30,12 +30,12 @@ export const StorageProjectSchema = z.object({
   i: z.number(), // id
   n: z.string(), // name
   u: z.string(), // updatedAt
-  b: StorageBillableRateSchema.optional() // billableRate
+  b: StorageBillableRateSchema.optional(), // billableRate
 });
 
 // Storage schema for settings (minimal field names)
 export const StorageSettingsSchema = z.object({
-  w: z.enum(['sunday', 'saturday']) // weekEndsOn
+  w: z.enum(['sunday', 'saturday']), // weekEndsOn
 });
 
 // Array schemas
@@ -55,12 +55,12 @@ export function timeEntryToStorage(entry: TimeEntry): StorageTimeEntry {
     i: entry.id,
     p: entry.projectId,
     s: entry.start,
-    d: entry.duration
+    d: entry.duration,
   };
-  
+
   if (entry.note) storage.n = entry.note;
   if (entry.active === true) storage.a = true; // Only store if true
-  
+
   return storage;
 }
 
@@ -74,7 +74,7 @@ export function timeEntryFromStorage(storage: StorageTimeEntry): TimeEntry {
     start: storage.s,
     duration: storage.d,
     note: storage.n,
-    active: storage.a === true // false if not present
+    active: storage.a === true, // false if not present
   };
 }
 
@@ -85,16 +85,16 @@ export function projectToStorage(project: Project): StorageProject {
   const storage: StorageProject = {
     i: project.id,
     n: project.name,
-    u: project.updatedAt
+    u: project.updatedAt,
   };
-  
+
   if (project.billableRate) {
     storage.b = {
       a: project.billableRate.amount,
-      c: project.billableRate.currency
+      c: project.billableRate.currency,
     };
   }
-  
+
   return storage;
 }
 
@@ -105,16 +105,16 @@ export function projectFromStorage(storage: StorageProject): Project {
   const project: Project = {
     id: storage.i,
     name: storage.n,
-    updatedAt: storage.u
+    updatedAt: storage.u,
   };
-  
+
   if (storage.b) {
     project.billableRate = {
       amount: storage.b.a,
-      currency: storage.b.c
+      currency: storage.b.c,
     };
   }
-  
+
   return project;
 }
 
@@ -123,7 +123,7 @@ export function projectFromStorage(storage: StorageProject): Project {
  */
 export function settingsToStorage(settings: Settings): StorageSettings {
   return {
-    w: settings.weekEndsOn
+    w: settings.weekEndsOn,
   };
 }
 
@@ -132,6 +132,6 @@ export function settingsToStorage(settings: Settings): StorageSettings {
  */
 export function settingsFromStorage(storage: StorageSettings): Settings {
   return {
-    weekEndsOn: storage.w
+    weekEndsOn: storage.w,
   };
-} 
+}

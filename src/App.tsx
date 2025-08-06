@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -8,7 +8,7 @@ import { useProjects } from './hooks/useProjects';
 import { useTimeEntries } from './hooks/useTimeEntries';
 import { useSimpleStorage } from './hooks/useSimpleStorage';
 import { useIdGeneratorSync } from './hooks/useIdGeneratorSync';
-import { Settings, TimeEntry } from './types';
+import { Settings } from './types';
 import { TimerProvider } from './contexts/TimerContext';
 import { EntryProvider } from './contexts/EntryContext';
 import { ProjectProvider } from './contexts/ProjectContext';
@@ -24,17 +24,23 @@ export default function App() {
   useTheme();
 
   // time entries management
-  const { entries, setEntries, addEntry: addEntryBase, toggleTimer, canResumeTimerButton, resumeEntry, timer, elapsedMs } = useTimeEntries();
-  
-  const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } = useProjects(entries, setEntries);
+  const { entries, setEntries, toggleTimer, canResumeTimerButton, resumeEntry, timer, elapsedMs } =
+    useTimeEntries();
+
+  const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } =
+    useProjects(entries, setEntries);
   useIdGeneratorSync(projects, entries); // Sync ID generator with loaded data
 
-
   // ─── Settings and Tab Management ──────────────────────────────────────────
-  const [settings, setSettings] = useSimpleStorage('timetracker.moe.settings', { weekEndsOn: 'sunday' } as Settings);
+  const [settings, setSettings] = useSimpleStorage('timetracker.moe.settings', {
+    weekEndsOn: 'sunday',
+  } as Settings);
 
   // ─── Current tab state ──────────────────────────────────────────────────
-  const [tab, setTab] = useSimpleStorage('timetracker.moe.currentTab', 'TRACK' as 'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP');
+  const [tab, setTab] = useSimpleStorage(
+    'timetracker.moe.currentTab',
+    'TRACK' as 'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP'
+  );
 
   // Define tabs that appear in the UI
   const tabs = [
@@ -75,10 +81,10 @@ export default function App() {
       <TimerProvider isRunning={timer.running} projects={projects}>
         <EntryProvider>
           <div className="app">
-            <TopBar 
+            <TopBar
               tabs={tabs}
               current={tab}
-              changeTab={(id: string) => setTab(id as any)}
+              changeTab={(id: string) => setTab(id as 'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP')}
               isRunning={timer.running}
               toggleTimer={handleToggleTimer}
               elapsedMs={elapsedMs}
@@ -94,23 +100,11 @@ export default function App() {
                 />
               )}
 
-              {tab === 'REPORTS' && (
-                <ReportsTab
-                  settings={settings}
-                  timerElapsedMs={elapsedMs}
-                />
-              )}
+              {tab === 'REPORTS' && <ReportsTab settings={settings} timerElapsedMs={elapsedMs} />}
 
-              {tab === 'SETTINGS' && (
-                <SettingsTab
-                  settings={settings}
-                  setSettings={setSettings}
-                />
-              )}
+              {tab === 'SETTINGS' && <SettingsTab settings={settings} setSettings={setSettings} />}
 
-              {tab === 'BACKUP' && (
-                <BackupTab />
-              )}
+              {tab === 'BACKUP' && <BackupTab />}
             </main>
           </div>
         </EntryProvider>

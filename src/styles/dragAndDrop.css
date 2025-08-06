@@ -85,7 +85,7 @@
     font-size: 16px;
     min-width: 32px;
   }
-  
+
   .project-header {
     /* Prevent text selection during touch drag */
     -webkit-user-select: none;
@@ -95,4 +95,4 @@
     /* Prevent touch callouts */
     -webkit-touch-callout: none;
   }
-} 
+}

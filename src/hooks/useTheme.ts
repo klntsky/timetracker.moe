@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { useSimpleStorage } from './useSimpleStorage';
 
-type Theme = 'light' | 'dark' | undefined;
+export type Theme = 'light' | 'dark' | undefined;
 
 export function useTheme() {
   const [theme, setTheme] = useSimpleStorage('timetracker.moe.theme', undefined as Theme);
 
   useEffect(() => {
     const root = document.documentElement;
-    
+
     if (theme === undefined) {
       // Remove data-theme attribute to let CSS @media (prefers-color-scheme) handle it
       root.removeAttribute('data-theme');
@@ -30,6 +30,6 @@ export function useTheme() {
     theme,
     setTheme,
     effectiveTheme: getEffectiveTheme(),
-    isSystemTheme: theme === undefined
+    isSystemTheme: theme === undefined,
   };
-} 
+}

@@ -13,18 +13,19 @@ const ProjectBillableRate: React.FC<ProjectBillableRateProps> = ({ project, onUp
 
   const handleSave = () => {
     let updatedProject: Project;
-    
+
     if (amount === 0) {
       // Create a new object without the billableRate property
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { billableRate, ...rest } = project;
       updatedProject = { ...rest };
     } else {
-      updatedProject = { 
+      updatedProject = {
         ...project,
-        billableRate: { amount, currency }
+        billableRate: { amount, currency },
       };
     }
-    
+
     onUpdate(updatedProject);
     setIsEditing(false);
   };
@@ -37,6 +38,7 @@ const ProjectBillableRate: React.FC<ProjectBillableRateProps> = ({ project, onUp
 
   const handleRemove = () => {
     // Create a new object without the billableRate property
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { billableRate, ...rest } = project;
     onUpdate({ ...rest });
   };
@@ -50,7 +52,7 @@ const ProjectBillableRate: React.FC<ProjectBillableRateProps> = ({ project, onUp
     <div className="billable-rate">
       {isEditing ? (
         <div className="d-flex gap-2 align-items-center">
-          <select 
+          <select
             className="form-select form-select-sm"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
@@ -68,33 +70,24 @@ const ProjectBillableRate: React.FC<ProjectBillableRateProps> = ({ project, onUp
             step="0.01"
             style={{ width: '80px' }}
           />
-          <button 
-            className="btn btn-sm btn-success py-0"
-            onClick={handleSave}
-          >
+          <button className="btn btn-sm btn-success py-0" onClick={handleSave}>
             <i className="fas fa-check"></i>
           </button>
-          <button 
-            className="btn btn-sm btn-outline-secondary py-0"
-            onClick={handleCancel}
-          >
+          <button className="btn btn-sm btn-outline-secondary py-0" onClick={handleCancel}>
             <i className="fas fa-times"></i>
           </button>
         </div>
       ) : (
         <div className="d-flex gap-2 align-items-center">
           <span>{formatRate()}</span>
-          <button 
+          <button
             className="btn btn-sm btn-outline-secondary py-0"
             onClick={() => setIsEditing(true)}
           >
             <i className="fas fa-edit"></i>
           </button>
           {project.billableRate && (
-            <button 
-              className="btn btn-sm btn-outline-danger py-0"
-              onClick={handleRemove}
-            >
+            <button className="btn btn-sm btn-outline-danger py-0" onClick={handleRemove}>
               <i className="fas fa-trash"></i>
             </button>
           )}
@@ -104,4 +97,4 @@ const ProjectBillableRate: React.FC<ProjectBillableRateProps> = ({ project, onUp
   );
 };
 
-export default ProjectBillableRate; 
+export default ProjectBillableRate;

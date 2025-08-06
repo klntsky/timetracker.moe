@@ -1,9 +1,9 @@
-import React, { useMemo, useCallback } from 'react';
+import React from 'react';
 import TimeGridHeader from './TimeGridHeader';
 import ProjectRow from './ProjectRow';
-import { Project, TimeEntry } from '../types';
+import { TimeEntry } from '../types';
 import { useDragReorder } from '../hooks/useDragReorder';
-import { useEntryContext } from '../contexts/EntryContext';
+
 import { useProjectContext } from '../contexts/ProjectContext';
 import { generateId } from '../utils/idGenerator';
 
@@ -33,10 +33,7 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
   goToNextWeek,
   entriesForDay,
 }: EntryGridViewProps) => {
-  // Use entry context for updateEntry
-  const { updateEntry } = useEntryContext();
-  
-  const { projects, renameProject, updateProject, deleteProject, reorderProjects } = useProjectContext();
+  const { projects, reorderProjects } = useProjectContext();
 
   // Setup drag and drop functionality
   const { handleDragStart, getDropZoneState } = useDragReorder(
@@ -49,7 +46,7 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
     const entryDate = new Date(day);
     const now = new Date();
     entryDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-    
+
     // Create new entry with proper ID generation
     const newEntry: TimeEntry = {
       id: generateId(),
@@ -57,9 +54,9 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
       start: entryDate.toISOString(),
       duration: 0,
       note: '',
-      autoEdit: true
+      autoEdit: true,
     };
-    
+
     addEntry(newEntry);
   };
 

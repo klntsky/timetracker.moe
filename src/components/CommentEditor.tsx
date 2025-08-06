@@ -11,7 +11,7 @@ const CommentEditor: React.FC<CommentEditorProps> = ({
   initialComment,
   onSave,
   onCancel,
-  position
+  position,
 }) => {
   const [comment, setComment] = useState(initialComment || '');
   const originalComment = useRef(initialComment || ''); // Store the true original value
@@ -51,18 +51,15 @@ const CommentEditor: React.FC<CommentEditorProps> = ({
   };
 
   return (
-    <div 
-      className="comment-editor-overlay"
-      onClick={handleCancel}
-    >
-              <div 
-          className="comment-editor-popup"
-          style={{
-            position: 'fixed',
-            left: position.x,
-            top: position.y,
-            zIndex: 1050
-          }}
+    <div className="comment-editor-overlay" onClick={handleCancel}>
+      <div
+        className="comment-editor-popup"
+        style={{
+          position: 'fixed',
+          left: position.x,
+          top: position.y,
+          zIndex: 1050,
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="comment-editor-body">
@@ -86,4 +83,4 @@ const CommentEditor: React.FC<CommentEditorProps> = ({
   );
 };
 
-export default CommentEditor; 
+export default CommentEditor;
