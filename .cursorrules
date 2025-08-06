@@ -1,2 +1,4 @@
 - Always use pnpm
 - never start the dev server. the user is assumed to run it continuously in background
+- do not add trivial comments
+- run linter and formatter after you have completed a task

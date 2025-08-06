@@ -14,22 +14,18 @@ interface Props {
   settings: Settings;
   resumeEntry: (entry: TimeEntry) => void;
   toggleTimer: () => void;
-  addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
 }
 
 function TrackTabComponent({
   settings,
   resumeEntry,
   toggleTimer,
-  addEntry,
 }: Props) {
   const [weekOffset, setWeekOffset] = usePersistedState('timetracker.moe.weekOffset', 0); // 0 = current week, -1 = last week, 1 = next week
 
-  // Get entries from context instead of props
-  const { entries } = useEntryContext();
+  const { entries, addEntry } = useEntryContext();
   
-  // Get project operations from context instead of props
-  const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } = useProjectContext();
+  const { addProject, renameProject } = useProjectContext();
 
   const weekStartsOn = settings.weekEndsOn === 'sunday' ? 'sunday' : 'saturday';
 
@@ -60,7 +56,7 @@ function TrackTabComponent({
           entries={entries}
           resumeEntry={resumeEntry}
           toggleTimer={toggleTimer}
-          addEntry={typeof addEntry === 'function' ? addEntry : undefined}
+          addEntry={addEntry}
           weekOffset={weekOffset}
           goToPreviousWeek={goToPreviousWeek}
           goToCurrentWeek={goToCurrentWeek}

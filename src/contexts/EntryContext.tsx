@@ -18,18 +18,14 @@ interface EntryContextValue {
   deleteEntry: (id: number) => void;
   changeEntryProject: (id: number, projectId: number) => void;
   
-  // Compatibility
-  addLegacyEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
 }
 
 const EntryContext = createContext<EntryContextValue | undefined>(undefined);
 
 export function EntryProvider({ 
   children,
-  addLegacyEntry,
 }: { 
   children: ReactNode;
-  addLegacyEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
 }) {
   // Get state from stores
   const {
@@ -87,7 +83,6 @@ export function EntryProvider({
         deleteEntry,
         changeEntryProject,
         lastUsedEntry,
-        addLegacyEntry,
       }}
     >
       {children}

@@ -5,6 +5,7 @@ import { Project, TimeEntry } from '../types';
 import { useDragReorder } from '../hooks/useDragReorder';
 import { useEntryContext } from '../contexts/EntryContext';
 import { useProjectContext } from '../contexts/ProjectContext';
+import { generateId } from '../utils/idGenerator';
 
 import '../styles/EntryGrid.css';
 import '../styles/dragAndDrop.css';
@@ -12,7 +13,7 @@ import '../styles/dragAndDrop.css';
 interface EntryGridViewProps {
   days: Date[];
   toggleTimer: () => void;
-  addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
+  addEntry?: (entry: TimeEntry) => void;
   resumeEntry: (entry: TimeEntry) => void;
   weekOffset: number;
   goToPreviousWeek: () => void;
@@ -44,15 +45,22 @@ const EntryGridView: React.FC<EntryGridViewProps> = ({
   );
 
   const addNewEntry = (projectId: number, day: Date) => {
-    if (typeof addEntry !== 'function') return;
+    if (!addEntry) return;
     const entryDate = new Date(day);
     const now = new Date();
     entryDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-    const newEntry = addEntry(projectId, 0, '', entryDate.toISOString());
-    // Set autoEdit flag on the newly created entry
-    if (newEntry && updateEntry) {
-      updateEntry(newEntry.id, { autoEdit: true });
-    }
+    
+    // Create new entry with proper ID generation
+    const newEntry: TimeEntry = {
+      id: generateId(),
+      projectId,
+      start: entryDate.toISOString(),
+      duration: 0,
+      note: '',
+      autoEdit: true
+    };
+    
+    addEntry(newEntry);
   };
 
   return (

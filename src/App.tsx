@@ -29,19 +29,6 @@ export default function App() {
   const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } = useProjects(entries, setEntries);
   useIdGeneratorSync(projects, entries); // Sync ID generator with loaded data
 
-  // Compatibility wrapper for addEntry to match the old interface
-  const addEntry = useCallback((projectId: number, duration: number, note?: string, start?: string) => {
-    const id = Math.max(0, ...entries.map(e => e.id)) + 1;
-    const entry: TimeEntry = {
-      id,
-      projectId,
-      start: start || new Date().toISOString(),
-      duration,
-      note,
-    };
-    addEntryBase(entry);
-    return entry;
-  }, [entries, addEntryBase]);
 
   // ─── Settings and Tab Management ──────────────────────────────────────────
   const [settings, setSettings] = useSimpleStorage('timetracker.moe.settings', { weekEndsOn: 'sunday' } as Settings);
@@ -86,7 +73,7 @@ export default function App() {
       reorderProjects={reorderProjects}
     >
       <TimerProvider isRunning={timer.running} projects={projects}>
-        <EntryProvider addLegacyEntry={addEntry}>
+        <EntryProvider>
           <div className="app">
             <TopBar 
               tabs={tabs}
@@ -104,7 +91,6 @@ export default function App() {
                   settings={settings}
                   resumeEntry={resumeEntry}
                   toggleTimer={handleToggleTimer}
-                  addEntry={addEntry}
                 />
               )}
 

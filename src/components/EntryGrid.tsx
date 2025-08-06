@@ -8,7 +8,7 @@ export interface EntryGridProps {
   days: Date[];
   entries: TimeEntry[];
   toggleTimer: () => void;
-  addEntry?: (projectId: number, duration: number, note?: string, start?: string) => TimeEntry;
+  addEntry?: (entry: TimeEntry) => void;
   resumeEntry: (entry: TimeEntry) => void;
   weekOffset: number;
   goToPreviousWeek: () => void;
