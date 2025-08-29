@@ -208,7 +208,7 @@
 .comment-text {
   flex: 1;
   margin-right: 4px;
-  font-size: 12px;
+  font-size: 18px;
   color: var(--color-text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
