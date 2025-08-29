@@ -12,6 +12,7 @@ import { Settings } from './types';
 import { TimerProvider } from './contexts/TimerContext';
 import { EntryProvider } from './contexts/EntryContext';
 import { ProjectProvider } from './contexts/ProjectContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import TopBar from './components/TopBar';
 import TrackTab from './components/TrackTab';
@@ -19,7 +20,9 @@ import ReportsTab from './components/ReportsTab';
 import SettingsTab from './components/SettingsTab';
 import BackupTab from './components/BackupTab';
 
-export default function App() {
+const queryClient = new QueryClient();
+
+function AppContent() {
   // Initialize theme immediately on app startup
   useTheme();
 
@@ -68,7 +71,6 @@ export default function App() {
   // Check if timer button should be shown for the standalone timer
   const showTimerButton = canResumeTimerButton(projects);
 
-  // ─── Render ──────────────────────────────────────────────────────────────
   return (
     <ProjectProvider
       projects={projects}
@@ -78,7 +80,7 @@ export default function App() {
       deleteProject={deleteProject}
       reorderProjects={reorderProjects}
     >
-      <TimerProvider isRunning={timer.running} projects={projects}>
+      <TimerProvider isRunning={timer.running} projects={projects} elapsedMs={elapsedMs}>
         <EntryProvider>
           <div className="app">
             <TopBar
@@ -110,5 +112,13 @@ export default function App() {
         </EntryProvider>
       </TimerProvider>
     </ProjectProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }

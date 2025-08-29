@@ -1,13 +1,9 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
+import { useSyncExternalStore } from 'react';
 import { TimeEntry } from '../types';
 import { storage } from '../storage';
 
 interface EntriesState {
   entries: TimeEntry[];
-
-  // Actions
   addEntry: (entry: TimeEntry) => void;
   updateEntry: (id: number, updates: Partial<TimeEntry>) => void;
   deleteEntry: (id: number) => void;
@@ -16,69 +12,123 @@ interface EntriesState {
   setEntries: (entries: TimeEntry[]) => void;
 }
 
-// Custom storage adapter for our async KV store
-const customStorage = {
-  getItem: async (name: string): Promise<string | null> => {
-    return await storage.get<string>(name);
+const STORAGE_KEY = 'timetracker.moe.entries';
+
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+function emitChange() {
+  for (const listener of Array.from(listeners)) {
+    try {
+      listener();
+    } catch (err) {
+      console.error('entriesStore listener error', err);
+    }
+  }
+}
+
+function subscribe(listener: Listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+async function persist() {
+  try {
+    await storage.set<TimeEntry[]>(STORAGE_KEY, store.entries);
+  } catch (err) {
+    console.error('entriesStore persist error', err);
+  }
+}
+
+function setEntriesInternal(next: TimeEntry[]) {
+  store.entries = next;
+  refreshSnapshot();
+  void persist();
+  emitChange();
+}
+
+async function hydrate() {
+  try {
+    const persisted = await storage.get<unknown>(STORAGE_KEY);
+    if (Array.isArray(persisted)) {
+      store.entries = persisted as TimeEntry[];
+    } else {
+      // Incompatible or missing data: reset to empty
+      store.entries = [];
+      await storage.set<TimeEntry[]>(STORAGE_KEY, []);
+    }
+    refreshSnapshot();
+    emitChange();
+  } catch (err) {
+    console.error('entriesStore hydrate error', err);
+    store.entries = [];
+    refreshSnapshot();
+    emitChange();
+  }
+}
+
+const store: EntriesState = {
+  entries: [],
+
+  addEntry: (entry) => {
+    setEntriesInternal([...store.entries, entry]);
   },
-  setItem: async (name: string, value: string): Promise<void> => {
-    await storage.set(name, value);
+
+  updateEntry: (id, updates) => {
+    setEntriesInternal(store.entries.map((e) => (e.id === id ? { ...e, ...updates } : e)));
   },
-  removeItem: async (name: string): Promise<void> => {
-    await storage.remove(name);
+
+  deleteEntry: (id) => {
+    setEntriesInternal(store.entries.filter((e) => e.id !== id));
+  },
+
+  changeEntryProject: (id, projectId) => {
+    setEntriesInternal(store.entries.map((e) => (e.id === id ? { ...e, projectId } : e)));
+  },
+
+  updateEntryDuration: (id, additionalMs) => {
+    setEntriesInternal(
+      store.entries.map((e) => (e.id === id ? { ...e, duration: e.duration + additionalMs } : e))
+    );
+  },
+
+  setEntries: (entries) => {
+    setEntriesInternal(entries);
   },
 };
 
-export const useEntriesStore = create<EntriesState>()(
-  persist(
-    immer((set) => ({
-      entries: [],
+let snapshot: EntriesState = {
+  get entries() {
+    return store.entries;
+  },
+  addEntry: store.addEntry,
+  updateEntry: store.updateEntry,
+  deleteEntry: store.deleteEntry,
+  changeEntryProject: store.changeEntryProject,
+  updateEntryDuration: store.updateEntryDuration,
+  setEntries: store.setEntries,
+};
 
-      addEntry: (entry) =>
-        set((state) => {
-          state.entries.push(entry);
-        }),
+function refreshSnapshot() {
+  snapshot = {
+    get entries() {
+      return store.entries;
+    },
+    addEntry: store.addEntry,
+    updateEntry: store.updateEntry,
+    deleteEntry: store.deleteEntry,
+    changeEntryProject: store.changeEntryProject,
+    updateEntryDuration: store.updateEntryDuration,
+    setEntries: store.setEntries,
+  };
+}
 
-      updateEntry: (id, updates) =>
-        set((state) => {
-          const index = state.entries.findIndex((e: TimeEntry) => e.id === id);
-          if (index !== -1) {
-            Object.assign(state.entries[index], updates);
-          }
-        }),
+void hydrate();
 
-      deleteEntry: (id) =>
-        set((state) => {
-          const index = state.entries.findIndex((e: TimeEntry) => e.id === id);
-          if (index !== -1) {
-            state.entries.splice(index, 1);
-          }
-        }),
+function getSnapshot(): EntriesState {
+  return snapshot;
+}
 
-      changeEntryProject: (id, projectId) =>
-        set((state) => {
-          const index = state.entries.findIndex((e: TimeEntry) => e.id === id);
-          if (index !== -1) {
-            state.entries[index].projectId = projectId;
-          }
-        }),
-
-      updateEntryDuration: (id, additionalMs) =>
-        set((state) => {
-          const index = state.entries.findIndex((e: TimeEntry) => e.id === id);
-          if (index !== -1) {
-            state.entries[index].duration += additionalMs;
-          }
-        }),
-
-      setEntries: (entries) =>
-        set((state) => {
-          state.entries = entries;
-        }),
-    })),
-    {
-      name: 'timetracker.moe.entries',
-      storage: createJSONStorage(() => customStorage),
-    }
-  )
-);
+export function useEntriesStore(): EntriesState {
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+}

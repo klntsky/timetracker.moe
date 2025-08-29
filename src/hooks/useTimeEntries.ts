@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import { TimeEntry, Project } from '../types';
 import { match, P } from 'ts-pattern';
-import { useEntriesStore } from '../stores/entriesStore';
-import { useTimerStore } from '../stores/timerStore';
 import { shouldShowResumeButton, findEntryById, entryProjectExists } from '../utils/stateUtils';
 import { ensureArray } from '../utils/timeUtils';
 import { generateId } from '../utils/idGenerator';
+import { useEntriesQuery } from './useEntriesQuery';
+import { useTimerQuery } from './useTimerQuery';
 
 export function useTimeEntries() {
   const {
@@ -16,18 +16,15 @@ export function useTimeEntries() {
     changeEntryProject: changeEntryProjectBase,
     updateEntryDuration,
     setEntries,
-  } = useEntriesStore();
+  } = useEntriesQuery();
 
   const {
-    running: isRunning,
-    start,
-    lastEntryId,
-    lastProjectId,
+    timer: { running: isRunning, start, lastEntryId, lastProjectId },
     startTimer: startTimerBase,
     stopTimer: stopTimerBase,
     updateProjectId,
     getElapsedMs,
-  } = useTimerStore();
+  } = useTimerQuery();
 
   // Create a new entry and start timer on it
   const newEntry = useCallback(

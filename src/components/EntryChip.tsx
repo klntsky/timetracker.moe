@@ -29,7 +29,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Use contexts to get state and functions
-  const { isRunning } = useTimerContext();
+  const { isRunning, elapsedMs } = useTimerContext();
   const { updateEntry, deleteEntry, changeEntryProject, lastUsedEntry } = useEntryContext();
   const { projects } = useProjectContext();
 
@@ -82,6 +82,8 @@ const EntryChip: React.FC<EntryChipProps> = ({
     setIsCommentOpen(true);
   };
 
+  const effectiveDuration = entry.active ? entry.duration + elapsedMs : entry.duration;
+
   return (
     <div
       className={`d-flex justify-content-between align-items-center ${entry.active ? 'active-entry' : ''} ${
@@ -106,7 +108,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
         <div className="flex-grow-1 d-flex align-items-center gap-1">
           {/* Time display */}
           <span
-            title={formatTimeHHMMSS(entry.duration)}
+            title={formatTimeHHMMSS(effectiveDuration)}
             className="time-display"
             onClick={() => {
               if (!entry.active) {
@@ -119,7 +121,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
             }}
             style={{ cursor: entry.active ? 'default' : 'pointer' }}
           >
-            <span className="time-text">{formatTimeHHMM(entry.duration)}</span>
+            <span className="time-text">{formatTimeHHMM(effectiveDuration)}</span>
             <div className="time-display-right">
               {entry.active ? (
                 <button

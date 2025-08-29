@@ -1,7 +1,7 @@
 import React, { createContext, useContext, ReactNode, useCallback } from 'react';
 import { TimeEntry } from '../types';
-import { useEntriesStore } from '../stores/entriesStore';
-import { useTimerStore } from '../stores/timerStore';
+import { useEntriesQuery } from '../hooks/useEntriesQuery';
+import { useTimerQuery } from '../hooks/useTimerQuery';
 import { findEntryById } from '../utils/stateUtils';
 
 interface EntryContextValue {
@@ -22,7 +22,6 @@ interface EntryContextValue {
 const EntryContext = createContext<EntryContextValue | undefined>(undefined);
 
 export function EntryProvider({ children }: { children: ReactNode }) {
-  // Get state from stores
   const {
     entries,
     addEntry,
@@ -30,37 +29,34 @@ export function EntryProvider({ children }: { children: ReactNode }) {
     deleteEntry: deleteEntryBase,
     changeEntryProject: changeEntryProjectBase,
     setEntries,
-  } = useEntriesStore();
+  } = useEntriesQuery();
 
-  const { running: isRunning, lastEntryId, stopTimer, updateProjectId } = useTimerStore();
+  const {
+    timer: { running: isRunning, lastEntryId },
+    stopTimer,
+    updateProjectId,
+  } = useTimerQuery();
 
-  // Enhanced delete with timer handling
   const deleteEntry = useCallback(
     (id: number) => {
-      // If deleting the currently running entry, stop the timer
       if (isRunning && lastEntryId === id) {
         stopTimer();
       }
-
       deleteEntryBase(id);
     },
     [isRunning, lastEntryId, stopTimer, deleteEntryBase]
   );
 
-  // Enhanced changeEntryProject with timer state update
   const changeEntryProject = useCallback(
     (id: number, projectId: number) => {
-      // If changing the last used entry's project, update the timer state
       if (lastEntryId === id) {
         updateProjectId(projectId);
       }
-
       changeEntryProjectBase(id, projectId);
     },
     [lastEntryId, updateProjectId, changeEntryProjectBase]
   );
 
-  // Compute lastUsedEntry
   const lastUsedEntry = findEntryById(entries, lastEntryId);
 
   return (
