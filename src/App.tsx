@@ -4,14 +4,13 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import './index.css';
 import { useTheme } from './hooks/useTheme';
-import { useProjects } from './hooks/useProjects';
 import { useTimeEntries } from './hooks/useTimeEntries';
 import { useSimpleStorage } from './hooks/useSimpleStorage';
 import { useIdGeneratorSync } from './hooks/useIdGeneratorSync';
 import { Settings } from './types';
 import { TimerProvider } from './contexts/TimerContext';
-import { EntryProvider } from './contexts/EntryContext';
-import { ProjectProvider } from './contexts/ProjectContext';
+import { EntryProvider, useEntryContext } from './contexts/EntryContext';
+import { ProjectProvider, useProjectContext } from './contexts/ProjectContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import TopBar from './components/TopBar';
@@ -26,12 +25,12 @@ function AppContent() {
   // Initialize theme immediately on app startup
   useTheme();
 
-  // time entries management
-  const { entries, setEntries, toggleTimer, canResumeTimerButton, resumeEntry, timer, elapsedMs } =
-    useTimeEntries();
+  // time entries & timer management
+  const { toggleTimer, canResumeTimerButton, resumeEntry, timer, elapsedMs } = useTimeEntries();
 
-  const { projects, addProject, renameProject, updateProject, deleteProject, reorderProjects } =
-    useProjects(entries, setEntries);
+  // projects & entries via context
+  const { entries } = useEntryContext();
+  const { projects, addProject } = useProjectContext();
   useIdGeneratorSync(projects, entries); // Sync ID generator with loaded data
 
   // ─── Settings and Tab Management ──────────────────────────────────────────
@@ -55,15 +54,12 @@ function AppContent() {
 
   // Handle timer toggling
   const handleToggleTimer = () => {
-    // If no projects exist but they try to toggle, create one
     if (projects.length === 0) {
       addProject();
-      // Wait for the project to be created, then toggle the timer
       setTimeout(() => {
         toggleTimer(projects);
       }, 100);
     } else {
-      // Always pass the projects array to toggleTimer
       toggleTimer(projects);
     }
   };
@@ -72,53 +68,42 @@ function AppContent() {
   const showTimerButton = canResumeTimerButton(projects);
 
   return (
-    <ProjectProvider
-      projects={projects}
-      addProject={addProject}
-      renameProject={renameProject}
-      updateProject={updateProject}
-      deleteProject={deleteProject}
-      reorderProjects={reorderProjects}
-    >
-      <TimerProvider isRunning={timer.running} projects={projects} elapsedMs={elapsedMs}>
-        <EntryProvider>
-          <div className="app">
-            <TopBar
-              tabs={tabs}
-              current={tab}
-              changeTab={(id: string) => setTab(id as 'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP')}
-              isRunning={timer.running}
-              toggleTimer={handleToggleTimer}
-              elapsedMs={elapsedMs}
-              showResumeButton={showTimerButton}
-            />
+    <div className="app">
+      <TopBar
+        tabs={tabs}
+        current={tab}
+        changeTab={(id: string) => setTab(id as 'TRACK' | 'REPORTS' | 'SETTINGS' | 'BACKUP')}
+        isRunning={timer.running}
+        toggleTimer={handleToggleTimer}
+        elapsedMs={elapsedMs}
+        showResumeButton={showTimerButton}
+      />
 
-            <main className="container-fluid mt-3">
-              {tab === 'TRACK' && (
-                <TrackTab
-                  settings={settings}
-                  resumeEntry={resumeEntry}
-                  toggleTimer={handleToggleTimer}
-                />
-              )}
+      <main className="container-fluid mt-3">
+        {tab === 'TRACK' && (
+          <TrackTab settings={settings} resumeEntry={resumeEntry} toggleTimer={handleToggleTimer} />
+        )}
 
-              {tab === 'REPORTS' && <ReportsTab settings={settings} timerElapsedMs={elapsedMs} />}
+        {tab === 'REPORTS' && <ReportsTab settings={settings} timerElapsedMs={elapsedMs} />}
 
-              {tab === 'SETTINGS' && <SettingsTab settings={settings} setSettings={setSettings} />}
+        {tab === 'SETTINGS' && <SettingsTab settings={settings} setSettings={setSettings} />}
 
-              {tab === 'BACKUP' && <BackupTab />}
-            </main>
-          </div>
-        </EntryProvider>
-      </TimerProvider>
-    </ProjectProvider>
+        {tab === 'BACKUP' && <BackupTab />}
+      </main>
+    </div>
   );
 }
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <EntryProvider>
+        <ProjectProvider>
+          <TimerProvider>
+            <AppContent />
+          </TimerProvider>
+        </ProjectProvider>
+      </EntryProvider>
     </QueryClientProvider>
   );
 }

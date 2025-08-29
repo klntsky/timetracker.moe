@@ -1,5 +1,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { Project } from '../types';
+import { useTimerQuery } from '../hooks/useTimerQuery';
+import { useProjectContext } from './ProjectContext';
 
 interface TimerContextValue {
   isRunning: boolean;
@@ -9,19 +11,14 @@ interface TimerContextValue {
 
 const TimerContext = createContext<TimerContextValue | undefined>(undefined);
 
-export function TimerProvider({
-  children,
-  isRunning,
-  projects,
-  elapsedMs,
-}: {
-  children: ReactNode;
-  isRunning: boolean;
-  projects: Project[];
-  elapsedMs: number;
-}) {
+export function TimerProvider({ children }: { children: ReactNode }) {
+  const { timer, getElapsedMs } = useTimerQuery();
+  const { projects } = useProjectContext();
+
   return (
-    <TimerContext.Provider value={{ isRunning, projects, elapsedMs }}>
+    <TimerContext.Provider
+      value={{ isRunning: timer.running, projects, elapsedMs: getElapsedMs() }}
+    >
       {children}
     </TimerContext.Provider>
   );
