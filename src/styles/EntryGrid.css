@@ -90,8 +90,13 @@
   font-family: inherit;
   text-align: left;
   background-color: var(--color-input-bg);
+  color: var(--color-text-primary);
   transition: background-color 0.3s ease;
   box-sizing: border-box;
+}
+
+.time-editor::placeholder {
+  color: var(--color-text-secondary);
 }
 
 .time-editor:focus {
