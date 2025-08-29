@@ -35,10 +35,17 @@ export function useTimerQuery() {
   const updateProjectId = (projectId: number) =>
     mutateTimer.mutate((prev) => ({ ...prev, lastProjectId: projectId }));
 
+  const resetTimer = () =>
+    mutateTimer.mutate(() => ({
+      running: false,
+      start: null,
+      lastEntryId: null,
+      lastProjectId: null,
+    }));
+
   const running = timerQuery.data?.running ?? false;
   const startIso = timerQuery.data?.start ?? null;
 
-  // Recompute elapsed in the UI where needed using Date.now() to avoid extra state here
   const elapsedMs = useMemo(() => {
     if (!running || !startIso) return 0;
     const now = Date.now();
@@ -57,6 +64,7 @@ export function useTimerQuery() {
     startTimer,
     stopTimer,
     updateProjectId,
+    resetTimer,
     getElapsedMs: () => elapsedMs,
   } as const;
 }

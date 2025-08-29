@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TimeEntry } from '../types';
 import { formatTimeHHMM, formatTimeHHMMSS } from '../utils/timeFormatters';
 import { useTimerContext } from '../contexts/TimerContext';
@@ -36,11 +36,13 @@ const EntryChip: React.FC<EntryChipProps> = ({
   // Compute resume visibility directly here
   const canResume = !isRunning && projectExists(projects, entry.projectId);
 
-  // If autoEdit becomes true later, open editor
+  // Only handle autoEdit once to avoid re-triggering mutations while data is still refreshing
+  const autoEditHandledRef = useRef(false);
+
   useEffect(() => {
-    if (autoEdit) {
+    if (autoEdit && !autoEditHandledRef.current) {
+      autoEditHandledRef.current = true;
       setEditingTime(true);
-      // Clear the autoEdit flag since we've acted on it
       if (typeof updateEntry === 'function') {
         updateEntry(entry.id, { autoEdit: false });
       }
