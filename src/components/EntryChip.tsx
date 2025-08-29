@@ -107,7 +107,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
           />
         </div>
       ) : (
-        <div className="flex-grow-1 d-flex align-items-center gap-1">
+        <div className="flex-grow-1 d-flex align-items-center gap-1 entry-content">
           {/* Time display */}
           <span
             title={formatTimeHHMMSS(effectiveDuration)}
@@ -161,7 +161,7 @@ const EntryChip: React.FC<EntryChipProps> = ({
               evt.stopPropagation();
               openCommentEditor(evt);
             }}
-            style={{ cursor: 'pointer', flex: 1 }}
+            style={{ cursor: 'pointer' }}
           >
             <span className="comment-text">{entry.note || ''}</span>
           </span>

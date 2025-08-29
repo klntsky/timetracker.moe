@@ -46,13 +46,21 @@
   animation: pulse-opacity 3s infinite ease-in-out;
 }
 
+/* Scrollable container for the week grid */
+.week-grid-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 /* For the week grid */
 .week-grid {
   display: grid;
-  grid-template-columns: 200px repeat(7, 1fr);
+  grid-template-columns: minmax(200px, 200px) repeat(7, minmax(200px, 1fr));
   gap: 6px;
   margin-bottom: 20px;
   position: relative; /* Add positioning context for absolute elements */
+  min-width: calc(200px + 7 * 200px + 6px * 8); /* ensure overall min width so it can scroll */
 }
 
 .header {

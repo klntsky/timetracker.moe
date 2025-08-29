@@ -32,18 +32,20 @@ function TrackTabComponent({ settings, resumeEntry, toggleTimer }: Props) {
 
   return (
     <>
-      <div className="week-grid">
-        <EntryGrid
-          days={days}
-          entries={entries}
-          resumeEntry={resumeEntry}
-          toggleTimer={toggleTimer}
-          addEntry={addEntry}
-          weekOffset={weekOffset}
-          goToPreviousWeek={goToPreviousWeek}
-          goToCurrentWeek={goToCurrentWeek}
-          goToNextWeek={goToNextWeek}
-        />
+      <div className="week-grid-container">
+        <div className="week-grid">
+          <EntryGrid
+            days={days}
+            entries={entries}
+            resumeEntry={resumeEntry}
+            toggleTimer={toggleTimer}
+            addEntry={addEntry}
+            weekOffset={weekOffset}
+            goToPreviousWeek={goToPreviousWeek}
+            goToCurrentWeek={goToCurrentWeek}
+            goToNextWeek={goToNextWeek}
+          />
+        </div>
       </div>
       <button className="btn btn-outline-primary mt-3" onClick={addProject}>
         + Add project

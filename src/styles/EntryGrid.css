@@ -1,6 +1,6 @@
 /* -------------------- Time Display Styles -------------------- */
 .time-display {
-  min-width: 80px; /* Adjusted for wider time text */
+  min-width: 96px; /* Slightly wider to fit button comfortably */
   flex-shrink: 0; /* Don't shrink to ensure comment gets space */
   display: flex;
   align-items: center;
@@ -197,6 +197,13 @@
   /* No padding needed since we use fixed-width inner elements */
 }
 
+/* Constrain the content area so dropdown space is reserved */
+.entry-content {
+  min-width: 0;
+  max-width: calc(100% - 22px); /* reserve space for the menu button */
+  overflow: hidden; /* prevent pushing siblings when zoomed */
+}
+
 /* -------------------- Comment Display and Editor Styles -------------------- */
 .comment-text {
   flex: 1;
@@ -207,7 +214,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0; /* Allow flex item to shrink below content size */
-  max-width: 80px; /* Smaller constraint to ensure buttons fit */
+  width: 100%; /* fill the fixed container width */
 }
 
 .comment-edit-button {
@@ -285,7 +292,8 @@
   padding: 2px 4px;
   border-radius: 4px;
   transition: background-color 0.2s;
-  flex: 1; /* Take remaining space */
+  flex: 0 0 180px; /* fixed width for description area */
+  width: 180px;
   overflow: hidden;
 }
 
