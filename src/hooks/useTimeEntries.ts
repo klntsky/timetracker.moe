@@ -16,6 +16,8 @@ export function useTimeEntries() {
     changeEntryProject: changeEntryProjectBase,
     updateEntryDuration,
     setEntries,
+    finalizeStoppedEntry,
+    isMutating: entriesMutating,
   } = useEntriesQuery();
 
   const {
@@ -24,23 +26,27 @@ export function useTimeEntries() {
     stopTimer: stopTimerBase,
     updateProjectId,
     getElapsedMs,
+    isMutating: timerMutating,
   } = useTimerQuery();
+
+  const isBusy = entriesMutating || timerMutating;
 
   // Create a new entry and start timer on it
   const newEntry = useCallback(
     (projectId: number) => {
       const id = generateId();
       const now = new Date();
+      const nowIso = now.toISOString();
       const newEntry: TimeEntry = {
         id,
         projectId,
-        start: now.toISOString(),
+        start: nowIso,
         duration: 0,
         active: true,
       };
 
       addEntry(newEntry);
-      startTimerBase(id, projectId);
+      startTimerBase(id, projectId, nowIso);
     },
     [addEntry, startTimerBase]
   );
@@ -72,18 +78,18 @@ export function useTimeEntries() {
     // Update the entry that was being timed
     const entryExists = entries.some((e) => e.id === lastEntryId);
     if (entryExists) {
-      // Update duration and set active to false
-      updateEntryDuration(lastEntryId, elapsedMs);
-      updateEntry(lastEntryId, { active: false });
+      // Atomically add elapsed and set inactive
+      finalizeStoppedEntry(lastEntryId, elapsedMs);
     }
 
     // Stop the timer
     stopTimerBase();
-  }, [isRunning, start, lastEntryId, entries, updateEntryDuration, updateEntry, stopTimerBase]);
+  }, [isRunning, start, lastEntryId, entries, finalizeStoppedEntry, stopTimerBase]);
 
   // Toggle timer (start/stop)
   const toggleTimer = useCallback(
     (projects: Project[] = []) => {
+      if (isBusy) return;
       if (isRunning) {
         stopTimer();
         return;
@@ -143,7 +149,7 @@ export function useTimeEntries() {
           // If none of these conditions are met, the button should be hidden by canResume
         });
     },
-    [isRunning, start, lastEntryId, lastProjectId, entries, stopTimer, startTimer]
+    [isBusy, isRunning, start, lastEntryId, lastProjectId, entries, stopTimer, startTimer]
   );
 
   // Check if Resume button should be shown (renamed for clarity)
@@ -189,6 +195,7 @@ export function useTimeEntries() {
   // Resume an existing entry
   const resumeEntry = useCallback(
     (entry: TimeEntry) => {
+      if (isBusy) return;
       if (isRunning) {
         stopTimer();
       }
@@ -196,7 +203,7 @@ export function useTimeEntries() {
       // Always resume the exact entry clicked
       startTimer(entry.projectId, entry.id);
     },
-    [isRunning, stopTimer, startTimer]
+    [isBusy, isRunning, stopTimer, startTimer]
   );
 
   // Get the last used entry if it still exists
@@ -217,5 +224,6 @@ export function useTimeEntries() {
     timer: { running: isRunning, start, lastEntryId, lastProjectId },
     lastUsedEntry,
     elapsedMs: getElapsedMs(),
-  };
+    isBusy,
+  } as const;
 }

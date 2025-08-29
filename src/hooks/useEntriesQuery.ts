@@ -32,14 +32,24 @@ export function useEntriesQuery() {
     );
   const setAll = (entries: TimeEntry[]) => mutateEntries.mutate(() => entries);
 
+  // Atomically finalize a stopped entry: add elapsed and mark inactive
+  const finalizeStoppedEntry = (id: number, additionalMs: number) =>
+    mutateEntries.mutate((prev) =>
+      prev.map((e) =>
+        e.id === id ? { ...e, duration: e.duration + additionalMs, active: false } : e
+      )
+    );
+
   return {
     entries: entriesQuery.data ?? [],
     isLoading: entriesQuery.isLoading,
+    isMutating: mutateEntries.isPending,
     addEntry,
     updateEntry,
     deleteEntry,
     changeEntryProject,
     updateEntryDuration,
+    finalizeStoppedEntry,
     setEntries: setAll,
   } as const;
 }

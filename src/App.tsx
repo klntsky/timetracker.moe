@@ -26,7 +26,8 @@ function AppContent() {
   useTheme();
 
   // time entries & timer management
-  const { toggleTimer, canResumeTimerButton, resumeEntry, timer, elapsedMs } = useTimeEntries();
+  const { toggleTimer, canResumeTimerButton, resumeEntry, timer, elapsedMs, isBusy } =
+    useTimeEntries();
 
   // projects & entries via context
   const { entries } = useEntryContext();
@@ -54,6 +55,7 @@ function AppContent() {
 
   // Handle timer toggling
   const handleToggleTimer = () => {
+    if (isBusy) return;
     if (projects.length === 0) {
       addProject();
       setTimeout(() => {
@@ -77,6 +79,7 @@ function AppContent() {
         toggleTimer={handleToggleTimer}
         elapsedMs={elapsedMs}
         showResumeButton={showTimerButton}
+        disabled={isBusy}
       />
 
       <main className="container-fluid mt-3">

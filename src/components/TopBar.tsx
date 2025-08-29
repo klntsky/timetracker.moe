@@ -13,6 +13,7 @@ interface Props {
   toggleTimer: () => void;
   elapsedMs: number;
   showResumeButton: boolean;
+  disabled?: boolean;
 }
 
 export default function TopBar({
@@ -23,6 +24,7 @@ export default function TopBar({
   toggleTimer,
   elapsedMs,
   showResumeButton,
+  disabled = false,
 }: Props) {
   // Format time using our utility functions
   const displayTime = formatTimeHHMM(elapsedMs);
@@ -60,6 +62,8 @@ export default function TopBar({
             )}
             onClick={toggleTimer}
             title={buttonTitle}
+            disabled={disabled}
+            style={disabled ? { pointerEvents: 'none' } : undefined}
           >
             <i className={clsx('fas', isRunning ? 'fa-circle' : 'fa-play')}></i>
             {isRunning ? 'Pause' : 'Start'}

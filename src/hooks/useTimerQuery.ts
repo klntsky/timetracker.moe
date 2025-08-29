@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTimer, setTimer } from '../lib/timer.api';
 import { TimerState } from '../reducers/timerReducer';
@@ -46,12 +46,22 @@ export function useTimerQuery() {
   const running = timerQuery.data?.running ?? false;
   const startIso = timerQuery.data?.start ?? null;
 
+  // Local ticking state to trigger recalculation once per second while running
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!running || !startIso) return;
+    const intervalId = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(intervalId);
+  }, [running, startIso]);
+
   const elapsedMs = useMemo(() => {
     if (!running || !startIso) return 0;
     const now = Date.now();
     const start = new Date(startIso).getTime();
+    // Depend on tick so this recomputes every second
+    void tick; // reference to include in memo without lint complaints if unused
     return Math.max(0, now - start);
-  }, [running, startIso]);
+  }, [running, startIso, tick]);
 
   return {
     timer: timerQuery.data ?? {
@@ -61,6 +71,7 @@ export function useTimerQuery() {
       lastProjectId: null,
     },
     isLoading: timerQuery.isLoading,
+    isMutating: mutateTimer.isPending,
     startTimer,
     stopTimer,
     updateProjectId,
